@@ -13,6 +13,7 @@ import { Demo } from '@/types';
 import { ChartData, ChartOptions } from 'chart.js';
 import { Badge } from 'primereact/badge';
 import { Tag } from 'primereact/tag';
+import { WebsocketContext } from '@/layout/context/websocketcontext';
 
 const lineData: ChartData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -38,11 +39,9 @@ const lineData: ChartData = {
 
 const Dashboard = () => {
     const [products, setProducts] = useState<Demo.Product[]>([]);
-    const menu1 = useRef<Menu>(null);
-    const menu2 = useRef<Menu>(null);
     const [lineOptions, setLineOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
-
+    const { isConnected }: any = useContext(WebsocketContext);
     const applyLightTheme = () => {
         const lineOptions: ChartOptions = {
             plugins: {
@@ -133,7 +132,7 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div className="text-900 font-medium text-xl">Connected</div>
+                            <div className="text-900 font-medium text-xl">{isConnected ? "Connected" : "Disconnected"}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
@@ -170,7 +169,7 @@ const Dashboard = () => {
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-android text-cyan-500 text-xl" />
+                            <i className="pi pi-android text-blue-500 text-xl" />
                         </div>
                     </div>
                     <span className="text-green-500 font-bold">1 </span>
@@ -186,7 +185,7 @@ const Dashboard = () => {
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-comment text-purple-500 text-xl" />
+                            <i className="pi pi-comment text-blue-500 text-xl" />
                         </div>
                     </div>
                     <span className="text-green-500 font-bold">1 </span>
@@ -195,8 +194,8 @@ const Dashboard = () => {
             </div>
             <div className={'col-12 '}>
                 <div className="card">
-                    <h5>Machines</h5>
-                    <DataTable value={products} rows={6} paginator responsiveLayout="scroll">
+
+                    <DataTable loading={false} value={products} rows={5} paginator responsiveLayout="scroll">
 
                         <Column field="name" header="Name" sortable style={{ width: '35%' }} />
                         <Column field="address" header="Address" sortable style={{ width: '35%' }}
@@ -232,21 +231,10 @@ const Dashboard = () => {
 
 
             <div className="col-12 lg:col-6">
-                <div className="card max-h-30rem overflow-auto">
+                <div className="card max-h-35rem overflow-auto">
                     <div className="flex align-items-center justify-content-between mb-4">
                         <h5>Notifications</h5>
-                        <div>
-                            <Button type="button" icon="pi pi-ellipsis-v" rounded text className="p-button-plain"
-                                    onClick={(event) => menu2.current?.toggle(event)} />
-                            <Menu
-                                ref={menu2}
-                                popup
-                                model={[
-                                    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-                                    { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-                                ]}
-                            />
-                        </div>
+
                     </div>
 
                     <span className="block text-600 font-medium mb-3">TODAY</span>

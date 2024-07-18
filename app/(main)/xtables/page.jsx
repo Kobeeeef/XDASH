@@ -1,30 +1,79 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 
-import React, { useEffect } from 'react';
+
+
+
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 
 
 
 import { Terminal } from 'primereact/terminal';
 import { TerminalService } from 'primereact/terminalservice';
+import { WebsocketContext } from '../../../layout/context/websocketcontext';
 
 
-
+const helpMessage = `Available Commands: - clear: Clear the terminal screen. - put {key} {value}: Update a specific key value. - get {key}: Retrieve a value from the server. - sync: Syncs all data from server to refresh. - help: Show available commands and their descriptions.`;
 
 const Dashboard = () => {
+    const { isConnected} = useContext(WebsocketContext);
+
+    const dt = useRef(null);
+    const [data, setData] = useState([]);
+    const [rawJSON, setRawJSON] = useState({});
     const commandHandler = (text) => {
+            let argsIndex = text.indexOf(' ');
+            let command = argsIndex !== -1 ? text.substring(0, argsIndex) : text;
+            let tokens = text.split(" ");
+            if(!isConnected) return TerminalService.emit('response', "Please connect to backend socket first!");
+
+                switch (command) {
+                    case 'help':
+                    case 'ls':
+                        TerminalService.emit('response', helpMessage);
+                        break;
+                    case 'clear':
+                        TerminalService.emit('clear');
+                        break;
+                }
 
     }
     useEffect(() => {
         TerminalService.on('command', commandHandler);
-
         return () => {
             TerminalService.off('command', commandHandler);
         };
     }, []);
-
+    useEffect(() => {
+        setData(convertJSON(rawJSON));
+    }, [rawJSON]);
+    const allowExpansion = (rowData) => {
+        return rowData.data && Object.keys(rowData.data).length > 0;
+    };
+    const rowExpansionTemplate = (data) => {
+        return (<div className="p-3">
+            <DataTable showGridlines value={data.data} editMode={"cell"} expandedRows={expandedRows}
+                       rowExpansionTemplate={rowExpansionTemplate}
+                       selectionMode="single"
+                       dataKey="key" removableSort>
+                <Column expander={allowExpansion} style={{width: '5rem'}}/>
+                <Column field="name" header="" sortable/>
+                <Column field="value" header="" frozen={true}
+                        className="font-bold max-w-1 overflow-hidden whitespace-nowrap" editor={textEditor}
+                        onCellEditComplete={onCellEditComplete}
+                        sortable/>
+                <Column
+                    field="type"
+                    className="capitalize max-w-1 overflow-hidden whitespace-nowrap"
+                    sortable
+                />
+            </DataTable>
+        </div>);
+    };
 
 
     // @ts-ignore
@@ -35,7 +84,7 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div className="text-900 font-medium text-xl">Connected</div>
+                            <div className="text-900 font-medium text-xl"> {isConnected ? "Connected" : "Disconnected"}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
@@ -81,6 +130,7 @@ const Dashboard = () => {
             </div>
             <div className="col-12">
                 <div className="card mb-0">
+
                     <Terminal
                         welcomeMessage="Welcome to XTABLES control panel!"
                         prompt="XTABLES $"
@@ -91,11 +141,85 @@ const Dashboard = () => {
                             response: 'text-primary-300'
                         }}
                     />
+
+                </div>
+
+            </div>
+            <div className="col-12">
+                <div className="card mb-0">
+                    <DataTable
+                        ref={dt}
+                        virtualScrollerOptions={{itemSize: 50}}
+                        value={data}
+                        selectionMode="single"
+                        showGridlines={false}
+                        globalFilterFields={['name', 'value']}
+                        removableSort
+                        filterDisplay="row"
+                        loading={!isConnected}
+                        rowExpansionTemplate={rowExpansionTemplate}
+                        dataKey="key"
+                        scrollable
+                        scrollHeight={"50vh"}
+                        tableStyle={{ minWidth: '15rem'}}
+                    >
+                        <Column expander={allowExpansion} style={{width: '5rem'}}/>
+                        <Column field="name" header="Name" sortable  f/>
+                        <Column
+                            field="value"
+                            header="Value"
+                            className="font-bold max-w-1 overflow-hidden whitespace-nowrap"
+
+                            sortable
+                        />
+                        <Column
+                            field="type"
+                            header="Type"
+                            className="capitalize max-w-1 overflow-hidden whitespace-nowrap"
+                            sortable
+                        />
+                    </DataTable>
                 </div>
             </div>
-
         </div>
     );
 };
+function isValidJSON(jsonString) {
+    try {
+        JSON.parse(jsonString);
+        return true; // The JSON is valid
+    } catch (e) {
+        return false; // The JSON is not valid
+    }
+}
+function convertJSON(json) {
+    const transformRecursively = (obj, parentKey = '') => {
+        return Object.entries(obj).map(([key, value]) => {
+            // Create a new object for the array
+            let transformed = {
+                key: parentKey ? `${parentKey}.${key}` : key, name: key
+            };
+
+            if (typeof value === 'object' && value !== null) {
+                if (value.hasOwnProperty('value')) {
+                    transformed.value = value.value;
+                    transformed.type = (typeof JSON.parse(value.value)).toString()
+                }
+                // Recurse if there's nested data
+                if (value.data) {
+                    transformed.data = transformRecursively(value.data, transformed.key);
+                }
+            } else {
+                transformed.value = value;
+                transformed.type = (typeof JSON.parse(value)).toString()
+            }
+
+            return transformed;
+        });
+    };
+
+    // Start the transformation with the top-level keys
+    return transformRecursively(json);
+}
 
 export default Dashboard;
