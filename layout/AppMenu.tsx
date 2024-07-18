@@ -18,7 +18,7 @@ const AppMenu = () => {
         {
             label: 'Devices',
             items: [
-                { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
+                { label: 'te', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
             ]
         },
         {
