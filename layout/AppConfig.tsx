@@ -109,16 +109,16 @@ const AppConfig = (props: AppConfigProps) => {
                 )}
                 <h5>Design</h5>
                 <div className="grid">
-                    <div className="col-3">
+                    <div className="col-2">
                         <button className="p-link w-2rem h-2rem"
                                 onClick={() => _changeTheme('lara-light-indigo', 'light')}>
-                            <i className={'pi pi-sun'}></i>
+                            <i style={{ fontSize: '1.2rem' }} className={'pi pi-sun p-1 transition-colors duration-300 transform border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 ' + (layoutConfig.theme == "lara-light-indigo" ? "bg-blue-500 border-blue-500" : "border-gray-400")}></i>
                         </button>
                     </div>
 
-                    <div className="col-3">
+                    <div className="col-2">
                         <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('lara-dark-indigo', 'dark')}>
-                            <i className={"pi pi-moon"}></i>
+                            <i style={{ fontSize: '1.2rem' }} className={ "pi pi-moon p-1 transition-colors duration-300 transform  border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 " + (layoutConfig.theme == "lara-dark-indigo" ? "bg-blue-500 border-blue-500" : "border-gray-400") }></i>
                         </button>
                     </div>
 

@@ -46,7 +46,7 @@ const AppMenu = () => {
             label: 'Prime Blocks',
             items: [
                 { label: 'Free Blocks', icon: 'pi pi-fw pi-eye', to: '/blocks', badge: 'NEW' },
-                { label: 'All Blocks', icon: 'pi pi-fw pi-globe', url: 'https://blocks.primereact.org', target: '_blank' }
+
             ]
         },
         {
@@ -54,11 +54,7 @@ const AppMenu = () => {
             icon: 'pi pi-fw pi-briefcase',
             to: '/pages',
             items: [
-                {
-                    label: 'Landing',
-                    icon: 'pi pi-fw pi-globe',
-                    to: '/landing'
-                },
+
                 {
                     label: 'Auth',
                     icon: 'pi pi-fw pi-user',
