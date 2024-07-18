@@ -18,7 +18,7 @@ const AppMenu = () => {
         {
             label: 'Network Tables',
             items: [
-                { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/uikit/formlayout' },
+                { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables' },
             ]
         },
         {
