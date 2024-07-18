@@ -21,6 +21,12 @@ const AppMenu = () => {
                 { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables' },
             ]
         },
+        {
+            label: 'Settings',
+            items: [
+                { label: 'Settings', icon: 'pi pi-cog', to: '/settings' },
+            ]
+        },
         // {
         //     label: 'UI Components',
         //     items: [
