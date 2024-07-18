@@ -48,7 +48,7 @@ const Dashboard = () => {
         return () => {
             TerminalService.off('command', commandHandler);
         };
-    }, []);
+    }, [commandHandler]);
     useEffect(() => {
         setData(convertJSON(rawJSON));
     }, [rawJSON]);
