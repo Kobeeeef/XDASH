@@ -16,9 +16,9 @@ const AppMenu = () => {
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
         },
         {
-            label: 'Devices',
+            label: 'Network Tables',
             items: [
-                { label: 'te', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
+                { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/uikit/formlayout' },
             ]
         },
         {
