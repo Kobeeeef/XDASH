@@ -4,6 +4,7 @@ export const WebsocketContext = createContext({});
 
 export const WebSocketProvider = ({ children, url }) => {
     const [isConnected, setIsConnected] = useState(false);
+    const [lastConnectionUpdate, setLastConnectionUpdate] = useState(new Date())
     const socket = useRef(null);
 
     useEffect(() => {
@@ -28,7 +29,9 @@ export const WebSocketProvider = ({ children, url }) => {
             }
         };
     }, [url]);
-
+    useEffect(() => {
+        setLastConnectionUpdate(new Date())
+    }, [isConnected]);
     const ping = () => {
         if (isConnected) {
             socket.current.send(JSON.stringify({ type: 'ping' }));
@@ -61,7 +64,7 @@ export const WebSocketProvider = ({ children, url }) => {
     };
 
     return (
-        <WebsocketContext.Provider value={{ isConnected }}>
+        <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition }}>
             {children}
         </WebsocketContext.Provider>
     );

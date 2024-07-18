@@ -15,12 +15,13 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Terminal } from 'primereact/terminal';
 import { TerminalService } from 'primereact/terminalservice';
 import { WebsocketContext } from '../../../layout/context/websocketcontext';
+import TimeAgo from '../../../components/TimeAgo';
 
 
 const helpMessage = `Available Commands: - clear: Clear the terminal screen. - put {key} {value}: Update a specific key value. - get {key}: Retrieve a value from the server. - sync: Syncs all data from server to refresh. - help: Show available commands and their descriptions.`;
 
 const Dashboard = () => {
-    const { isConnected} = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate} = useContext(WebsocketContext);
 
     const dt = useRef(null);
     const [data, setData] = useState([]);
@@ -91,8 +92,7 @@ const Dashboard = () => {
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-bold">1 </span>
-                    <span className="text-500">minute ago</span>
+                    <TimeAgo date={lastConnectionUpdate} />
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-4">

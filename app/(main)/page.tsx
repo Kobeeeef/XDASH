@@ -1,19 +1,19 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
+
 import { Button } from 'primereact/button';
 import { Chart } from 'primereact/chart';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import { Menu } from 'primereact/menu';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ProductService } from '../../demo/service/ProductService';
 import { LayoutContext } from '../../layout/context/layoutcontext';
-import Link from 'next/link';
+
 import { Demo } from '@/types';
 import { ChartData, ChartOptions } from 'chart.js';
-import { Badge } from 'primereact/badge';
+
 import { Tag } from 'primereact/tag';
 import { WebsocketContext } from '@/layout/context/websocketcontext';
+import TimeAgo from '@/components/TimeAgo';
 
 const lineData: ChartData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -41,7 +41,7 @@ const Dashboard = () => {
     const [products, setProducts] = useState<Demo.Product[]>([]);
     const [lineOptions, setLineOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
-    const { isConnected }: any = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition }: any = useContext(WebsocketContext);
     const applyLightTheme = () => {
         const lineOptions: ChartOptions = {
             plugins: {
@@ -132,15 +132,15 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div className="text-900 font-medium text-xl">{isConnected ? "Connected" : "Disconnected"}</div>
+                            <div
+                                className="text-900 font-medium text-xl">{isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-bold">1 </span>
-                    <span className="text-500">minute ago</span>
+                    <TimeAgo date={lastConnectionUpdate} />
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
@@ -202,8 +202,8 @@ const Dashboard = () => {
                                 body={(data) => formatCurrency(data.address)} />
                         <Column field="status" header="Status" sortable style={{ width: '35%' }}
                                 body={(data) => (<div>
-                                    <Tag  severity={data.connected ? "success" : "danger"}
-                                         value={data.connected ? "Connected" : "Disconnected"} rounded></Tag>
+                                    <Tag severity={data.connected ? 'success' : 'danger'}
+                                         value={data.connected ? 'Connected' : 'Disconnected'} rounded></Tag>
                                 </div>)} />
                         <Column
                             header="View"
