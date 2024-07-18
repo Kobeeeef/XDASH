@@ -10,7 +10,10 @@ import '../styles/demo/Demos.scss';
 interface RootLayoutProps {
     children: React.ReactNode;
 }
+const value = {
+    ripple: true,
 
+};
 export default function RootLayout({ children }: RootLayoutProps) {
     return (
         <html lang="en" suppressHydrationWarning>
@@ -18,7 +21,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 <link id="theme-css" href={`/themes/lara-dark-indigo/theme.css`} rel="stylesheet"></link>
             </head>
             <body>
-                <PrimeReactProvider>
+                <PrimeReactProvider value={value}>
                     <LayoutProvider>{children}</LayoutProvider>
                 </PrimeReactProvider>
             </body>

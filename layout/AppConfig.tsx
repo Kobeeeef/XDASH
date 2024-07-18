@@ -110,14 +110,15 @@ const AppConfig = (props: AppConfigProps) => {
                 <h5>Design</h5>
                 <div className="grid">
                     <div className="col-3">
-                        <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('lara-light-indigo', 'light')}>
-                            <img src="/layout/images/themes/lara-light-indigo.png" className="w-2rem h-2rem" alt="Lara Light Indigo" />
+                        <button className="p-link w-2rem h-2rem"
+                                onClick={() => _changeTheme('lara-light-indigo', 'light')}>
+                            <i className={'pi pi-sun'}></i>
                         </button>
                     </div>
 
                     <div className="col-3">
                         <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('lara-dark-indigo', 'dark')}>
-                            <img src="/layout/images/themes/lara-dark-indigo.png" className="w-2rem h-2rem" alt="Lara Dark Indigo" />
+                            <i className={"pi pi-moon"}></i>
                         </button>
                     </div>
 
@@ -130,4 +131,5 @@ const AppConfig = (props: AppConfigProps) => {
     );
 };
 
+// @ts-ignore
 export default AppConfig;

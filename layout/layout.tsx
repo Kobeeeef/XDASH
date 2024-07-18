@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
+import { ScrollTop } from 'primereact/scrolltop';
+
 import { useRouter } from 'next/navigation';
 import { useEventListener, useMountEffect, useUnmountEffect } from 'primereact/hooks';
 import React, { useContext, useEffect, useRef } from 'react';
@@ -124,6 +126,7 @@ const Layout = ({ children }: ChildContainerProps) => {
 
     return (
         <React.Fragment>
+            <ScrollTop />
             <div className={containerClass}>
                 <AppTopbar ref={topbarRef} />
                 <div ref={sidebarRef} className="layout-sidebar">
