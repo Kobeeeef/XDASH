@@ -118,12 +118,6 @@ const Dashboard = () => {
         }
     }, [layoutConfig.colorScheme]);
 
-    const formatCurrency = (value: number) => {
-        return value?.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        });
-    };
 
     return (
         <div className="grid">
@@ -199,7 +193,7 @@ const Dashboard = () => {
 
                         <Column field="name" header="Name" sortable style={{ width: '35%' }} />
                         <Column field="address" header="Address" sortable style={{ width: '35%' }}
-                                body={(data) => formatCurrency(data.address)} />
+                                body={(data) => data.address} />
                         <Column field="status" header="Status" sortable style={{ width: '35%' }}
                                 body={(data) => (<div>
                                     <Tag severity={data.connected ? 'success' : 'danger'}
@@ -249,42 +243,7 @@ const Dashboard = () => {
                                 Your request for withdrawal of <span className="text-blue-500 font-medium">2500$</span> has been initiated.
                             </span>
                         </li>
-                        <li className="flex align-items-center py-2">
-                            <div
-                                className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-download text-xl text-orange-500" />
-                            </div>
-                            <span className="text-700 line-height-3">
-                                Your request for withdrawal of <span className="text-blue-500 font-medium">2500$</span> has been initiated.
-                            </span>
-                        </li>
-                        <li className="flex align-items-center py-2">
-                            <div
-                                className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-download text-xl text-orange-500" />
-                            </div>
-                            <span className="text-700 line-height-3">
-                                Your request for withdrawal of <span className="text-blue-500 font-medium">2500$</span> has been initiated.
-                            </span>
-                        </li>
-                        <li className="flex align-items-center py-2">
-                            <div
-                                className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-download text-xl text-orange-500" />
-                            </div>
-                            <span className="text-700 line-height-3">
-                                Your request for withdrawal of <span className="text-blue-500 font-medium">2500$</span> has been initiated.
-                            </span>
-                        </li>
-                        <li className="flex align-items-center py-2">
-                            <div
-                                className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-download text-xl text-orange-500" />
-                            </div>
-                            <span className="text-700 line-height-3">
-                                Your request for withdrawal of <span className="text-blue-500 font-medium">2500$</span> has been initiated.
-                            </span>
-                        </li>
+
                     </ul>
 
                     <span className="block text-600 font-medium mb-3">YESTERDAY</span>
@@ -318,7 +277,7 @@ const Dashboard = () => {
             </div>
             <div className="col-12 lg:col-6">
                 <div className="card">
-                    <h5>Sales Overview</h5>
+                    <h5>Machine Overview</h5>
                     <Chart type="line" data={lineData} options={lineOptions} />
                 </div>
             </div>

@@ -7,7 +7,7 @@ import { Column } from 'primereact/column';
 
 
 
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 
 
@@ -26,24 +26,25 @@ const Dashboard = () => {
     const dt = useRef(null);
     const [data, setData] = useState([]);
     const [rawJSON, setRawJSON] = useState({});
-    const commandHandler = (text) => {
-            let argsIndex = text.indexOf(' ');
-            let command = argsIndex !== -1 ? text.substring(0, argsIndex) : text;
-            let tokens = text.split(" ");
-            if(!isConnected) return TerminalService.emit('response', "Please connect to backend socket first!");
+    const commandHandler = useCallback((text) => {
+        let argsIndex = text.indexOf(' ');
+        let command = argsIndex !== -1 ? text.substring(0, argsIndex) : text;
+        let tokens = text.split(" ");
+        if(!isConnected) return TerminalService.emit('response', "Please connect to backend socket first!");
 
-                switch (command) {
-                    case 'help':
-                    case 'ls':
-                        TerminalService.emit('response', helpMessage);
-                        break;
-                    case 'clear':
-                        TerminalService.emit('clear');
-                        break;
-                }
+        switch (command) {
+            case 'help':
+            case 'ls':
+                TerminalService.emit('response', helpMessage);
+                break;
+            case 'clear':
+                TerminalService.emit('clear');
+                break;
+        }
 
-    }
+    }, [isConnected]);
     useEffect(() => {
+
         TerminalService.on('command', commandHandler);
         return () => {
             TerminalService.off('command', commandHandler);
