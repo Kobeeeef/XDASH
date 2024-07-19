@@ -146,6 +146,7 @@ public class SocketClient {
                     new RequestAction<>(this, new ResponseInfo(null, MethodType.SUBSCRIBE_DELETE).parsed(), ResponseStatus.class).queue();
                     logger.info("Queued delete event subscription successfully!");
                 }
+                isConnected = true;
                 break;
             } catch (IOException e) {
                 logger.warning("Failed to connect to server. Retrying...");
@@ -276,22 +277,22 @@ public class SocketClient {
         }
     }
 
-        public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
-            long startTime = System.currentTimeMillis();
-            long timeoutMillis = unit.toMillis(timeout);
+    public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
+        long startTime = System.currentTimeMillis();
+        long timeoutMillis = unit.toMillis(timeout);
 
-            while (System.currentTimeMillis() - startTime < timeoutMillis) {
-                try {
-                    for (RequestInfo message : new ArrayList<>(MESSAGES)) {
-                        if (message != null && message.getID().equals(ID)) {
-                            MESSAGES.remove(message);
-                            return message;
-                        }
+        while (System.currentTimeMillis() - startTime < timeoutMillis) {
+            try {
+                for (RequestInfo message : new ArrayList<>(MESSAGES)) {
+                    if (message != null && message.getID().equals(ID)) {
+                        MESSAGES.remove(message);
+                        return message;
                     }
-                } catch (Exception ignored) {}
-            }
-            return null;
+                }
+            } catch (Exception ignored) {}
         }
+        return null;
+    }
 
 
     public RequestInfo sendMessageAndWaitForReply(ResponseInfo responseInfo, long timeout, TimeUnit unit) throws InterruptedException {

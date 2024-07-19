@@ -21,7 +21,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         if(message.getType().equals("XTABLES-STATUS")){
             XTablesClient.LatencyInfo info = xTablesClient == null ? null : xTablesClient.ping_latency().complete();
 
-           int totalClients = xTablesClient == null ? 0 : info.getSystemStatistics().getTotalClients();
+           int totalClients = xTablesClient == null ? 0 : info == null ? 0 : info.getSystemStatistics().getTotalClients();
             session.sendMessage(new TextMessage( new Message(new XTablesStatusReturn(xTablesClient != null && xTablesClient.getSocketClient().isConnected, totalClients), "XTABLES-STATUS").toJSON()));
         } else if(message.getType().equals("XTABLES-STATISTICS")){
             if(xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
