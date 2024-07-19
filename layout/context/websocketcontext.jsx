@@ -8,21 +8,27 @@ export const WebSocketProvider = ({ children, url }) => {
     const socket = useRef(null);
 
     useEffect(() => {
-        socket.current = new WebSocket(url);
+        function connect() {
+            console.log("Connecting to websocket")
+            socket.current = new WebSocket(url);
 
-        socket.current.onopen = () => {
-            setIsConnected(true);
-        };
+            socket.current.onopen = () => {
+                setIsConnected(true);
+            };
 
-        socket.current.onclose = () => {
-            setIsConnected(false);
-        };
+            socket.current.onclose = () => {
+                setIsConnected(false);
+                console.log("Disconnected from websocket.")
+                return connect();
+            };
 
-        socket.current.onerror = (error) => {
-            console.error('WebSocket Error: ', error);
-            setIsConnected(false);
-        };
-
+            socket.current.onerror = (error) => {
+                console.error('WebSocket Error: ', error);
+                socket.current.close();
+                setIsConnected(false);
+            };
+        }
+        connect();
         return () => {
             if (socket.current) {
                 socket.current.close();

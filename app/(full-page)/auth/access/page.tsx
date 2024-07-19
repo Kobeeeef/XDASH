@@ -10,7 +10,7 @@ const AccessDeniedPage = () => {
     return (
         <div className="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
             <div className="flex flex-column align-items-center justify-content-center">
-                <img src="/layout/images/logo.png" alt="XBOT logo" className="mb-5 w-30rem flex-shrink-0" />
+                <img src="/images/logo/logo.png" alt="XBOT logo" className="xl:mb-5 lg:mb-4 sm:mb-3 xl:mb-5 lg:mb-4 sm:mb-3 mb-2 xl:w-30rem lg:w-25rem sm:w-20rem w-9 flex-shrink-0" />
 
                 <div
                     style={{
@@ -25,7 +25,7 @@ const AccessDeniedPage = () => {
                         </div>
                         <h1 className="text-900 font-bold text-5xl mb-2">Access Denied</h1>
                         <div className="text-600 mb-5">You do not have the necessary permisions.</div>
-                        <img src="/demo/images/access/asset-access.svg" alt="Error" className="mb-5" width="80%" />
+                        <img src="/images/access/asset-access.svg" alt="Error" className="mb-5" width="80%" />
                         <Button icon="pi pi-arrow-left" label="Go to Dashboard" text onClick={() => router.push('/')} />
                     </div>
                 </div>

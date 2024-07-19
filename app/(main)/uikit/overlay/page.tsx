@@ -135,7 +135,7 @@ const OverlayDemo = () => {
                             <div>
                                 <Button type="button" label="Image" onClick={toggle} outlined />
                                 <OverlayPanel ref={op} appendTo={typeof window !== 'undefined' ? document.body : null} showCloseIcon>
-                                    <img src="/demo/images/nature/nature9.jpg" alt="nature1" />
+                                    <img src="/images/nature/nature9.jpg" alt="nature1" />
                                 </OverlayPanel>
                             </div>
                             <div>

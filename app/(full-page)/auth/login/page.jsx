@@ -1,11 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import { classNames } from 'primereact/utils';
+import { Toast } from 'primereact/toast';
 
 const LoginPage = () => {
     const [password, setPassword] = useState('');
@@ -14,8 +15,12 @@ const LoginPage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
-
-    const handleLogin = async () => {
+    const toast = useRef(null);
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        if(!password) {
+            return setError('Password is required');
+        }
         setError('');
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -33,7 +38,10 @@ const LoginPage = () => {
             setLoading(false);
             clearTimeout(timeoutId);
             if (response.ok) {
-                router.push('/');
+                setLoading(true);
+                toast.current.show({severity:'success', summary: 'Success', detail:'Redirecting to dashboard...', life: 3000});
+                setTimeout(() => { router.push('/'); }, 1000);
+
             } else {
                 setError('Invalid password, please try again.');
             }
@@ -49,8 +57,9 @@ const LoginPage = () => {
 
     return (
         <div className={containerClassName}>
+            <Toast ref={toast} />
             <div className="flex flex-column align-items-center justify-content-center">
-                <img src="/layout/images/logo.png" alt="XBOT logo" className="mb-5 w-30rem flex-shrink-0" />
+                <img src="/images/logo/logo.png" alt="XBOT logo" className="xl:mb-5 lg:mb-4 sm:mb-3 xl:mb-5 lg:mb-4 sm:mb-3 mb-2 xl:w-30rem lg:w-25rem sm:w-20rem w-9 flex-shrink-0" />
                 <div
                     style={{
                         borderRadius: '56px',
@@ -60,7 +69,7 @@ const LoginPage = () => {
                 >
                     <div className="w-full surface-card py-8 px-5 sm:px-8" style={{ borderRadius: '53px' }}>
                         <div className="text-center mb-5">
-                            <img src="/layout/images/favicon.ico" alt="Image" height="50" className="mb-3" />
+                            <img src="/images/logo/favicon.ico" alt="Image" height="50" className="mb-3" />
                             <div className="text-900 text-3xl font-medium mb-3">Welcome!</div>
                             <span className="text-600 font-medium">Sign in to continue</span>
                         </div>

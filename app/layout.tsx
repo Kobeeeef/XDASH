@@ -24,7 +24,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </head>
         <body>
         <PrimeReactProvider value={value}>
-            <WebSocketProvider url="wss://your-websocket-url">
+            <WebSocketProvider url="ws://localhost:8080/ws">
                 <LayoutProvider>{children}</LayoutProvider>
             </WebSocketProvider>
         </PrimeReactProvider>

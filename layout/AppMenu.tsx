@@ -161,7 +161,7 @@ const AppMenu = () => {
                 })}
 
                 <Link href="/" style={{ cursor: 'pointer' }}>
-                    <img alt="XBOT Robotics" className="w-full my-4" src={`/layout/images/logo.png`} />
+                    <img alt="XBOT Robotics" className="w-full my-4" src={`/images/logo/logo.png`} />
                 </Link>
             </ul>
         </MenuProvider>
