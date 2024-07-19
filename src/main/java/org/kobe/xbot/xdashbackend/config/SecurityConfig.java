@@ -21,7 +21,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(  "/_next/**", "/themes/**", "/layout/**", "/images/**").permitAll()
+                                .requestMatchers(  "/_next/**", "/themes/**", "/layout/**", "/auth/**", "/images/**", "/ws/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .formLogin(formLogin ->
@@ -29,7 +29,7 @@ public class SecurityConfig {
                                 .loginPage("/auth/login.html")
                                 .loginProcessingUrl("/perform_login")
                                 .defaultSuccessUrl("/", true)
-                                .failureUrl("/auth/error.html")
+                                .failureHandler(new CustomAuthenticationFailureHandler())
                                 .permitAll()
                 )
                 .logout(logout ->
