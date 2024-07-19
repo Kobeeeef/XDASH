@@ -1,0 +1,22 @@
+package org.kobe.xbot.Utilities;
+
+public enum MethodType {
+    GET,
+    PUT,
+    GET_RAW_JSON,
+    UPDATE_EVENT,
+    GET_TABLES,
+    UPDATE_KEY,
+    DELETE,
+    DELETE_EVENT,
+    SUBSCRIBE_UPDATE,
+    UNSUBSCRIBE_UPDATE,
+    REBOOT_SERVER,
+    PING,
+    RUN_SCRIPT,
+    SUBSCRIBE_DELETE,
+    UNSUBSCRIBE_DELETE,
+    REGISTER_VIDEO_STREAM,
+    GET_VIDEO_STREAM,
+    UNKNOWN
+}
