@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Layout from '../../layout/layout';
+import { WebSocketProvider } from '@/layout/context/websocketcontext';
 
 interface AppLayoutProps {
     children: React.ReactNode;
@@ -15,5 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function AppLayout({ children }: AppLayoutProps) {
-    return <Layout>{children}</Layout>;
+    return (
+
+            <Layout>{children}</Layout>
+      );
 }

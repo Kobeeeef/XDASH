@@ -1,3 +1,4 @@
+'use client';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 export const WebsocketContext = createContext({});
