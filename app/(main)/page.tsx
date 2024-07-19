@@ -189,7 +189,7 @@ const Dashboard = () => {
             <div className={'col-12 '}>
                 <div className="card">
 
-                    <DataTable loading={false} value={products} rows={5} paginator responsiveLayout="scroll">
+                    <DataTable loading={!isConnected} value={products} rows={5} paginator responsiveLayout="scroll">
 
                         <Column field="name" header="Name" sortable style={{ width: '35%' }} />
                         <Column field="address" header="Address" sortable style={{ width: '35%' }}
@@ -201,18 +201,24 @@ const Dashboard = () => {
                                 </div>)} />
                         <Column
                             header="View"
-                            style={{ width: '15%' }}
                             body={() => (
                                 <>
                                     <Button icon="pi pi-search" text />
                                 </>
                             )}
                         />
+                        <Column
+                            header="Control"
+                            body={() => (
+                                <>
+                                    <Button className={'text-purple-500'} icon="pi pi-desktop" text />
 
+                                </>
+                            )}
+                        />
                         <Column
 
                             header="Reboot"
-                            style={{ width: '15%' }}
                             body={() => (
                                 <>
                                     <Button className={'text-red-500'} icon="pi pi-sync" text />
