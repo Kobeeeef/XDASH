@@ -37,10 +37,10 @@ const LoginPage = () => {
             });
             setLoading(false);
             clearTimeout(timeoutId);
-            if (response.status === 200) {
+            if (response.ok) {
                 setLoading(true);
                 toast.current.show({severity:'success', summary: 'Success', detail:'Redirecting to dashboard...', life: 3000});
-                //setTimeout(() => { router.push('/'); }, 1000);
+                setTimeout(() => { router.push('/'); }, 2000);
 
             } else {
                 setError('Invalid password, please try again.');

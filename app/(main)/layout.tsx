@@ -17,7 +17,8 @@ export const metadata: Metadata = {
 
 export default function AppLayout({ children }: AppLayoutProps) {
     return (
-
+        <WebSocketProvider url="ws://localhost:8080/ws">
             <Layout>{children}</Layout>
+        </WebSocketProvider>
       );
 }
