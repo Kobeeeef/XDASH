@@ -1,5 +1,6 @@
 package org.kobe.xbot.Utilities;
 
+import com.google.gson.Gson;
 import com.sun.management.OperatingSystemMXBean;
 
 import java.lang.management.ManagementFactory;
@@ -10,11 +11,11 @@ import java.util.List;
 public class SystemStatistics {
     private final long freeMemoryMB;
     private final long maxMemoryMB;
-
     private final double processCpuLoadPercentage;
     private final int availableProcessors;
     private final long totalThreads;
     private final long nanoTime;
+    private final String health;
     private final int totalClients;
     private XTablesStatus status;
     private int totalMessages;
@@ -33,7 +34,21 @@ public class SystemStatistics {
         this.availableProcessors = osMXBean.getAvailableProcessors();
         this.totalThreads = threadMXBean.getThreadCount();
         this.ip = Utilities.getLocalIPAddress();
+        if (freeMemoryMB > maxMemoryMB * 0.8 && processCpuLoadPercentage < 50 && totalThreads < availableProcessors * 20) {
+            this.health = HealthStatus.GOOD.name();
+        } else if (freeMemoryMB > maxMemoryMB * 0.5 && processCpuLoadPercentage < 70 && totalThreads < availableProcessors * 50) {
+            this.health = HealthStatus.OK.name();
+        } else if (freeMemoryMB > maxMemoryMB * 0.2 && processCpuLoadPercentage < 90 && totalThreads < availableProcessors * 70) {
+            this.health = HealthStatus.BAD.name();
+        } else if (freeMemoryMB <= maxMemoryMB * 0.1 || processCpuLoadPercentage >= 90 || totalThreads >= availableProcessors * 70) {
+            this.health = HealthStatus.OVERLOAD.name();
+        } else {
+            this.health = HealthStatus.UNKNOWN.name();
+        }
+    }
 
+    public enum HealthStatus {
+        GOOD, OK, BAD, OVERLOAD, CRITICAL, UNKNOWN
     }
 
     public String getIp() {
@@ -75,7 +90,6 @@ public class SystemStatistics {
         return nanoTime;
     }
 
-    // Getters for all fields with units in method names
     public long getFreeMemoryMB() {
         return freeMemoryMB;
     }
@@ -83,7 +97,6 @@ public class SystemStatistics {
     public long getMaxMemoryMB() {
         return maxMemoryMB;
     }
-
 
     public double getProcessCpuLoadPercentage() {
         return processCpuLoadPercentage;
