@@ -19,6 +19,7 @@ const AppMenu = () => {
             label: 'Network Tables',
             items: [
                 { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables' },
+                { label: 'Statistics', icon: 'pi pi-chart-bar', to: '/xtables/stats' },
             ]
         },
         {

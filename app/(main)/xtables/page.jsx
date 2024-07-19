@@ -34,6 +34,7 @@ const Dashboard = () => {
         let command = argsIndex !== -1 ? text.substring(0, argsIndex) : text;
         let tokens = text.split(" ");
         if(!isConnected) return TerminalService.emit('response', "Please connect to backend socket first!");
+        if(!statusData?.connected) return TerminalService.emit('response', "Please connect to XTABLES server first!");
 
         switch (command) {
             case 'help':
@@ -45,7 +46,7 @@ const Dashboard = () => {
                 break;
         }
 
-    }, [isConnected]);
+    }, [isConnected, statusData]);
 
     useEffect(() => {
         const intervalId = setInterval( () => {
@@ -60,7 +61,7 @@ const Dashboard = () => {
 
                         return message.message;
                     });
-                }).catch(e => {});
+                }).catch(() => {});
 
 
 
@@ -85,15 +86,14 @@ const Dashboard = () => {
     };
     const rowExpansionTemplate = (data) => {
         return (<div className="p-3">
-            <DataTable showGridlines value={data.data} editMode={"cell"} expandedRows={expandedRows}
+            <DataTable showGridlines value={data.data}
                        rowExpansionTemplate={rowExpansionTemplate}
                        selectionMode="single"
                        dataKey="key" removableSort>
                 <Column expander={allowExpansion} style={{width: '5rem'}}/>
                 <Column field="name" header="" sortable/>
                 <Column field="value" header="" frozen={true}
-                        className="font-bold max-w-1 overflow-hidden whitespace-nowrap" editor={textEditor}
-                        onCellEditComplete={onCellEditComplete}
+                        className="font-bold max-w-1 overflow-hidden whitespace-nowrap"
                         sortable/>
                 <Column
                     field="type"
@@ -182,7 +182,7 @@ const Dashboard = () => {
                         globalFilterFields={['name', 'value']}
                         removableSort
                         filterDisplay="row"
-                        loading={!isConnected}
+                        loading={!isConnected || !statusData?.connected}
                         rowExpansionTemplate={rowExpansionTemplate}
                         dataKey="key"
                         scrollable
