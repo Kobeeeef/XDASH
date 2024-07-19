@@ -21,7 +21,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(  "/_next/**", "/themes/**", "/layout/**", "/auth/**", "/images/**", "/ws/**").permitAll()
+                                .requestMatchers(  "/_next/**", "/themes/**", "/layout/**", "/auth/**", "/images/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .formLogin(formLogin ->
@@ -37,7 +37,9 @@ public class SecurityConfig {
                                 .logoutUrl("/perform_logout")
                                 .deleteCookies("JSESSIONID")
                                 .logoutSuccessUrl("/auth/login.html")
-                ); // Consider enabling CSRF for production environments
+                                .permitAll()
+                ).csrf().disable();
+
 
         return http.build();
     }
