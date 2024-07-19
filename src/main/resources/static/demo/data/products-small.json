@@ -1,0 +1,44 @@
+{
+	"data": [
+		{
+			"name": "Front Right OP",
+			"address": "10.0.0.121",
+            "connected": true
+		},
+        {
+            "name": "Front Left OP",
+            "address": "10.0.0.123",
+            "connected": false
+        },
+        {
+            "name": "Rear Right OP",
+            "address": "10.0.0.145",
+            "connected": true
+        },
+        {
+            "name": "Rear Left OP",
+            "address": "10.0.0.11",
+            "connected": false
+        },
+        {
+            "name": "Front Right OP",
+            "address": "10.0.0.121",
+            "connected": true
+        },
+        {
+            "name": "Front Left OP",
+            "address": "10.0.0.123",
+            "connected": true
+        },
+        {
+            "name": "Rear Right OP",
+            "address": "10.0.0.145",
+            "connected": true
+        },
+        {
+            "name": "Rear Left OP",
+            "address": "10.0.0.11",
+            "connected": true
+        }
+    ]
+}
