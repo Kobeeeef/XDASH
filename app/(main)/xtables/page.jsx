@@ -21,7 +21,10 @@ import TimeAgo from '../../../components/TimeAgo';
 const helpMessage = `Available Commands: - clear: Clear the terminal screen. - put {key} {value}: Update a specific key value. - get {key}: Retrieve a value from the server. - sync: Syncs all data from server to refresh. - help: Show available commands and their descriptions.`;
 
 const Dashboard = () => {
-    const { isConnected, lastConnectionUpdate} = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition} = useContext(WebsocketContext);
+    const [statusData, setStatusData] = useState({})
+    const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
+    const [lastClientsUpdate, setLastClientsUpdate] = useState(new Date());
 
     const dt = useRef(null);
     const [data, setData] = useState([]);
@@ -43,6 +46,30 @@ const Dashboard = () => {
         }
 
     }, [isConnected]);
+
+    useEffect(() => {
+        const intervalId = setInterval( () => {
+            if (isConnected) {
+                sendMessageAndWaitForCondition(
+                    { type: "XTABLES-STATUS" },
+                    (m) => m.type === "XTABLES-STATUS"
+                ).then((message) => {
+                    setStatusData((a) => {
+                        if(message.message.connected !== a?.connected) setLastStatusUpdate(new Date())
+                        if(message.message.clients !== a?.clients) setLastClientsUpdate(new Date())
+
+                        return message.message;
+                    });
+                }).catch(e => {});
+
+
+
+            }
+        }, 100);
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
+    }, [isConnected, sendMessageAndWaitForCondition]);
     useEffect(() => {
 
         TerminalService.on('command', commandHandler);
@@ -101,15 +128,14 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div className="text-900 font-medium text-xl">Connected</div>
+                            <div className="text-900 font-medium text-xl">{isConnected ? statusData?.connected ? "Connected" : "Disconnected" : "Disconnected"}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-bold">1 </span>
-                    <span className="text-500">minute ago</span>
+                    <TimeAgo date={lastStatusUpdate} />
                 </div>
             </div>
 
@@ -118,15 +144,14 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Clients</span>
-                            <div className="text-900 font-medium text-xl">5</div>
+                            <div className="text-900 font-medium text-xl">{isConnected ? statusData?.connected ? statusData?.clients || "Unknown" : "Disconnected" : "Disconnected"}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-android text-cyan-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-bold">1 </span>
-                    <span className="text-500">minute ago</span>
+                    <TimeAgo date={lastClientsUpdate} />
                 </div>
             </div>
             <div className="col-12">

@@ -42,6 +42,29 @@ const Dashboard = () => {
     const [lineOptions, setLineOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition }: any = useContext(WebsocketContext);
+    const [statusData, setStatusData]: any = useState({})
+    const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
+    useEffect(() => {
+        const intervalId = setInterval( () => {
+            if (isConnected) {
+                sendMessageAndWaitForCondition(
+                    { type: "XTABLES-STATUS" },
+                    (m: { type: string; }) => m.type === "XTABLES-STATUS"
+                ).then((message: { message: { connected?: boolean;  }; }) => {
+                    setStatusData((a: { connected?: boolean;  }) => {
+                        if(message.message.connected !== a.connected) setLastStatusUpdate(new Date())
+                        return message.message;
+                    });
+                }).catch(() => {});
+
+
+
+            }
+        }, 100);
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
+    }, [isConnected, sendMessageAndWaitForCondition]);
     const applyLightTheme = () => {
         const lineOptions: ChartOptions = {
             plugins: {
@@ -142,15 +165,14 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div className="text-900 font-medium text-xl">Connected</div>
+                            <div className="text-900 font-medium text-xl">{isConnected ? statusData?.connected ? "Connected" : "Disconnected" : "Disconnected"}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-bold">1 </span>
-                    <span className="text-500">minute ago</span>
+                    <TimeAgo date={lastStatusUpdate} />
                 </div>
             </div>
 

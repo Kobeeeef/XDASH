@@ -56,6 +56,8 @@ export const WebSocketProvider = ({ children, url }) => {
                 if (conditionFunc(data)) {
                     socket.current.removeEventListener('message', listener);
                     clearTimeout(timeoutId);
+                    let message = data.message;
+                    data.message = JSON.parse(message);
                     resolve(data);
                 }
             };

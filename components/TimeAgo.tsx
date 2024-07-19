@@ -14,7 +14,7 @@ const TimeAgo: React.FC<TimeAgoProps> = ({ date, className }) => {
         setTimeAgo(formatTimeAgo(date));
         const interval = setInterval(() => {
             setTimeAgo(formatTimeAgo(date));
-        }, 30); // Update interval to 1000ms (1 second)
+        }, 100); // Update interval to 1000ms (1 second)
 
         return () => clearInterval(interval);
     }, [date]);
