@@ -65,7 +65,7 @@ const Dashboard = () => {
                     <div>
                         <span className="block text-500 font-medium mb-3">XTABLES Status</span>
                         <div
-                            className={'text-900 font-medium text-xl ' + (isConnected ? infoData?.connected ? 'text-green-600' : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse')}>{isConnected ? infoData?.connected ? 'Connected' : 'Disconnected' : 'Disconnected'}</div>
+                            className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? 'text-green-600' : 'text-red-600 animate-pulse' )}>{isConnected && infoData?.connected ? 'Connected' : 'Disconnected'}</div>
                     </div>
                     <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                          style={{ width: '2.5rem', height: '2.5rem' }}>
@@ -83,7 +83,7 @@ const Dashboard = () => {
                     <div>
                         <span className="block text-500 font-medium mb-3">Health</span>
                         <div
-                            className={'text-900 font-medium text-xl ' + (isConnected ? infoData?.connected ? infoData?.info?.health === 'GOOD' ? 'text-green-600' : infoData?.info?.health === 'OK' ? 'text-yellow-500' : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse')}>{isConnected ? infoData?.connected ? infoData?.info?.health || 'Unknown' : 'Disconnected' : 'Disconnected'}</div>
+                            className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.info?.health === 'GOOD' ? 'text-green-600' : infoData?.info?.health === 'OK' ? 'text-yellow-500' : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse')}>{isConnected ? infoData?.connected ? infoData?.info?.health || 'Unknown' : 'Disconnected' : 'Disconnected'}</div>
                     </div>
                     <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                          style={{ width: '2.5rem', height: '2.5rem' }}>
@@ -99,7 +99,7 @@ const Dashboard = () => {
                     <div>
                         <span className="block text-500 font-medium mb-3">Clients</span>
                         <div
-                            className={'text-900 font-medium text-xl ' + (isConnected ? infoData?.connected ? infoData?.info?.totalClients ? 'text-white' : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse')}>{isConnected ? infoData?.connected ? infoData?.info?.totalClients ?? 'Unknown' : 'Disconnected' : 'Disconnected'}</div>
+                            className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.info?.totalClients ? 'text-white' : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse')}>{isConnected ? infoData?.connected ? infoData?.info?.totalClients ?? 'Unknown' : 'Disconnected' : 'Disconnected'}</div>
                     </div>
                     <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                          style={{ width: '2.5rem', height: '2.5rem' }}>
@@ -115,7 +115,7 @@ const Dashboard = () => {
                     <div>
                         <span className="block text-500 font-medium mb-3">IP Address</span>
                         <div
-                            className={'text-900 font-medium text-xl ' + (isConnected ? infoData?.connected ? infoData?.info?.ip : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse')}>{isConnected ? infoData?.connected ? infoData?.info?.ip || 'Unknown' : 'Disconnected' : 'Disconnected'}</div>
+                            className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.info?.ip  : 'text-red-600 animate-pulse')}>{isConnected && infoData?.connected ? infoData?.info?.ip || 'Unknown' : 'Disconnected'}</div>
                     </div>
                     <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                          style={{ width: '2.5rem', height: '2.5rem' }}>
@@ -131,7 +131,7 @@ const Dashboard = () => {
                     <div>
                         <span className="block text-500 font-medium mb-3">Round Trip Latency</span>
                         <div
-                            className={'text-900 font-medium text-xl ' + (isConnected ? infoData?.connected ? infoData?.roundTripLatencyMS : 'text-red-600 animate-pulse' : 'text-red-600 animate-pulse')}>{isConnected ? infoData?.connected ? infoData?.roundTripLatencyMS || 'Unknown' : 'Disconnected' : 'Disconnected'}</div>
+                            className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.roundTripLatencyMS : 'text-red-600 animate-pulse')}>{isConnected && infoData?.connected ? infoData?.roundTripLatencyMS || 'Unknown' : 'Disconnected'}</div>
                     </div>
                     <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                          style={{ width: '2.5rem', height: '2.5rem' }}>
