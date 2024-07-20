@@ -24,11 +24,11 @@ const Dashboard = () => {
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition} = useContext(WebsocketContext);
     const [statusData, setStatusData] = useState({})
     const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
-    const [lastClientsUpdate, setLastClientsUpdate] = useState(new Date());
-
+    const [lastDataSizeUpdate, setLastDataSizeUpdate] = useState(new Date());
     const dt = useRef(null);
     const [data, setData] = useState([]);
     const [rawJSON, setRawJSON] = useState({});
+    const [expandedRows, setExpandedRows] = useState(null);
     const commandHandler = useCallback((text) => {
         let argsIndex = text.indexOf(' ');
         let command = argsIndex !== -1 ? text.substring(0, argsIndex) : text;
@@ -47,26 +47,44 @@ const Dashboard = () => {
         }
 
     }, [isConnected, statusData]);
+    function getStringSize(str) {
+        if (typeof str !== 'string') {
+            throw new TypeError('Input must be a string');
+        }
 
+        // Calculate the byte size of the string
+        const byteSize = new Blob([str]).size;
+
+        // Determine the appropriate unit and format the size
+        if (byteSize < 1024) {
+            return `${byteSize} bytes`;
+        } else if (byteSize < 1024 * 1024) {
+            return `${(byteSize / 1024).toFixed(2)} KB`;
+        } else if (byteSize < 1024 * 1024 * 1024) {
+            return `${(byteSize / (1024 * 1024)).toFixed(2)} MB`;
+        } else {
+            return `${(byteSize / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+        }
+    }
     useEffect(() => {
         const intervalId = setInterval( () => {
             if (isConnected) {
                 sendMessageAndWaitForCondition(
-                    { type: "XTABLES-STATUS" },
-                    (m) => m.type === "XTABLES-STATUS"
+                    { type: "XTABLES-DATA" },
+                    (m) => m.type === "XTABLES-DATA"
                 ).then((message) => {
                     setStatusData((a) => {
                         if(message.message.connected !== a?.connected) setLastStatusUpdate(new Date())
-                        if(message.message.clients !== a?.clients) setLastClientsUpdate(new Date())
-
+                        if(message.message.json !== a?.json) setLastDataSizeUpdate(new Date());
                         return message.message;
                     });
+                    setRawJSON(JSON.parse(message.message.json) || {});
                 }).catch(() => {});
 
 
 
             }
-        }, 100);
+        }, 500);
 
         // Cleanup interval on component unmount
         return () => clearInterval(intervalId);
@@ -86,19 +104,21 @@ const Dashboard = () => {
     };
     const rowExpansionTemplate = (data) => {
         return (<div className="p-3">
-            <DataTable showGridlines value={data.data}
+            <DataTable showGridlines={false} value={data.data}
                        rowExpansionTemplate={rowExpansionTemplate}
+                       onRowToggle={(e) => setExpandedRows(e.data)}
                        selectionMode="single"
+                       expandedRows={expandedRows}
                        dataKey="key" removableSort>
                 <Column expander={allowExpansion} style={{width: '5rem'}}/>
-                <Column field="name" header="" sortable/>
+                <Column field="name" header="" />
                 <Column field="value" header="" frozen={true}
                         className="font-bold max-w-1 overflow-hidden whitespace-nowrap"
-                        sortable/>
+                />
                 <Column
                     field="type"
                     className="capitalize max-w-1 overflow-hidden whitespace-nowrap"
-                    sortable
+
                 />
             </DataTable>
         </div>);
@@ -143,15 +163,15 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                            <span className="block text-500 font-medium mb-3">Clients</span>
-                            <div className="text-900 font-medium text-xl">{isConnected ? statusData?.connected ? statusData?.clients || "Unknown" : "Disconnected" : "Disconnected"}</div>
+                            <span className="block text-500 font-medium mb-3">Data Size</span>
+                            <div className="text-900 font-medium text-xl">{isConnected ? statusData?.connected ? getStringSize( statusData?.json) || "Unknown" : "Disconnected" : "Disconnected"}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-android text-cyan-500 text-xl" />
                         </div>
                     </div>
-                    <TimeAgo date={lastClientsUpdate} />
+                    <TimeAgo date={lastDataSizeUpdate} />
                 </div>
             </div>
             <div className="col-12">
@@ -175,13 +195,14 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <DataTable
                         ref={dt}
-                        virtualScrollerOptions={{itemSize: 50}}
                         value={data}
                         selectionMode="single"
                         showGridlines={false}
                         globalFilterFields={['name', 'value']}
                         removableSort
                         filterDisplay="row"
+                        expandedRows={expandedRows}
+                        onRowToggle={(e) => setExpandedRows(e.data)}
                         loading={!isConnected || !statusData?.connected}
                         rowExpansionTemplate={rowExpansionTemplate}
                         dataKey="key"
