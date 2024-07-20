@@ -1,6 +1,5 @@
 package org.kobe.xbot.Utilities;
 
-import com.google.gson.Gson;
 import com.sun.management.OperatingSystemMXBean;
 
 import java.lang.management.ManagementFactory;
@@ -10,6 +9,7 @@ import java.util.List;
 
 public class SystemStatistics {
     private final long freeMemoryMB;
+    private final long usedMemoryMB;
     private final long maxMemoryMB;
     private final double processCpuLoadPercentage;
     private final int availableProcessors;
@@ -17,7 +17,7 @@ public class SystemStatistics {
     private final long nanoTime;
     private final String health;
     private final int totalClients;
-    private XTablesStatus status;
+    private XTableStatus status;
     private int totalMessages;
     private String ip;
     private List<ClientData> clientDataList;
@@ -30,21 +30,21 @@ public class SystemStatistics {
         this.totalClients = totalClients;
         this.maxMemoryMB = osMXBean.getTotalPhysicalMemorySize() / (1024 * 1024);
         this.freeMemoryMB = osMXBean.getFreePhysicalMemorySize() / (1024 * 1024);
+        this.usedMemoryMB = maxMemoryMB - freeMemoryMB;
         this.processCpuLoadPercentage = osMXBean.getSystemCpuLoad() * 100;
         this.availableProcessors = osMXBean.getAvailableProcessors();
         this.totalThreads = threadMXBean.getThreadCount();
         this.ip = Utilities.getLocalIPAddress();
-        if (freeMemoryMB > maxMemoryMB * 0.8 && processCpuLoadPercentage < 50 && totalThreads < availableProcessors * 20) {
+        if (usedMemoryMB > maxMemoryMB * 0.8 && processCpuLoadPercentage < 50 && totalThreads < availableProcessors * 20) {
             this.health = HealthStatus.GOOD.name();
-        } else if (freeMemoryMB > maxMemoryMB * 0.5 && processCpuLoadPercentage < 70 && totalThreads < availableProcessors * 50) {
+        } else if (usedMemoryMB > maxMemoryMB * 0.5 && processCpuLoadPercentage < 70 && totalThreads < availableProcessors * 50) {
             this.health = HealthStatus.OK.name();
-        } else if (freeMemoryMB > maxMemoryMB * 0.2 && processCpuLoadPercentage < 90 && totalThreads < availableProcessors * 70) {
+        } else if (usedMemoryMB > maxMemoryMB * 0.2 && processCpuLoadPercentage < 90 && totalThreads < availableProcessors * 70) {
             this.health = HealthStatus.BAD.name();
-        } else if (freeMemoryMB <= maxMemoryMB * 0.1 || processCpuLoadPercentage >= 90 || totalThreads >= availableProcessors * 70) {
-            this.health = HealthStatus.OVERLOAD.name();
         } else {
-            this.health = HealthStatus.UNKNOWN.name();
+            this.health = HealthStatus.OVERLOAD.name();
         }
+
     }
 
     public enum HealthStatus {
@@ -64,11 +64,11 @@ public class SystemStatistics {
         return this;
     }
 
-    public XTablesStatus getStatus() {
+    public XTableStatus getStatus() {
         return status;
     }
 
-    public SystemStatistics setStatus(XTablesStatus status) {
+    public SystemStatistics setStatus(XTableStatus status) {
         this.status = status;
         return this;
     }
