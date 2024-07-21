@@ -9,8 +9,8 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.kobe.xbot</groupId>
-	<artifactId>xdashbackend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>XDASH</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>xdashbackend</name>
 	<description>xdashbackend</description>
 	<url/>
@@ -46,11 +46,6 @@
 			<artifactId>jetty-servlets</artifactId>
 			<version>11.0.22</version>
 		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.17.1</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.jmdns</groupId>
@@ -58,12 +53,12 @@
 			<version>3.5.9</version>
 		</dependency>
 
-
 		<dependency>
-			<groupId>org.bytedeco</groupId>
-			<artifactId>opencv-platform</artifactId>
-			<version>${opencv.version}</version>
+			<groupId>com.github.oshi</groupId>
+			<artifactId>oshi-core</artifactId>
+			<version>6.1.1</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

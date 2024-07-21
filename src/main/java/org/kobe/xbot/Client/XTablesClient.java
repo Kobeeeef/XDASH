@@ -2,7 +2,6 @@ package org.kobe.xbot.Client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import org.bytedeco.opencv.opencv_core.Mat;
 import org.kobe.xbot.Server.XTablesData;
 import org.kobe.xbot.Utilities.*;
 import org.kobe.xbot.Utilities.Entities.UpdateConsumer;
@@ -478,7 +477,7 @@ public class XTablesClient {
 
 
     public RequestAction<ResponseStatus> putRawUnsafe(String key, String value) {
-        //logger.warning("This method is not recommend to be used. Please use XTablesClient#putRaw instead for a more safe put.");
+        logger.warning("This method is not recommend to be used. Please use XTablesClient#putRaw instead for a more safe put.");
         Utilities.validateKey(key, true);
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.PUT, key + " " + value).parsed(), ResponseStatus.class) {
             /**
@@ -624,90 +623,90 @@ public class XTablesClient {
         client.sendMessageRaw("IGNORED:PUT " + key + " " + parsedValue);
     }
 
-    public RequestAction<VideoStreamResponse> registerImageStreamServer(String name) {
-        Utilities.validateName(name, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.REGISTER_VIDEO_STREAM, name).parsed(), VideoStreamResponse.class) {
-            /**
-             * Called when a response is received.
-             * Meant to be overridden in subclasses to handle specific actions on response.
-             * <p>
-             * Order of execution: 5 (Called after parsing and formatting the response)
-             *
-             * @param result The result of the response.
-             * @return true if the response was handled successfully, false otherwise.
-             */
-            @Override
-            public boolean onResponse(VideoStreamResponse result) {
-                if (result.getStatus().equals(ImageStreamStatus.OKAY)) {
-                    ImageStreamServer streamServer = new ImageStreamServer(name);
-                    try {
-                        streamServer.start();
-                        result.setStreamServer(streamServer);
-                    } catch (IOException e) {
-                        logger.severe("There was an exception while starting video stream: " + e.getMessage());
-                        result.setStatus(ImageStreamStatus.FAIL_START_SERVER);
-                    }
-                }
-                return true;
-            }
+//    public RequestAction<VideoStreamResponse> registerImageStreamServer(String name) {
+//        Utilities.validateName(name, true);
+//        return new RequestAction<>(client, new ResponseInfo(null, MethodType.REGISTER_VIDEO_STREAM, name).parsed(), VideoStreamResponse.class) {
+//            /**
+//             * Called when a response is received.
+//             * Meant to be overridden in subclasses to handle specific actions on response.
+//             * <p>
+//             * Order of execution: 5 (Called after parsing and formatting the response)
+//             *
+//             * @param result The result of the response.
+//             * @return true if the response was handled successfully, false otherwise.
+//             */
+//            @Override
+//            public boolean onResponse(VideoStreamResponse result) {
+//                if (result.getStatus().equals(ImageStreamStatus.OKAY)) {
+//                    ImageStreamServer streamServer = new ImageStreamServer(name);
+//                    try {
+//                        streamServer.start();
+//                        result.setStreamServer(streamServer);
+//                    } catch (IOException e) {
+//                        logger.severe("There was an exception while starting video stream: " + e.getMessage());
+//                        result.setStatus(ImageStreamStatus.FAIL_START_SERVER);
+//                    }
+//                }
+//                return true;
+//            }
+//
+//            /**
+//             * Parses the response received from the server.
+//             * Meant to be overridden in subclasses to parse the response based on specific needs.
+//             * <p>
+//             * Order of execution: 3 (Called when a response is received)
+//             *
+//             * @param startTime The start time of the request, used for calculating latency.
+//             * @param result    The raw result from the server.
+//             * @return The parsed response as type T.
+//             */
+//            @Override
+//            public VideoStreamResponse parseResponse(long startTime, String result) {
+//                return new VideoStreamResponse(ImageStreamStatus.valueOf(result));
+//            }
+//        };
+//    }
 
-            /**
-             * Parses the response received from the server.
-             * Meant to be overridden in subclasses to parse the response based on specific needs.
-             * <p>
-             * Order of execution: 3 (Called when a response is received)
-             *
-             * @param startTime The start time of the request, used for calculating latency.
-             * @param result    The raw result from the server.
-             * @return The parsed response as type T.
-             */
-            @Override
-            public VideoStreamResponse parseResponse(long startTime, String result) {
-                return new VideoStreamResponse(ImageStreamStatus.valueOf(result));
-            }
-        };
-    }
-
-    public RequestAction<VideoStreamResponse> registerImageStreamClient(String name, Consumer<Mat> consumer) {
-        Utilities.validateName(name, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET_VIDEO_STREAM, name).parsed(), VideoStreamResponse.class) {
-            /**
-             * Called when a response is received.
-             * Meant to be overridden in subclasses to handle specific actions on response.
-             * <p>
-             * Order of execution: 5 (Called after parsing and formatting the response)
-             *
-             * @param result The result of the response.
-             * @return true if the response was handled successfully, false otherwise.
-             */
-            @Override
-            public boolean onResponse(VideoStreamResponse result) {
-                if (result.getStatus().equals(ImageStreamStatus.OKAY)) {
-                    ImageStreamClient streamClient = new ImageStreamClient(result.getAddress(), consumer);
-                    streamClient.start(client.getExecutor());
-                    result.setStreamClient(streamClient);
-                }
-                return true;
-            }
-
-            /**
-             * Parses the response received from the server.
-             * Meant to be overridden in subclasses to parse the response based on specific needs.
-             * <p>
-             * Order of execution: 3 (Called when a response is received)
-             *
-             * @param startTime The start time of the request, used for calculating latency.
-             * @param result    The raw result from the server.
-             * @return The parsed response as type T.
-             */
-            @Override
-            public VideoStreamResponse parseResponse(long startTime, String result) {
-                if (Utilities.contains(ImageStreamStatus.class, result))
-                    return new VideoStreamResponse(ImageStreamStatus.valueOf(result));
-                return new VideoStreamResponse(ImageStreamStatus.OKAY).setAddress(gson.fromJson(result, String.class));
-            }
-        };
-    }
+//    public RequestAction<VideoStreamResponse> registerImageStreamClient(String name, Consumer<Mat> consumer) {
+//        Utilities.validateName(name, true);
+//        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET_VIDEO_STREAM, name).parsed(), VideoStreamResponse.class) {
+//            /**
+//             * Called when a response is received.
+//             * Meant to be overridden in subclasses to handle specific actions on response.
+//             * <p>
+//             * Order of execution: 5 (Called after parsing and formatting the response)
+//             *
+//             * @param result The result of the response.
+//             * @return true if the response was handled successfully, false otherwise.
+//             */
+//            @Override
+//            public boolean onResponse(VideoStreamResponse result) {
+//                if (result.getStatus().equals(ImageStreamStatus.OKAY)) {
+//                    ImageStreamClient streamClient = new ImageStreamClient(result.getAddress(), consumer);
+//                    streamClient.start(client.getExecutor());
+//                    result.setStreamClient(streamClient);
+//                }
+//                return true;
+//            }
+//
+//            /**
+//             * Parses the response received from the server.
+//             * Meant to be overridden in subclasses to parse the response based on specific needs.
+//             * <p>
+//             * Order of execution: 3 (Called when a response is received)
+//             *
+//             * @param startTime The start time of the request, used for calculating latency.
+//             * @param result    The raw result from the server.
+//             * @return The parsed response as type T.
+//             */
+//            @Override
+//            public VideoStreamResponse parseResponse(long startTime, String result) {
+//                if (Utilities.contains(ImageStreamStatus.class, result))
+//                    return new VideoStreamResponse(ImageStreamStatus.valueOf(result));
+//                return new VideoStreamResponse(ImageStreamStatus.OKAY).setAddress(gson.fromJson(result, String.class));
+//            }
+//        };
+//    }
 
     public RequestAction<ResponseStatus> renameKey(String key, String newName) {
         Utilities.validateKey(key, true);

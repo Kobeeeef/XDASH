@@ -1,9 +1,9 @@
 package org.kobe.xbot.Utilities;
 
 
-import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.opencv.global.opencv_imgcodecs;
-import org.bytedeco.opencv.opencv_core.Mat;
+//import org.bytedeco.javacpp.BytePointer;
+//import org.bytedeco.opencv.global.opencv_imgcodecs;
+//import org.bytedeco.opencv.opencv_core.Mat;
 
 import java.net.*;
 import java.util.Enumeration;
@@ -11,13 +11,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Utilities {
 
-    public static byte[] matToByteArray(Mat mat) {
-        BytePointer bytePointer = new BytePointer();
-        opencv_imgcodecs.imencode(".jpg", mat, bytePointer); // Encode the image
-        byte[] byteArray = new byte[(int) bytePointer.limit()];
-        bytePointer.get(byteArray);
-        return byteArray;
-    }
+//    public static byte[] matToByteArray(Mat mat) {
+//        BytePointer bytePointer = new BytePointer();
+//        opencv_imgcodecs.imencode(".jpg", mat, bytePointer); // Encode the image
+//        byte[] byteArray = new byte[(int) bytePointer.limit()];
+//        bytePointer.get(byteArray);
+//        return byteArray;
+//    }
 
 
     public static String getLocalIPAddress() {

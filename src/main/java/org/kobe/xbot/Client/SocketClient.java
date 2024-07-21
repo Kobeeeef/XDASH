@@ -277,22 +277,22 @@ public class SocketClient {
         }
     }
 
-    public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
-        long startTime = System.currentTimeMillis();
-        long timeoutMillis = unit.toMillis(timeout);
+        public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
+            long startTime = System.currentTimeMillis();
+            long timeoutMillis = unit.toMillis(timeout);
 
-        while (System.currentTimeMillis() - startTime < timeoutMillis) {
-            try {
-                for (RequestInfo message : new ArrayList<>(MESSAGES)) {
-                    if (message != null && message.getID().equals(ID)) {
-                        MESSAGES.remove(message);
-                        return message;
+            while (System.currentTimeMillis() - startTime < timeoutMillis) {
+                try {
+                    for (RequestInfo message : new ArrayList<>(MESSAGES)) {
+                        if (message != null && message.getID().equals(ID)) {
+                            MESSAGES.remove(message);
+                            return message;
+                        }
                     }
-                }
-            } catch (Exception ignored) {}
+                } catch (Exception ignored) {}
+            }
+            return null;
         }
-        return null;
-    }
 
 
     public RequestInfo sendMessageAndWaitForReply(ResponseInfo responseInfo, long timeout, TimeUnit unit) throws InterruptedException {
