@@ -24,7 +24,6 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         <div className="layout-topbar">
             <Link href="/" className="layout-topbar-logo">
                 <img src={`/images/logo/logo.png`} height={'35px'} alt="logo" />
-
             </Link>
 
             <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
@@ -36,36 +35,42 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             </button>
 
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-
-                <Menu model={[
-                    {
-                        label: 'Options',
-                        items: [
-                            {
-                                label: 'Refresh',
-                                icon: 'pi pi-refresh'
-                            },
-                            {
-                                label: 'Logout',
-                                icon: 'pi pi-sign-out',
-                                url: '/perform_logout'
-                            }
-                        ]
-                    }
-                ]} popup ref={menuLeftRef} id="popup_menu_left" />
-                    <Button className="p-link layout-topbar-button"
-                            onClick={(event) => {
-
-                                // @ts-ignore
-                                return menuLeftRef.current.toggle(event);
-                            }} aria-controls="popup_menu_left"
-                            aria-haspopup>
-                        <i className="pi pi-user"></i>
-                        <span>Profile</span>
-                    </Button>
+                <Menu
+                    model={[
+                        {
+                            label: 'Options',
+                            items: [
+                                {
+                                    label: 'Refresh',
+                                    icon: 'pi pi-refresh'
+                                },
+                                {
+                                    label: 'Logout',
+                                    icon: 'pi pi-sign-out',
+                                    url: '/perform_logout'
+                                }
+                            ]
+                        }
+                    ]}
+                    popup
+                    ref={menuLeftRef}
+                    id="popup_menu_left"
+                />
+                <Button
+                    className="p-link layout-topbar-button"
+                    onClick={(event) => {
+                        // @ts-ignore
+                        return menuLeftRef.current.toggle(event);
+                    }}
+                    aria-controls="popup_menu_left"
+                    aria-haspopup
+                >
+                    <i className="pi pi-user"></i>
+                    <span>Profile</span>
+                </Button>
 
                 <Link href="/settings">
-                <button type="button" className="p-link layout-topbar-button">
+                    <button type="button" className="p-link layout-topbar-button">
                         <i className="pi pi-cog"></i>
                         <span>Settings</span>
                     </button>

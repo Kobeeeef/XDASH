@@ -27,7 +27,6 @@ const NotFoundPage = () => {
                                 <span className="text-600 lg:text-lg">Click here to return back to dashboard</span>
                             </span>
                         </Link>
-
                     </div>
                 </div>
             </div>

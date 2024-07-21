@@ -2,7 +2,6 @@
 
 import { PrimeReactContext } from 'primereact/api';
 import { Button } from 'primereact/button';
-import { InputSwitch, InputSwitchChangeEvent } from 'primereact/inputswitch';
 import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
 import { Sidebar } from 'primereact/sidebar';
 import { classNames } from 'primereact/utils';
@@ -13,7 +12,7 @@ import { LayoutContext } from './context/layoutcontext';
 const AppConfig = (props: AppConfigProps) => {
     const [scales] = useState([12, 13, 14, 15, 16]);
     const { layoutConfig, setLayoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
-    const { setRipple, changeTheme } = useContext(PrimeReactContext);
+    const { changeTheme } = useContext(PrimeReactContext);
 
     const onConfigButtonClick = () => {
         setLayoutState((prevState: LayoutState) => ({ ...prevState, configSidebarVisible: true }));
@@ -27,10 +26,7 @@ const AppConfig = (props: AppConfigProps) => {
         setLayoutConfig((prevState: LayoutConfig) => ({ ...prevState, inputStyle: e.value }));
     };
 
-    const changeRipple = (e: InputSwitchChangeEvent) => {
-        setRipple?.(e.value as boolean);
-        setLayoutConfig((prevState: LayoutConfig) => ({ ...prevState, ripple: e.value as boolean }));
-    };
+
 
     const changeMenuMode = (e: RadioButtonChangeEvent) => {
         setLayoutConfig((prevState: LayoutConfig) => ({ ...prevState, menuMode: e.value }));
@@ -103,29 +99,35 @@ const AppConfig = (props: AppConfigProps) => {
                             </div>
                         </div>
 
-                        <h5>Ripple Effect</h5>
-                        <InputSwitch checked={layoutConfig.ripple as boolean} onChange={(e) => changeRipple(e)}></InputSwitch>
+
                     </>
                 )}
                 <h5>Design</h5>
                 <div className="grid">
                     <div className="col-2">
-                        <button className="p-link w-2rem h-2rem"
-                                onClick={() => _changeTheme('lara-light-indigo', 'light')}>
-                            <i style={{ fontSize: '1.2rem' }} className={'pi pi-sun p-1 transition-colors duration-300 transform border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 ' + (layoutConfig.theme == "lara-light-indigo" ? "bg-blue-500 border-blue-500" : "border-gray-400")}></i>
+                        <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('lara-light-indigo', 'light')}>
+                            <i
+                                style={{ fontSize: '1.2rem' }}
+                                className={
+                                    'pi pi-sun p-1 transition-colors duration-300 transform border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 ' +
+                                    (layoutConfig.theme == 'lara-light-indigo' ? 'bg-blue-500 border-blue-500' : 'border-gray-400')
+                                }
+                            ></i>
                         </button>
                     </div>
 
                     <div className="col-2">
                         <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('lara-dark-indigo', 'dark')}>
-                            <i style={{ fontSize: '1.2rem' }} className={ "pi pi-moon p-1 transition-colors duration-300 transform  border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 " + (layoutConfig.theme == "lara-dark-indigo" ? "bg-blue-500 border-blue-500" : "border-gray-400") }></i>
+                            <i
+                                style={{ fontSize: '1.2rem' }}
+                                className={
+                                    'pi pi-moon p-1 transition-colors duration-300 transform  border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 ' +
+                                    (layoutConfig.theme == 'lara-dark-indigo' ? 'bg-blue-500 border-blue-500' : 'border-gray-400')
+                                }
+                            ></i>
                         </button>
                     </div>
-
                 </div>
-
-
-
             </Sidebar>
         </>
     );

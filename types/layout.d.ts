@@ -30,7 +30,6 @@ export type LayoutState = {
 };
 
 export type LayoutConfig = {
-    ripple: boolean;
     inputStyle: string;
     menuMode: string;
     colorScheme: string;

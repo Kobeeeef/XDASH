@@ -20,13 +20,12 @@ const AppMenu = () => {
             items: [
                 { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables' },
                 { label: 'Statistics', icon: 'pi pi-chart-bar', to: '/xtables/stats' },
+                { label: 'Graphs', icon: 'pi pi-chart-pie', to: '/xtables/graphs' }
             ]
         },
         {
             label: 'Settings',
-            items: [
-                { label: 'Settings', icon: 'pi pi-cog', to: '/settings' },
-            ]
+            items: [{ label: 'Settings', icon: 'pi pi-cog', to: '/settings' }]
         },
         // {
         //     label: 'UI Components',
@@ -54,7 +53,6 @@ const AppMenu = () => {
         //     icon: 'pi pi-fw pi-briefcase',
         //     to: '/pages',
         //     items: [
-        //
         //         {
         //             label: 'Auth',
         //             icon: 'pi pi-fw pi-user',
@@ -149,7 +147,7 @@ const AppMenu = () => {
                     label: 'Documentation',
                     icon: 'pi pi-fw pi-question',
                     to: '/documentation'
-                },
+                }
             ]
         }
     ];

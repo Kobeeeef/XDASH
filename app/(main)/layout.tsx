@@ -20,5 +20,5 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <WebSocketProvider url="ws://localhost:8080/ws">
             <Layout>{children}</Layout>
         </WebSocketProvider>
-      );
+    );
 }

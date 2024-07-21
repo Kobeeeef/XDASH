@@ -18,7 +18,7 @@ const LoginPage = () => {
     const toast = useRef(null);
     const handleLogin = async (e) => {
         e.preventDefault();
-        if(!password) {
+        if (!password) {
             return setError('Password is required');
         }
         setError('');
@@ -30,7 +30,7 @@ const LoginPage = () => {
             const response = await fetch('/perform_login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: `username=user&password=${password}`,
                 signal: controller.signal
@@ -39,9 +39,10 @@ const LoginPage = () => {
             clearTimeout(timeoutId);
             if (response.ok) {
                 setLoading(true);
-                toast.current.show({severity:'success', summary: 'Success', detail:'Redirecting to dashboard...', life: 3000});
-                setTimeout(() => { router.push('/'); }, 2000);
-
+                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Redirecting to dashboard...', life: 3000 });
+                setTimeout(() => {
+                    router.push('/');
+                }, 2000);
             } else {
                 setError('Invalid password, please try again.');
             }
@@ -79,27 +80,10 @@ const LoginPage = () => {
                                 <label htmlFor="password1" className="block text-900 font-medium text-xl mb-2">
                                     Password
                                 </label>
-                                <Password
-                                    inputId="password1"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Password"
-                                    toggleMask
-                                    className="w-full mb-5"
-                                    inputClassName="w-full p-3 md:w-30rem"
-                                />
+                                <Password inputId="password1" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" toggleMask className="w-full mb-5" inputClassName="w-full p-3 md:w-30rem" />
                             </div>
-                            {error && (
-                                <div className="mb-3 text-red-600">
-                                    {error}
-                                </div>
-                            )}
-                            <Button
-                                loading={loading}
-                                label="Sign In"
-                                className="w-full p-3 text-xl"
-                                onClick={handleLogin}
-                            />
+                            {error && <div className="mb-3 text-red-600">{error}</div>}
+                            <Button loading={loading} label="Sign In" className="w-full p-3 text-xl" onClick={handleLogin} />
                         </div>
                     </div>
                 </div>

@@ -5,12 +5,12 @@ export const WebsocketContext = createContext({});
 
 export const WebSocketProvider = ({ children, url }) => {
     const [isConnected, setIsConnected] = useState(false);
-    const [lastConnectionUpdate, setLastConnectionUpdate] = useState(new Date())
+    const [lastConnectionUpdate, setLastConnectionUpdate] = useState(new Date());
     const socket = useRef(null);
 
     useEffect(() => {
         function connect() {
-            console.log("Connecting to websocket")
+            console.log('Connecting to websocket');
             socket.current = new WebSocket(url);
 
             socket.current.onopen = () => {
@@ -19,7 +19,7 @@ export const WebSocketProvider = ({ children, url }) => {
 
             socket.current.onclose = () => {
                 setIsConnected(false);
-                console.log("Disconnected from websocket.")
+                console.log('Disconnected from websocket.');
                 return connect();
             };
 
@@ -37,7 +37,7 @@ export const WebSocketProvider = ({ children, url }) => {
         };
     }, [url]);
     useEffect(() => {
-        setLastConnectionUpdate(new Date())
+        setLastConnectionUpdate(new Date());
     }, [isConnected]);
     const ping = () => {
         if (isConnected) {
@@ -72,9 +72,5 @@ export const WebSocketProvider = ({ children, url }) => {
         });
     };
 
-    return (
-        <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition }}>
-            {children}
-        </WebsocketContext.Provider>
-    );
+    return <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition }}>{children}</WebsocketContext.Provider>;
 };

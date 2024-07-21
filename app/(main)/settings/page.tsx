@@ -28,10 +28,6 @@ const FormLayoutDemo = () => {
 
     return (
         <div className="grid">
-
-
-
-
             <div className="col-12">
                 <div className="card">
                     <h5>General Settings</h5>
@@ -61,7 +57,7 @@ const FormLayoutDemo = () => {
                             <InputText id="zip" type="text" />
                         </div>
                         <div className="field col-12">
-                        <Button label="Submit"></Button>
+                            <Button label="Submit"></Button>
                         </div>
                     </div>
                 </div>
