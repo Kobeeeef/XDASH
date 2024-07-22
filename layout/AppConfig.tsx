@@ -26,8 +26,6 @@ const AppConfig = (props: AppConfigProps) => {
         setLayoutConfig((prevState: LayoutConfig) => ({ ...prevState, inputStyle: e.value }));
     };
 
-
-
     const changeMenuMode = (e: RadioButtonChangeEvent) => {
         setLayoutConfig((prevState: LayoutConfig) => ({ ...prevState, menuMode: e.value }));
     };
@@ -98,8 +96,6 @@ const AppConfig = (props: AppConfigProps) => {
                                 <label htmlFor="filled_input">Filled</label>
                             </div>
                         </div>
-
-
                     </>
                 )}
                 <h5>Design</h5>
