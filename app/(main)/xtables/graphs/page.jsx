@@ -17,7 +17,7 @@ import KeyValidator from '../../../../utilities/KeyValidator';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { exportExcel, exportPdf, saveAsExcelFile } from '../../../../utilities/fileManager';
+import { exportExcel } from '../../../../utilities/fileManager';
 
 const GraphsPage = () => {
     const dt = useRef();
