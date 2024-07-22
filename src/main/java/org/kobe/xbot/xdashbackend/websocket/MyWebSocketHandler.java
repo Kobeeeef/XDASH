@@ -19,10 +19,14 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         XTablesClient xTablesClient = XdashbackendApplication.clientRef.get();
         Message message = gson.fromJson(payload, Message.class);
         if (message.getType().equals("XTABLES-STATUS")) {
-            XTablesClient.LatencyInfo info = xTablesClient == null ? null : xTablesClient.ping_latency().complete();
+            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
+                XTablesClient.LatencyInfo info = xTablesClient == null ? null : xTablesClient.ping_latency().complete();
 
-            int totalClients = xTablesClient == null ? 0 : info == null ? 0 : info.getSystemStatistics().getTotalClients();
-            session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(xTablesClient != null && xTablesClient.getSocketClient().isConnected, totalClients), "XTABLES-STATUS").toJSON()));
+                int totalClients = xTablesClient == null ? 0 : info == null ? 0 : info.getSystemStatistics().getTotalClients();
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(xTablesClient != null && xTablesClient.getSocketClient().isConnected, totalClients), "XTABLES-STATUS").toJSON()));
+            } else {
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(false, 0), "XTABLES-STATUS").toJSON()));
+            }
         } else if (message.getType().equals("XTABLES-STATISTICS")) {
             if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
                 XTablesClient.LatencyInfo info = xTablesClient.ping_latency().complete();
