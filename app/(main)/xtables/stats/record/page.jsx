@@ -1,25 +1,25 @@
 'use client';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
-import { LayoutContext } from '../../../../layout/context/layoutcontext';
+import { LayoutContext } from '../../../../../layout/context/layoutcontext';
 import { Chart } from 'primereact/chart';
 import { Button } from 'primereact/button';
 import { InputNumber } from 'primereact/inputnumber';
 import { ToggleButton } from 'primereact/togglebutton';
-import { WebsocketContext } from '../../../../layout/context/websocketcontext';
-import TimeAgo from '../../../../components/TimeAgo';
+import { WebsocketContext } from '../../../../../layout/context/websocketcontext';
+import TimeAgo from '../../../../../components/TimeAgo';
 import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
-import KeyValidator from '../../../../utilities/KeyValidator';
+import KeyValidator from '../../../../../utilities/KeyValidator';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { exportExcel } from '../../../../utilities/fileManager';
+import { exportExcel } from '../../../../../utilities/fileManager';
 
-const GraphsPage = () => {
+const RecordPage = () => {
     const dt = useRef();
     const [options, setOptions] = useState({});
     const [addKeyDialogVisible, setAddKeyDialogVisible] = useState(false);
@@ -478,4 +478,4 @@ function convertJSON(json) {
     return transformRecursively(json);
 }
 
-export default GraphsPage;
+export default RecordPage;
