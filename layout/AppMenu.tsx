@@ -15,11 +15,19 @@ const AppMenu = () => {
             label: 'Home',
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
         },
+
         {
             label: 'Network Tables',
             items: [
                 { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables' },
-                { label: 'Statistics', icon: 'pi pi-chart-bar', to: '/xtables/stats' },
+
+                {
+                    label: 'Statistics', icon: 'pi pi-chart-bar',
+                    items: [
+                        { label: 'Live Statistics', icon: 'pi pi-chart-line', to: '/xtables/stats' },
+                        { label: 'Record Statistics', icon: 'pi pi-history', to: '/xtables/stats/record' }
+                    ]
+                },
                 { label: 'Graphs', icon: 'pi pi-chart-pie', to: '/xtables/graphs' }
             ]
         },
@@ -119,25 +127,7 @@ const AppMenu = () => {
         //                 }
         //             ]
         //         },
-        //         {
-        //             label: 'Submenu 2',
-        //             icon: 'pi pi-fw pi-bookmark',
-        //             items: [
-        //                 {
-        //                     label: 'Submenu 2.1',
-        //                     icon: 'pi pi-fw pi-bookmark',
-        //                     items: [
-        //                         { label: 'Submenu 2.1.1', icon: 'pi pi-fw pi-bookmark' },
-        //                         { label: 'Submenu 2.1.2', icon: 'pi pi-fw pi-bookmark' }
-        //                     ]
-        //                 },
-        //                 {
-        //                     label: 'Submenu 2.2',
-        //                     icon: 'pi pi-fw pi-bookmark',
-        //                     items: [{ label: 'Submenu 2.2.1', icon: 'pi pi-fw pi-bookmark' }]
-        //                 }
-        //             ]
-        //         }
+        //
         //     ]
         // },
         {
@@ -156,7 +146,8 @@ const AppMenu = () => {
         <MenuProvider>
             <ul className="layout-menu">
                 {model.map((item, i) => {
-                    return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> : <li className="menu-separator"></li>;
+                    return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> :
+                        <li className="menu-separator"></li>;
                 })}
 
                 <Link href="/" style={{ cursor: 'pointer' }}>

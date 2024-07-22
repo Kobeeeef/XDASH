@@ -15,7 +15,12 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import KeyValidator from '../../../../utilities/KeyValidator';
 
-const EmptyPage = () => {
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { exportExcel, exportPdf, saveAsExcelFile } from '../../../../utilities/fileManager';
+
+const GraphsPage = () => {
+    const dt = useRef();
     const [options, setOptions] = useState({});
     const [addKeyDialogVisible, setAddKeyDialogVisible] = useState(false);
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
@@ -31,6 +36,7 @@ const EmptyPage = () => {
     const documentStyle = getComputedStyle(document.documentElement);
     const [removeKeyInput, setRemoveKeyInput] = useState(null);
     const [keyInput, setKeyInput] = useState('');
+    const [dataTable, setDataTable] = useState();
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -61,7 +67,7 @@ const EmptyPage = () => {
                             };
 
                             setChartData((prevState) => {
-                                const newLabels = [...(prevState.lineData?.labels || []), new Date()];
+                                const newLabels = [...(prevState.lineData?.labels || []), new Date().toISOString()];
                                 const newDatasets = (prevState.lineData?.datasets || []).map((dataset) => ({ ...dataset }));
 
                                 keys.forEach((key) => {
@@ -83,17 +89,25 @@ const EmptyPage = () => {
                                         dataset.data = [...(dataset.data || []), parseFloat(value)];
                                     }
                                 });
-
-                                return {
+                                const returnChartData = {
                                     lineData: {
                                         labels: newLabels,
                                         datasets: newDatasets
                                     }
                                 };
+                                setDataTable(returnChartData?.lineData?.labels?.map((label, index) => {
+                                    const obj = { time: new Date(label).toISOString() };
+                                    returnChartData.lineData.datasets.forEach(dataset => {
+                                        obj[dataset.label] = dataset.data[index];
+                                    });
+                                    return obj;
+                                }) ?? [])
+                                return returnChartData;
                             });
                         }
                     })
-                    .catch(() => {});
+                    .catch(() => {
+                    });
             }
         }, recordIntervalMS);
 
@@ -198,7 +212,8 @@ const EmptyPage = () => {
                             'p-invalid': KeyValidator(keyInput) !== null
                         })}
                     />
-                    {KeyValidator(keyInput) === null ? null : <small className="p-invalid">{KeyValidator(keyInput)}</small>}
+                    {KeyValidator(keyInput) === null ? null :
+                        <small className="p-invalid">{KeyValidator(keyInput)}</small>}
                 </div>
             </Dialog>
             <div className="col-12 lg:col-6 xl:col-4">
@@ -206,9 +221,11 @@ const EmptyPage = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}> {isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -220,9 +237,11 @@ const EmptyPage = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected && xtableStatus ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? (xtableStatus ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected && xtableStatus ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? (xtableStatus ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -234,9 +253,11 @@ const EmptyPage = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Intervals Recorded</span>
-                            <div className="text-900 font-medium text-xl">{chartData?.lineData?.labels?.length ?? 0}</div>
+                            <div
+                                className="text-900 font-medium text-xl">{chartData?.lineData?.labels?.length ?? 0}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-database text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -305,7 +326,9 @@ const EmptyPage = () => {
                             </div>
                         </div>
                         <div className="col-12 lg:col-3 ">
-                            <InputNumber disabled={recording || !isConnected || !xtableStatus} value={recordIntervalMS} onValueChange={(e) => setRecordIntervalMS(e.value ?? 100)} suffix={` millisecond${recordIntervalMS > 1 ? 's' : ''} per record`} />
+                            <InputNumber disabled={recording || !isConnected || !xtableStatus} value={recordIntervalMS}
+                                         onValueChange={(e) => setRecordIntervalMS(e.value ?? 100)}
+                                         suffix={` millisecond${recordIntervalMS > 1 ? 's' : ''} per record`} />
                         </div>
                         <div className="col-12 lg:col-3 ">
                             <Dropdown
@@ -334,28 +357,60 @@ const EmptyPage = () => {
                         </div>
                         <div className="col-6">
                             <Button
-                                disabled={!isConnected || !xtableStatus || !chartData?.lineData?.labels?.length}
+                                disabled={!isConnected || !xtableStatus || (!chartData?.lineData?.labels?.length && !(dataTable?.length ??0 === 0) && !(keys?.length ??0 === 0))}
                                 label="Reset"
                                 severity="danger"
                                 onClick={() => {
                                     setChartData({});
+                                    setDataTable([])
+                                    setKeys([])
                                     toast.current.show({
                                         severity: 'success',
                                         summary: 'Success',
-                                        detail: 'The chart data was cleared.'
+                                        detail: 'All settings and charts reset.'
                                     });
                                 }}
                             />
                         </div>
                         <div className="col-6">
-                            <ToggleButton disabled={!isConnected || !xtableStatus || !keys?.length} onLabel="Stop Recording" offLabel="Start Recording" checked={recording} onChange={(e) => setRecording(e.value)} />
+                            <ToggleButton disabled={!isConnected || !xtableStatus || !keys?.length}
+                                          onLabel="Stop Recording" offLabel="Start Recording" checked={recording}
+                                          onChange={(e) => setRecording(e.value)} />
                         </div>
                     </div>
                 </div>
             </div>
             <div className="col-12">
                 <div className="card">
-                    <Chart type={chartType?.type ?? 'line'} data={chartData.lineData} options={options.lineOptions}></Chart>
+                    <Chart type={chartType?.type ?? 'line'} data={chartData.lineData}
+                           options={options.lineOptions}></Chart>
+                </div>
+            </div>
+            <div className="col-12">
+                <div className="card">
+                    <div className="grid">
+                        <div className={'col-6'}>
+                            <Button disabled={(dataTable?.length ?? 0) === 0} label="Export CSV" icon="pi pi-file" onClick={() => {
+                                dt.current.exportCSV({ selectionOnly: false });
+                            }} />
+                        </div>
+                        <div className={'col-6'}>
+                            <Button disabled={(dataTable?.length ?? 0) === 0} severity={'success'} label="Export Excel" icon="pi pi-file-excel" onClick={() => {
+                                        exportExcel("XTABLES-GRAPHS", dataTable)
+                            }} />
+                        </div>
+                        <div className={'col-12'}>
+                            <DataTable scrollable virtualScrollerOptions={{ itemSize: 15 }} scrollHeight="500px" ref={dt} emptyMessage="There is no data recorded."
+                                       value={dataTable}
+                                       >
+                                <Column field="time" header="Time"></Column>
+
+                                {keys.map((key, i) => (
+                                    <Column key={i} field={key} header={key} />
+                                ))}
+                            </DataTable>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -393,4 +448,4 @@ function convertJSON(json) {
     return transformRecursively(json);
 }
 
-export default EmptyPage;
+export default GraphsPage;
