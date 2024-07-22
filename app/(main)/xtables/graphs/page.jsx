@@ -77,8 +77,6 @@ const EmptyPage = () => {
                                                 label: key,
                                                 data: [],
                                                 fill: false,
-                                                backgroundColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
-                                                borderColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
                                                 tension: 0.4
                                             };
                                             newDatasets.push(dataset);
@@ -156,7 +154,7 @@ const EmptyPage = () => {
                 setAddKeyDialogVisible(false);
                 setKeyInput(null);
             }} />
-            <Button label="Save" icon="pi pi-check" onClick={() => {
+            <Button disabled={KeyValidator(keyInput) !== null} label="Save" icon="pi pi-check" onClick={() => {
                 setAddKeyDialogVisible(false);
                 setKeys((a) => {
                     a.push(keyInput);
@@ -256,7 +254,16 @@ const EmptyPage = () => {
                             <div className="p-inputgroup">
                                 <Button onClick={() => {
                                     setKeys((a) => {
-                                       let success = a.splice(a.indexOf(removeKeyInput)).length > 0;
+                                        const removeIndex = a.indexOf(removeKeyInput);
+                                        if (removeIndex === -1) {
+                                            toast.current.show({
+                                                severity: 'error',
+                                                summary: 'Failure',
+                                                detail: 'The key was not found.'
+                                            });
+                                        return a;
+                                        }
+                                       let success = a.splice(removeIndex, 1).length > 0;
                                         if( success) {
                                             setRemoveKeyInput(null)
                                             toast.current.show({
