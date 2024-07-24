@@ -1,21 +1,16 @@
 'use client';
 
 import { Button } from 'primereact/button';
-import { Chart } from 'primereact/chart';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../demo/service/ProductService';
+import React, { useContext, useEffect, useState } from 'react';
 import { LayoutContext } from '../../layout/context/layoutcontext';
-
-import { Demo } from '@/types';
-import { ChartData, ChartOptions } from 'chart.js';
-
 import { Tag } from 'primereact/tag';
 import { WebsocketContext } from '@/layout/context/websocketcontext';
 import TimeAgo from '@/components/TimeAgo';
+import LoadingDots from '../../components/LoadingDots';
 
-const lineData: ChartData = {
+const lineData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
     datasets: [
         {
@@ -38,21 +33,22 @@ const lineData: ChartData = {
 };
 
 const Dashboard = () => {
-    const [products, setProducts] = useState<Demo.Product[]>([]);
-    const [lineOptions, setLineOptions] = useState<ChartOptions>({});
+    const [lineOptions, setLineOptions] = useState({});
     const { layoutConfig } = useContext(LayoutContext);
-    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition }: any = useContext(WebsocketContext);
-    const [statusData, setStatusData]: any = useState({});
-    const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
+    const [xtableStatus, setXtableStatus] = useState(false);
+    const [devicesData, setDevicesData] = useState([])
+    const [lastXTablesStatusUpdate, setLastXTablesStatusUpdate] = useState(new Date());
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
-                sendMessageAndWaitForCondition({ type: 'XTABLES-STATUS' }, (m: { type: string }) => m.type === 'XTABLES-STATUS')
-                    .then((message: { message: { connected?: boolean } }) => {
-                        setStatusData((a: { connected?: boolean }) => {
-                            if (message.message.connected !== a.connected) setLastStatusUpdate(new Date());
-                            return message.message;
+                sendMessageAndWaitForCondition({ type: 'DEVICES-DATA' }, (m) => m.type === 'DEVICES-DATA')
+                    .then((message) => {
+                        setXtableStatus((a) => {
+                            if (message?.message?.xtablesConnectedStatus !== a) setLastXTablesStatusUpdate(new Date());
+                            return message.message?.xtablesConnectedStatus;
                         });
+                        setDevicesData(JSON.parse(message?.message?.devices ??[]))
                     })
                     .catch(() => {});
             }
@@ -62,7 +58,7 @@ const Dashboard = () => {
         return () => clearInterval(intervalId);
     }, [isConnected, sendMessageAndWaitForCondition]);
     const applyLightTheme = () => {
-        const lineOptions: ChartOptions = {
+        const lineOptions = {
             plugins: {
                 legend: {
                     labels: {
@@ -125,9 +121,6 @@ const Dashboard = () => {
         setLineOptions(lineOptions);
     };
 
-    useEffect(() => {
-        ProductService.getProductsSmall().then((data) => setProducts(data));
-    }, []);
 
     useEffect(() => {
         if (layoutConfig.colorScheme === 'light') {
@@ -158,13 +151,13 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
+                            <div className="text-900 font-medium text-xl">{isConnected ? (xtableStatus ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <TimeAgo date={lastStatusUpdate} />
+                    <TimeAgo date={lastXTablesStatusUpdate} />
                 </div>
             </div>
 
@@ -173,14 +166,13 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Devices</span>
-                            <div className="text-900 font-medium text-xl">5</div>
+                            <div className="text-900 font-medium text-xl">{devicesData?.length ?? 0}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-android text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-bold">1 </span>
-                    <span className="text-500">newly registered</span>
+                  <TimeAgo date={lastConnectionUpdate}></TimeAgo>
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
@@ -198,10 +190,10 @@ const Dashboard = () => {
                     <span className="text-500">minute ago</span>
                 </div>
             </div>
-            <div className={'col-12 '}>
+            <div className={'col-12'}>
                 <div className="card">
-                    <DataTable loading={!isConnected} value={products} rows={5} paginator responsiveLayout="scroll">
-                        <Column field="name" header="Name" sortable style={{ width: '35%' }} />
+                    <DataTable loading={!isConnected} value={devicesData} emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={150}/></p>)} rows={5} paginator responsiveLayout="scroll">
+                        <Column field="hostname" header="Hostname" sortable style={{ width: '35%' }} />
                         <Column field="address" header="Address" sortable style={{ width: '35%' }} body={(data) => data.address} />
                         <Column
                             field="status"
@@ -242,56 +234,58 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="col-12 lg:col-6">
-                <div className="card max-h-35rem overflow-auto">
-                    <div className="flex align-items-center justify-content-between mb-4">
-                        <h5>Notifications</h5>
-                    </div>
+            {/*<div className="col-12 lg:col-6">*/}
+            {/*    <div className="card max-h-35rem overflow-auto">*/}
+            {/*        <div className="flex align-items-center justify-content-between mb-4">*/}
+            {/*            <h5>Notifications</h5>*/}
+            {/*        </div>*/}
 
-                    <span className="block text-600 font-medium mb-3">TODAY</span>
-                    <ul className="p-0 mx-0 mt-0 mb-4 list-none">
-                        <li className="flex align-items-center py-2">
-                            <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-download text-xl text-orange-500" />
-                            </div>
-                            <span className="text-700 line-height-3">
-                                Random <span className="text-blue-500 font-medium"></span> event.
-                            </span>
-                        </li>
-                    </ul>
+            {/*        <span className="block text-600 font-medium mb-3">TODAY</span>*/}
+            {/*        <ul className="p-0 mx-0 mt-0 mb-4 list-none">*/}
+            {/*            <li className="flex align-items-center py-2">*/}
+            {/*                <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">*/}
+            {/*                    <i className="pi pi-download text-xl text-orange-500" />*/}
+            {/*                </div>*/}
+            {/*                <span className="text-700 line-height-3">*/}
+            {/*                    Random <span className="text-blue-500 font-medium"></span> event.*/}
+            {/*                </span>*/}
+            {/*            </li>*/}
+            {/*        </ul>*/}
 
-                    <span className="block text-600 font-medium mb-3">YESTERDAY</span>
-                    <ul className="p-0 m-0 list-none">
-                        <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-                            <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-dollar text-xl text-blue-500" />
-                            </div>
-                            <span className="text-900 line-height-3">
-                                ok
-                                <span className="text-700">
-                                    {' '}
-                                    test <span className="text-blue-500">1</span>
-                                </span>
-                            </span>
-                        </li>
-                        <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-                            <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-question text-xl text-pink-500" />
-                            </div>
-                            <span className="text-900 line-height-3">
-                                not ready
-                                <span className="text-700"> testinbg</span>
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div className="col-12 lg:col-6">
-                <div className="card">
-                    <h5>Machine Overview</h5>
-                    <Chart type="line" data={lineData} options={lineOptions} />
-                </div>
-            </div>
+            {/*        <span className="block text-600 font-medium mb-3">YESTERDAY</span>*/}
+            {/*        <ul className="p-0 m-0 list-none">*/}
+            {/*            <li className="flex align-items-center py-2 border-bottom-1 surface-border">*/}
+            {/*                <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">*/}
+            {/*                    <i className="pi pi-dollar text-xl text-blue-500" />*/}
+            {/*                </div>*/}
+            {/*                <span className="text-900 line-height-3">*/}
+            {/*                    ok*/}
+            {/*                    <span className="text-700">*/}
+            {/*                        {' '}*/}
+            {/*                        test <span className="text-blue-500">1</span>*/}
+            {/*                    </span>*/}
+            {/*                </span>*/}
+            {/*            </li>*/}
+            {/*            <li className="flex align-items-center py-2 border-bottom-1 surface-border">*/}
+            {/*                <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">*/}
+            {/*                    <i className="pi pi-question text-xl text-pink-500" />*/}
+            {/*                </div>*/}
+            {/*                <span className="text-900 line-height-3">*/}
+            {/*                    not ready*/}
+            {/*                    <span className="text-700"> testinbg</span>*/}
+            {/*                </span>*/}
+            {/*            </li>*/}
+            {/*        </ul>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
+            {/*<div className="col-12 lg:col-6">*/}
+            {/*    <div className="card">*/}
+            {/*        <h5>Machine Overview</h5>*/}
+            {/*        <Chart type="line" data={lineData} options={lineOptions} />*/}
+            {/*    </div>*/}
+            {/*</div>*/}
+
+
         </div>
     );
 };
