@@ -207,13 +207,14 @@ const Dashboard = () => {
                     <DataTable removableSort loading={!isConnected} value={devicesData}
                                emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={200} /></p>)}
                                rows={5} paginator responsiveLayout="scroll">
-                        <Column field="hostname" header="Hostname" sortable style={{ width: '35%' }} />
-                        <Column field="address" header="Address" sortable style={{ width: '35%' }}
-                                body={(data) => data.address} />
+                        <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '35%' }} body={(data) => {
+                            return (<span className={"text-lg"} style={{ fontWeight: "800"}}>{data.hostname}</span>)
+                        }} />
+                        <Column field="server" header="Server" style={{ width: '35%' }}/>
+                        <Column field="address" header="Address" style={{ width: '35%' }}/>
                         <Column
                             field="status"
                             header="Status"
-                            sortable
                             style={{ width: '35%' }}
                             body={(data) => (
                                 <div>
