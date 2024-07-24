@@ -9,6 +9,8 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.util.List;
+
 public class MyWebSocketHandler extends TextWebSocketHandler {
     private static final Gson gson = new Gson();
 
@@ -61,7 +63,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-DATA-GET").toJSON()));
 
             }
-        }else if (message.getType().equals("XTABLES-DATA-DELETE")) {
+        } else if (message.getType().equals("XTABLES-DATA-DELETE")) {
             if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
                 String key = message.getMessage();
                 ResponseStatus status = xTablesClient.delete(key).complete();
@@ -78,6 +80,9 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-REBOOT").toJSON()));
 
             }
+        } else if (message.getType().equals("DEVICES-DATA")) {
+            List<DevicesData> dataList = XdashbackendApplication.getResolvedServices().values().stream().map(m -> new DevicesData(m.getHostname(), m.getAddress(), m.getSession() != null)).toList();
+            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected), "DEVICES-DATA").toJSON()));
         }
     }
 }

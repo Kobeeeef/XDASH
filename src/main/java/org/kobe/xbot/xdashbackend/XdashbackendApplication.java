@@ -2,21 +2,18 @@ package org.kobe.xbot.xdashbackend;
 
 
 import org.kobe.xbot.Client.XTablesClient;
-
 import org.kobe.xbot.XJmDNS;
-
+import org.kobe.xbot.xdashbackend.Entities.SSHHostAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,7 +22,7 @@ public class XdashbackendApplication {
     private static final Logger logger = LoggerFactory.getLogger(XJmDNS.class);
     public static AtomicReference<XTablesClient> clientRef = new AtomicReference<>(null);
     private static final AtomicBoolean lock = new AtomicBoolean(false);
-    private static final Map<String, String> resolvedServices = new HashMap<>();
+    private static final Map<String, SSHHostAddress> resolvedServices = new ConcurrentHashMap<>();
 
     public static void main(String[] args) {
 
@@ -41,6 +38,29 @@ public class XdashbackendApplication {
             @Override
             public void serviceRemoved(ServiceEvent event) {
                 logger.info("XCaster Service removed: " + event.getName());
+                ServiceInfo serviceInfo = event.getInfo();
+                String server = serviceInfo.getServer();
+
+                SSHHostAddress removedSSHHostAddress = resolvedServices.remove(server);
+                if (removedSSHHostAddress != null) {
+                    if (removedSSHHostAddress.getSession() != null) {
+                        try {
+                            removedSSHHostAddress.getSession().disconnect();
+                        } catch (Exception ignored) {
+                        }
+                        logger.info("Disconnected from " + removedSSHHostAddress.getAddress() + " with hostname " + removedSSHHostAddress.getHostname());
+
+                    }
+                    if (removedSSHHostAddress.getHostname() != null) {
+                        logger.info("Service with hostname \"" + removedSSHHostAddress.getHostname() + "\" and address \"" + removedSSHHostAddress.getAddress() + "\" removed.");
+                    } else {
+                        logger.info("Service with address \"" + removedSSHHostAddress.getAddress() + "\" removed (no hostname).");
+                    }
+
+                } else {
+                    logger.warn("Service with server \"" + server + "\" not found in resolved services.");
+                }
+
             }
 
             @Override
@@ -48,19 +68,21 @@ public class XdashbackendApplication {
                 ServiceInfo serviceInfo = event.getInfo();
                 String serviceAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
                 String hostname = serviceInfo.getPropertyString("hostname");
+                String server = serviceInfo.getServer();
+                SSHHostAddress SSHHostAddress = new SSHHostAddress(hostname, serviceAddress);
+
                 if (hostname != null) {
-                    if (!resolvedServices.containsKey(hostname) || !resolvedServices.get(hostname).equals(serviceAddress)) {
-                        resolvedServices.put(hostname, serviceAddress);
-                        logger.info("XCaster Service resolved: \"" + serviceInfo.getName() + "\" at (" + serviceAddress + ") with hostname \"" + hostname + "\"");
+                    if (!resolvedServices.containsKey(server) || (!resolvedServices.get(server).getHostname().equals(SSHHostAddress.getHostname()) && !resolvedServices.get(server).getAddress().equals(SSHHostAddress.getAddress()))) {
+                        resolvedServices.put(server, SSHHostAddress);
+                        logger.info("XCaster Service resolved: \"" + serviceInfo.getName() + "\" at (" + serviceAddress + ") with hostname \"" + hostname + "\" at " + server);
                     } else {
                         logger.warn("Duplicate service resolution detected: \"" + serviceInfo.getName() + "\" at (" + serviceAddress + ") with hostname \"" + hostname + "\"");
                     }
                 }
-
             }
         });
 
-
+        SSHConnectionManager.startConnectionManager();
         Thread main = new Thread(() -> {
 
             if (clientRef.get() == null && !lock.get()) {
@@ -73,4 +95,7 @@ public class XdashbackendApplication {
         main.start();
     }
 
+    public static Map<String, SSHHostAddress> getResolvedServices() {
+        return resolvedServices;
+    }
 }
