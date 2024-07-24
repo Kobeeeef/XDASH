@@ -27,9 +27,11 @@ public class SSHConnectionManager {
                         // Check if already connected
                         if (sshHostAddress.getSession() == null || !sshHostAddress.getSession().isConnected()) {
                             logger.info("Connecting to {} with hostname {}...", sshHostAddress.getAddress(), sshHostAddress.getHostname());
+                            sshHostAddress.setStatus("CONNECTING");
                             Session session = connectToHost(sshHostAddress);
                             if (session != null && session.isConnected()) {
                                 sshHostAddress.setSession(session);
+                                sshHostAddress.setStatus("CONNECTED");
                                 logger.info("Connected to {} with hostname {}", sshHostAddress.getAddress(), sshHostAddress.getHostname());
                             }
                         }
@@ -54,7 +56,7 @@ public class SSHConnectionManager {
             session.connect();
             return session;
         } catch (JSchException e) {
-
+            sshHostAddress.setStatus("DISCONNECTED");
             logger.error("Failed to connect to server: {} with hostname: {}\nMessage: {}", sshHostAddress.getAddress(), sshHostAddress.getHostname(), e.getMessage());
             return null;
         }
