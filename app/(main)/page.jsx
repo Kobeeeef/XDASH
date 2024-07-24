@@ -37,7 +37,7 @@ const Dashboard = () => {
     const { layoutConfig } = useContext(LayoutContext);
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
     const [xtableStatus, setXtableStatus] = useState(false);
-    const [devicesData, setDevicesData] = useState([])
+    const [devicesData, setDevicesData] = useState([]);
     const [lastXTablesStatusUpdate, setLastXTablesStatusUpdate] = useState(new Date());
     const [lastDevicesUpdate, setLastDevicesUpdate] = useState(new Date());
     useEffect(() => {
@@ -50,12 +50,13 @@ const Dashboard = () => {
                             return message.message?.xtablesConnectedStatus;
                         });
                         setDevicesData((a) => {
-                            const json = JSON.parse(message?.message?.devices ??[])
+                            const json = JSON.parse(message?.message?.devices ?? []);
                             if (JSON.stringify(json) !== JSON.stringify(a)) setLastDevicesUpdate(new Date());
                             return json;
-                        })
+                        });
                     })
-                    .catch(() => {});
+                    .catch(() => {
+                    });
             }
         }, 100);
 
@@ -142,9 +143,11 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div className="text-900 font-medium text-xl">{isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div
+                                className="text-900 font-medium text-xl">{isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -156,9 +159,11 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div className="text-900 font-medium text-xl">{isConnected ? (xtableStatus ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
+                            <div
+                                className="text-900 font-medium text-xl">{isConnected ? (xtableStatus ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -173,11 +178,12 @@ const Dashboard = () => {
                             <span className="block text-500 font-medium mb-3">Devices</span>
                             <div className="text-900 font-medium text-xl">{devicesData?.length ?? 0}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-android text-blue-500 text-xl" />
                         </div>
                     </div>
-                  <TimeAgo date={lastDevicesUpdate}></TimeAgo>
+                    <TimeAgo date={lastDevicesUpdate}></TimeAgo>
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
@@ -187,7 +193,8 @@ const Dashboard = () => {
                             <span className="block text-500 font-medium mb-3">Notifications</span>
                             <div className="text-900 font-medium text-xl">0</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-comment text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -197,9 +204,12 @@ const Dashboard = () => {
             </div>
             <div className={'col-12'}>
                 <div className="card">
-                    <DataTable removableSort loading={!isConnected} value={devicesData} emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={150}/></p>)} rows={5} paginator responsiveLayout="scroll">
+                    <DataTable removableSort loading={!isConnected} value={devicesData}
+                               emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={150} /></p>)}
+                               rows={5} paginator responsiveLayout="scroll">
                         <Column field="hostname" header="Hostname" sortable style={{ width: '35%' }} />
-                        <Column field="address" header="Address" sortable style={{ width: '35%' }} body={(data) => data.address} />
+                        <Column field="address" header="Address" sortable style={{ width: '35%' }}
+                                body={(data) => data.address} />
                         <Column
                             field="status"
                             header="Status"
@@ -207,31 +217,36 @@ const Dashboard = () => {
                             style={{ width: '35%' }}
                             body={(data) => (
                                 <div>
-                                    <Tag severity={data.connected ? 'success' : 'danger'} value={data.connected ? 'Connected' : 'Disconnected'} rounded></Tag>
+                                    <Tag
+                                        severity={data.connected ? 'success' : data?.status === 'CONNECTING' ? 'warning' : 'danger'}
+                                        value={data.connected ? 'Connected' : data?.status === 'CONNECTING' ? 'Connecting' : 'Disconnected'}
+                                        rounded></Tag>
                                 </div>
                             )}
                         />
                         <Column
                             header="View"
-                            body={() => (
+                            body={(data) => (
                                 <>
-                                    <Button icon="pi pi-search" text />
+                                    <Button disabled={!isConnected || data?.status !== "CONNECTED"} icon="pi pi-search" text />
                                 </>
                             )}
                         />
                         <Column
                             header="Control"
-                            body={() => (
+                            body={(data) => (
                                 <>
-                                    <Button className={'text-purple-500'} icon="pi pi-desktop" text />
+                                    <Button disabled={!isConnected || data?.status !== "CONNECTED"} className={'text-purple-500'}
+                                            icon="pi pi-desktop" text />
                                 </>
                             )}
                         />
                         <Column
                             header="Reboot"
-                            body={() => (
+                            body={(data) => (
                                 <>
-                                    <Button className={'text-red-500'} icon="pi pi-sync" text />
+                                    <Button disabled={!isConnected || data?.status !== "CONNECTED"} className={'text-red-500'}
+                                            icon="pi pi-sync" text />
                                 </>
                             )}
                         />
