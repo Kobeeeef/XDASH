@@ -39,6 +39,7 @@ const Dashboard = () => {
     const [xtableStatus, setXtableStatus] = useState(false);
     const [devicesData, setDevicesData] = useState([])
     const [lastXTablesStatusUpdate, setLastXTablesStatusUpdate] = useState(new Date());
+    const [lastDevicesUpdate, setLastDevicesUpdate] = useState(new Date());
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -48,7 +49,11 @@ const Dashboard = () => {
                             if (message?.message?.xtablesConnectedStatus !== a) setLastXTablesStatusUpdate(new Date());
                             return message.message?.xtablesConnectedStatus;
                         });
-                        setDevicesData(JSON.parse(message?.message?.devices ??[]))
+                        setDevicesData((a) => {
+                            const json = JSON.parse(message?.message?.devices ??[])
+                            if (JSON.stringify(json) !== JSON.stringify(a)) setLastDevicesUpdate(new Date());
+                            return json;
+                        })
                     })
                     .catch(() => {});
             }
@@ -172,7 +177,7 @@ const Dashboard = () => {
                             <i className="pi pi-android text-blue-500 text-xl" />
                         </div>
                     </div>
-                  <TimeAgo date={lastConnectionUpdate}></TimeAgo>
+                  <TimeAgo date={lastDevicesUpdate}></TimeAgo>
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
@@ -192,7 +197,7 @@ const Dashboard = () => {
             </div>
             <div className={'col-12'}>
                 <div className="card">
-                    <DataTable loading={!isConnected} value={devicesData} emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={150}/></p>)} rows={5} paginator responsiveLayout="scroll">
+                    <DataTable removableSort loading={!isConnected} value={devicesData} emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={150}/></p>)} rows={5} paginator responsiveLayout="scroll">
                         <Column field="hostname" header="Hostname" sortable style={{ width: '35%' }} />
                         <Column field="address" header="Address" sortable style={{ width: '35%' }} body={(data) => data.address} />
                         <Column
