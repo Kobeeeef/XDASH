@@ -208,7 +208,7 @@ const Dashboard = () => {
                                emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={200} /></p>)}
                                rows={5} paginator responsiveLayout="scroll">
                         <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '35%' }} body={(data) => {
-                            return (<span className={"text-lg"} style={{ fontWeight: "800"}}>{data.hostname}</span>)
+                            return (<span className={"text-lg font-bold"}>{data.hostname}</span>)
                         }} />
                         <Column field="server" header="Server" style={{ width: '35%' }}/>
                         <Column field="address" header="Address" style={{ width: '35%' }}/>
