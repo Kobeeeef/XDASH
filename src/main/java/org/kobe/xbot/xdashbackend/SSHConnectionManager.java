@@ -38,7 +38,7 @@ public class SSHConnectionManager {
                     }
 
                     // Sleep for a bit before checking again
-                    Thread.sleep(3000);
+                    Thread.sleep(4000);
                 } catch (Exception e) {
                     logger.error("Error in SSH Connection Manager", e);
                 }
