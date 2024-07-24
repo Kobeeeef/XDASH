@@ -3,6 +3,7 @@ package org.kobe.xbot.xdashbackend.Entities;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.kobe.xbot.Utilities.Utilities;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,18 +12,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
 
 public class SSHHostAddress {
     private static final Logger logger = LoggerFactory.getLogger(SSHHostAddress.class);
-
+    private final String server;
     private final String hostname;
     private final String address;
     private String status = "DISCONNECTED";
     private transient Session session = null;
 
-    public SSHHostAddress(String hostname, String address) {
+    public SSHHostAddress(String hostname, String address, String server) {
         this.hostname = hostname;
         this.address = address;
+        this.server = server;
     }
 
     public String getStatus() {
@@ -51,13 +54,19 @@ public class SSHHostAddress {
 
         return address;
     }
+
     public void closeSession() {
         if (session != null && forceIsConnected()) {
             session.disconnect();
             setStatus("DISCONNECTED");
         }
     }
-    public String sendCommand(String command) throws JSchException, java.io.IOException {
+
+    public String sendCommandWithSudoPermissions(String command) {
+        return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command));
+    }
+
+    public String sendCommand(String command) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
         }
@@ -83,6 +92,7 @@ public class SSHHostAddress {
             }
         }
     }
+
     private String readStream(InputStream input) throws java.io.IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         StringBuilder result = new StringBuilder();
@@ -93,6 +103,7 @@ public class SSHHostAddress {
         }
         return result.toString();
     }
+
     public boolean forceIsConnected() {
         if (session != null) {
             try {
@@ -107,4 +118,31 @@ public class SSHHostAddress {
         setStatus("DISCONNECTED");
         return false;
     }
+
+    public Double getPingLatency() {
+        String inet4Address = Utilities.getLocalIPAddress();
+        if (inet4Address != null) {
+            // Send a single ping (-c 1) to the target address
+            String command = String.format("ping -c 1 %s", inet4Address);
+            String result = sendCommand(command);
+            if (result != null) {
+                try {
+                    String[] lines = result.split("\n");
+                    for (String line : lines) {
+                        if (line.contains("time=")) {
+                            // Extracting the round-trip time from the ping output
+                            String timePart = line.split("time=")[1];
+                            String timeString = timePart.split(" ")[0];
+                            return Double.parseDouble(timeString); // round-trip time in ms
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to parse ping output.", e);
+                }
+            }
+        }
+        return null;
+    }
+
+
 }

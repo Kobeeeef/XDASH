@@ -28,7 +28,6 @@ public class Utilities {
             }
             return localHost.getHostAddress();
         } catch (UnknownHostException | SocketException e) {
-            e.printStackTrace();
         }
         return null;
     }

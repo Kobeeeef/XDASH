@@ -69,7 +69,7 @@ public class XdashbackendApplication {
                 String serviceAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
                 String hostname = serviceInfo.getPropertyString("hostname");
                 String server = serviceInfo.getServer();
-                SSHHostAddress SSHHostAddress = new SSHHostAddress(hostname, serviceAddress);
+                SSHHostAddress SSHHostAddress = new SSHHostAddress(hostname, serviceAddress, server);
 
                 if (hostname != null) {
                     if (!resolvedServices.containsKey(server) || (!resolvedServices.get(server).getHostname().equals(SSHHostAddress.getHostname()) && !resolvedServices.get(server).getAddress().equals(SSHHostAddress.getAddress()))) {

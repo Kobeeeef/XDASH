@@ -16,7 +16,10 @@ public class SSHConnectionManager {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final Logger logger = LoggerFactory.getLogger(SSHConnectionManager.class);
-
+    private static final String password = "kobe2609";
+    public static String getPassword() {
+        return password;
+    }
     public static void startConnectionManager() {
         executor.submit(() -> {
             while (running.get()) {
