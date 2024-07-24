@@ -51,7 +51,7 @@ const Dashboard = () => {
                         });
                         setDevicesData((a) => {
                             const json = JSON.parse(message?.message?.devices ?? []);
-                            if (JSON.stringify(json) !== JSON.stringify(a)) setLastDevicesUpdate(new Date());
+                            if (json?.length !== a?.length) setLastDevicesUpdate(new Date());
                             return json;
                         });
                     })
@@ -205,7 +205,7 @@ const Dashboard = () => {
             <div className={'col-12'}>
                 <div className="card">
                     <DataTable removableSort loading={!isConnected} value={devicesData}
-                               emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={150} /></p>)}
+                               emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={200} /></p>)}
                                rows={5} paginator responsiveLayout="scroll">
                         <Column field="hostname" header="Hostname" sortable style={{ width: '35%' }} />
                         <Column field="address" header="Address" sortable style={{ width: '35%' }}
