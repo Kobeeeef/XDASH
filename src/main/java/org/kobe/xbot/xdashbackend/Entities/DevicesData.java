@@ -3,18 +3,12 @@ package org.kobe.xbot.xdashbackend.Entities;
 public class DevicesData {
     private final String hostname;
     private final String address;
-    private final boolean connected;
     private final String status;
 
-    public DevicesData(String hostname, String address, boolean connected, String status) {
+    public DevicesData(String hostname, String address, String status) {
         this.hostname = hostname;
         this.address = address;
-        this.connected = connected;
         this.status = status;
-    }
-
-    public boolean isConnected() {
-        return connected;
     }
 
     public String getStatus() {

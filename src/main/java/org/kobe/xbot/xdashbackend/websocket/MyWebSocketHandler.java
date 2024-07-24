@@ -81,7 +81,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
 
             }
         } else if (message.getType().equals("DEVICES-DATA")) {
-            List<DevicesData> dataList = XdashbackendApplication.getResolvedServices().values().stream().map(m -> new DevicesData(m.getHostname(), m.getAddress(), m.getSession() != null, m.getStatus())).toList();
+            List<DevicesData> dataList = XdashbackendApplication.getResolvedServices().values().stream().map(m -> new DevicesData(m.getHostname(), m.getAddress(), m.getSession() != null ? "CONNECTED" : m.getStatus())).toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected), "DEVICES-DATA").toJSON()));
         }
     }
