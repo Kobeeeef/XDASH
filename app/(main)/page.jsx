@@ -3,12 +3,16 @@
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { LayoutContext } from '../../layout/context/layoutcontext';
 import { Tag } from 'primereact/tag';
 import { WebsocketContext } from '@/layout/context/websocketcontext';
 import TimeAgo from '@/components/TimeAgo';
 import LoadingDots from '../../components/LoadingDots';
+
+import { Toast } from 'primereact/toast';
+import ansiToHtml from '../../utilities/Ansi';
+
 
 const lineData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -33,6 +37,8 @@ const lineData = {
 };
 
 const Dashboard = () => {
+    const toast = useRef(null);
+    const [loadingStates, setLoadingStates] = useState({});
     const [lineOptions, setLineOptions] = useState({});
     const { layoutConfig } = useContext(LayoutContext);
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
@@ -40,6 +46,8 @@ const Dashboard = () => {
     const [devicesData, setDevicesData] = useState([]);
     const [lastXTablesStatusUpdate, setLastXTablesStatusUpdate] = useState(new Date());
     const [lastDevicesUpdate, setLastDevicesUpdate] = useState(new Date());
+    const [logs, setLogs] = useState([])
+    const logEndRef = useRef(null);
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -49,6 +57,12 @@ const Dashboard = () => {
                             if (message?.message?.xtablesConnectedStatus !== a) setLastXTablesStatusUpdate(new Date());
                             return message.message?.xtablesConnectedStatus;
                         });
+                        setLogs((a) => {
+                            if(message?.message?.logs?.toString() !== a.toString()) {
+                                logEndRef.current?.scrollIntoView({ behavior: "instant" });
+                            }
+                            return message?.message?.logs ?? []
+                        })
                         setDevicesData((a) => {
                             const json = JSON.parse(message?.message?.devices ?? []);
                             if (json?.length !== a?.length) setLastDevicesUpdate(new Date());
@@ -138,6 +152,7 @@ const Dashboard = () => {
 
     return (
         <div className="grid">
+            <Toast ref={toast} />
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
@@ -207,20 +222,20 @@ const Dashboard = () => {
                     <DataTable removableSort loading={!isConnected} value={devicesData}
                                emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={200} /></p>)}
                                rows={5} paginator responsiveLayout="scroll">
-                        <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '35%' }} body={(data) => {
-                            return (<span className={"text-lg font-bold"}>{data.hostname}</span>)
-                        }} />
-                        <Column field="server" header="Server" style={{ width: '35%' }}/>
-                        <Column field="address" header="Address" style={{ width: '35%' }}/>
+                        <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '25%' }}
+                                body={(data) => {
+                                    return (<span className={"text-lg font-bold"}>{data.hostname}</span>)
+                                }} />
+                        <Column field="server" header="Server" style={{ width: '25%' }} />
+                        <Column field="address" header="Address" style={{ width: '25%' }} />
                         <Column
-                            field="status"
+                            style={{ width: '25%' }}
                             header="Status"
-                            style={{ width: '35%' }}
                             body={(data) => (
                                 <div>
                                     <Tag
-                                        severity={data.connected ? 'success' : data?.status === 'CONNECTING' ? 'warning' : 'danger'}
-                                        value={data.connected ? 'Connected' : data?.status === 'CONNECTING' ? 'Connecting' : 'Disconnected'}
+                                        severity={data.connected ? 'success' : data?.status === 'CONNECTED' ? 'success' : data?.status === 'CONNECTING' ? 'warning' : 'danger'}
+                                        value={data.connected ? 'Connected' : data?.status === 'CONNECTED' ? 'Connected' : data?.status === 'CONNECTING' ? 'Connecting' : 'Disconnected'}
                                         rounded></Tag>
                                 </div>
                             )}
@@ -229,7 +244,9 @@ const Dashboard = () => {
                             header="View"
                             body={(data) => (
                                 <>
-                                    <Button disabled={!isConnected || data?.status !== "CONNECTED"} icon="pi pi-search" text />
+                                    <Button loading={loadingStates[data?.server]}
+                                            disabled={!isConnected || data?.status !== "CONNECTED"} icon="pi pi-search"
+                                            text />
                                 </>
                             )}
                         />
@@ -237,7 +254,9 @@ const Dashboard = () => {
                             header="Control"
                             body={(data) => (
                                 <>
-                                    <Button disabled={!isConnected || data?.status !== "CONNECTED"} className={'text-purple-500'}
+                                    <Button loading={loadingStates[data?.server]}
+                                            disabled={!isConnected || data?.status !== "CONNECTED"}
+                                            className={'text-purple-500'}
                                             icon="pi pi-desktop" text />
                                 </>
                             )}
@@ -246,14 +265,61 @@ const Dashboard = () => {
                             header="Reboot"
                             body={(data) => (
                                 <>
-                                    <Button disabled={!isConnected || data?.status !== "CONNECTED"} className={'text-red-500'}
-                                            icon="pi pi-sync" text />
+                                    <Button loading={loadingStates[data?.server]}
+                                            disabled={!isConnected || data?.status !== "CONNECTED"}
+                                            className={'text-red-500'}
+                                            icon="pi pi-sync" text onClick={() => {
+                                        if (isConnected) {
+                                            const server = data?.server;
+                                            if (!server) {
+                                                toast.current.show({
+                                                    severity: 'danger',
+                                                    summary: 'Server Not Found!',
+                                                    detail: 'The server was not found.'
+                                                });
+                                                return;
+                                            }
+                                            setLoadingStates(prev => ({ ...prev, [server]: true }));
+                                            sendMessageAndWaitForCondition({
+                                                type: 'DEVICE-REBOOT',
+                                                message: server
+                                            }, (m) => m.type === 'DEVICE-REBOOT', 5000)
+                                                .then((message) => {
+                                                    toast.current.show({
+                                                        severity: 'success',
+                                                        summary: 'Server Rebooting!',
+                                                        detail: 'The command was sent to the machine.'
+                                                    });
+                                                    setLoadingStates(prev => ({ ...prev, [server]: false }));
+                                                })
+                                                .catch(() => {
+                                                    toast.current.show({
+                                                        severity: 'danger',
+                                                        summary: 'Server Unresponsive!',
+                                                        detail: 'The server did not respond in time.'
+                                                    });
+                                                    setLoadingStates(prev => ({ ...prev, [server]: false }));
+                                                });
+                                        }
+                                    }} />
                                 </>
                             )}
                         />
                     </DataTable>
                 </div>
             </div>
+            <div className={'col-12'}>
+                <div className="card">
+                    <div className="overflow-y-auto" style={{ 'max-height': '40rem' }}>
+                        {logs.map((log, index) => (
+                            <pre key={index}>{ansiToHtml(log)}</pre>
+                        ))}
+                        <div ref={logEndRef} />
+                    </div>
+
+                </div>
+            </div>
+
 
             {/*<div className="col-12 lg:col-6">*/}
             {/*    <div className="card max-h-35rem overflow-auto">*/}
