@@ -1,0 +1,133 @@
+package org.kobe.xbot.xdashbackend.logs;
+
+import org.slf4j.LoggerFactory;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class XDashLogger extends Logger {
+    private static final String loggerName = "XTablesLogger";
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(XDashLogger.class);
+    private static Level defaultLevel = Level.ALL;
+    private static XDashLogger instance = null;
+    private static final String RESET = "\u001B[0m";
+    private static final String RED = "\u001B[31m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String BLUE = "\u001B[34m";
+    private static final String PURPLE = "\u001B[35m"; // For fatal level
+
+    // Define a custom FATAL logging level
+    public static final Level FATAL = new Level("FATAL", Level.SEVERE.intValue() + 1) {
+    };
+
+    protected XDashLogger(String name, String resourceBundleName) {
+        super(name, resourceBundleName);
+    }
+
+    public static XDashLogger getLogger() {
+        if (instance == null) {
+            XDashLogger logger = new XDashLogger(loggerName, null);
+            logger.setLevel(defaultLevel);
+            ConsoleHandler consoleHandler = new ConsoleHandler();
+            consoleHandler.setFormatter(new XDashLogger.XTablesFormatter());
+            logger.addHandler(consoleHandler);
+            instance = logger;
+        }
+        return instance;
+    }
+
+    @Override
+    public void log(Level level, String msg) {
+        super.log(level, msg);
+        addLogToLogSave(level, msg);
+    }
+
+    // Method to log fatal messages
+    public void fatal(String msg) {
+        log(FATAL, msg);
+    }
+
+    private void addLogToLogSave(Level level, String msg) {
+        String formattedMessage = formatLogMessage(level, msg);
+        LogSave.getInstance().addLog(formattedMessage);
+    }
+
+    private String formatLogMessage(Level level, String msg) {
+        // Get current time and date
+        ZonedDateTime dateTime = ZonedDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm:ss a");
+        String formattedDateTime = dateTime.format(formatter);
+
+        // Get the calling class and method names
+        String classPath = new Throwable().getStackTrace()[3].getClassName();
+        String methodName = new Throwable().getStackTrace()[3].getMethodName();
+        String className = classPath.substring(classPath.lastIndexOf('.') + 1);
+
+        String color = getColorFromLevel(level);
+        return String.format("%s[%s] %s %s %s%s: \n%s[%s] [%s] %s%s%s",
+                color, level.getName(), formattedDateTime, classPath, RESET, methodName
+                , color, level.getName(), className, RESET, msg, System.lineSeparator());
+    }
+
+    private static class XTablesFormatter extends java.util.logging.Formatter {
+        @Override
+        public String format(java.util.logging.LogRecord record) {
+            StringBuilder builder = new StringBuilder();
+
+            // Get current time and date
+            ZonedDateTime dateTime = ZonedDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm:ss a");
+            String formattedDateTime = dateTime.format(formatter);
+
+            // Get class and method names
+            String classPath = record.getSourceClassName();
+            String methodName = record.getSourceMethodName();
+            String className = classPath.split("\\.")[classPath.split("\\.").length - 1];
+
+            builder.append(getColorFromLevel(record.getLevel()))
+                    .append("[")
+                    .append(record.getLevel().getName())
+                    .append("] ")
+                    .append(formattedDateTime)
+                    .append(" ")
+                    .append(classPath)
+                    .append(" ")
+                    .append(RESET)
+                    .append(methodName)
+                    .append(": \n")
+                    .append(getColorFromLevel(record.getLevel()))
+                    .append("[")
+                    .append(record.getLevel().getName())
+                    .append("] ")
+                    .append("[")
+                    .append(className)
+                    .append("] ")
+                    .append(RESET)
+                    .append(record.getMessage())
+                    .append(System.lineSeparator());
+            return builder.toString();
+        }
+    }
+
+    private static String getColorFromLevel(Level level) {
+        if (level == FATAL) {
+            return PURPLE;
+        } else if (level == Level.SEVERE) {
+            return RED;
+        } else if (level == Level.WARNING) {
+            return YELLOW;
+        } else if (level == Level.INFO) {
+            return BLUE;
+        }
+        return "";
+    }
+
+    public static void setLoggingLevel(Level level) {
+        if (instance == null) defaultLevel = level;
+        else instance.setLevel(level);
+    }
+}
+

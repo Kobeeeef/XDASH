@@ -5,17 +5,15 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.kobe.xbot.Utilities.Utilities;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.Inet4Address;
 
 public class SSHHostAddress {
-    private static final Logger logger = LoggerFactory.getLogger(SSHHostAddress.class);
+    private static final XDashLogger logger = XDashLogger.getLogger();
     private final String server;
     private final String hostname;
     private final String address;
@@ -84,7 +82,7 @@ public class SSHHostAddress {
             return readStream(input);
         } catch (JSchException | IOException e) {
             setStatus("DISCONNECTED");
-            logger.error("Failed to execute command: " + command, e);
+            logger.severe("Failed to execute command: " + command + "\n" + e);
             return null;
         } finally {
             if (channel != null && channel.isConnected()) {
@@ -137,7 +135,7 @@ public class SSHHostAddress {
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("Failed to parse ping output.", e);
+                    logger.severe("Failed to parse ping output.\n" + e);
                 }
             }
         }

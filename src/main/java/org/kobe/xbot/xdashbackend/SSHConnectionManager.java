@@ -4,8 +4,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.kobe.xbot.xdashbackend.Entities.SSHHostAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -15,11 +14,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SSHConnectionManager {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private static final Logger logger = LoggerFactory.getLogger(SSHConnectionManager.class);
+    private static final XDashLogger logger = XDashLogger.getLogger();
     private static final String password = "kobe2609";
+
     public static String getPassword() {
         return password;
     }
+
     public static void startConnectionManager() {
         executor.submit(() -> {
             while (running.get()) {
@@ -29,13 +30,14 @@ public class SSHConnectionManager {
                         SSHHostAddress sshHostAddress = entry.getValue();
                         // Check if already connected
                         if (sshHostAddress.getSession() == null || !sshHostAddress.getSession().isConnected()) {
-                            logger.info("Connecting to {} with hostname {}...", sshHostAddress.getAddress(), sshHostAddress.getHostname());
+                            logger.info(String.format("Connecting to %s with hostname %s...", sshHostAddress.getAddress(), sshHostAddress.getHostname()));
                             sshHostAddress.setStatus("CONNECTING");
                             Session session = connectToHost(sshHostAddress);
                             if (session != null && session.isConnected()) {
                                 sshHostAddress.setSession(session);
                                 sshHostAddress.setStatus("CONNECTED");
-                                logger.info("Connected to {} with hostname {}", sshHostAddress.getAddress(), sshHostAddress.getHostname());
+                                logger.info(String.format("Connected to %s with hostname %s", sshHostAddress.getAddress(), sshHostAddress.getHostname()));
+
                             }
                         }
                     }
@@ -43,11 +45,12 @@ public class SSHConnectionManager {
                     // Sleep for a bit before checking again
                     Thread.sleep(4000);
                 } catch (Exception e) {
-                    logger.error("Error in SSH Connection Manager", e);
+                    logger.severe("Error in SSH Connection Manager:\n" + e);
                 }
             }
         });
     }
+
     private static Session connectToHost(SSHHostAddress sshHostAddress) {
         try {
             JSch jsch = new JSch();
@@ -60,7 +63,7 @@ public class SSHConnectionManager {
             return session;
         } catch (JSchException e) {
             sshHostAddress.setStatus("DISCONNECTED");
-            logger.error("Failed to connect to server: {} with hostname: {}\nMessage: {}", sshHostAddress.getAddress(), sshHostAddress.getHostname(), e.getMessage());
+            logger.severe(String.format("Failed to connect to server: %s with hostname: %s\nMessage: %s", sshHostAddress.getAddress(), sshHostAddress.getHostname(), e.getMessage()));
             return null;
         }
     }

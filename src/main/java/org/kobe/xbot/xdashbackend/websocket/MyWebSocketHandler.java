@@ -5,11 +5,13 @@ import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.ResponseStatus;
 import org.kobe.xbot.xdashbackend.Entities.*;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
-import org.springframework.security.core.parameters.P;
+import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MyWebSocketHandler extends TextWebSocketHandler {
@@ -83,7 +85,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             }
         } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedServices().values().stream().toList();
-            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected), "DEVICES-DATA").toJSON()));
+            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICE-REBOOT")) {
             String server = message.getMessage();
             SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);

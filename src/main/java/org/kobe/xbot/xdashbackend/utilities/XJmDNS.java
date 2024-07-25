@@ -1,8 +1,7 @@
-package org.kobe.xbot;
+package org.kobe.xbot.xdashbackend.utilities;
 
-import org.kobe.xbot.xdashbackend.utilities.Utilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceListener;
@@ -13,7 +12,7 @@ import java.util.TimerTask;
 
 public class XJmDNS {
 
-    private static final Logger logger = LoggerFactory.getLogger(XJmDNS.class);
+    private static final XDashLogger logger = XDashLogger.getLogger();
     private JmDNS jmdns;
     private InetAddress previousAddress;
     private Timer timer;
@@ -36,11 +35,11 @@ public class XJmDNS {
                     jmdns.close();
                     logger.info("JmDNS closed successfully.");
                 } catch (Exception e) {
-                    logger.error("Failed to close JmDNS.", e);
+                    logger.severe("Failed to close JmDNS.:\n" + e);
                 }
             }));
         } catch (IOException e) {
-            logger.error("Failed to set up mDNS.", e);
+            logger.severe("Failed to set up mDNS.:\n" + e);
         }
     }
 
@@ -52,7 +51,7 @@ public class XJmDNS {
                 try {
                     InetAddress currentAddress = Utilities.getLocalInetAddress();
                     if (!currentAddress.equals(previousAddress)) {
-                        logger.info("Network address changed from {} to {}. Restarting mDNS.", previousAddress, currentAddress);
+                        logger.info(String.format("Network address changed from %1$s to %2$s. Restarting mDNS.", previousAddress, currentAddress));
                         restartMDNS(currentAddress);
                     }
                 } catch (IOException e) {
@@ -74,7 +73,8 @@ public class XJmDNS {
 
             logger.info("New mDNS initialized successfully.");
         } catch (IOException e) {
-            logger.error("Failed to restart mDNS.", e);
+            logger.severe("Failed to restart mDNS.:\n" + e);
+
         }
     }
 

@@ -2,8 +2,9 @@ package org.kobe.xbot.xdashbackend;
 
 
 import org.kobe.xbot.Client.XTablesClient;
-import org.kobe.xbot.XJmDNS;
 import org.kobe.xbot.xdashbackend.Entities.SSHHostAddress;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.kobe.xbot.xdashbackend.utilities.XJmDNS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @SpringBootApplication
 public class XdashbackendApplication {
-    private static final Logger logger = LoggerFactory.getLogger(XJmDNS.class);
+    private static final XDashLogger logger = XDashLogger.getLogger();
     public static AtomicReference<XTablesClient> clientRef = new AtomicReference<>(null);
     private static final AtomicBoolean lock = new AtomicBoolean(false);
     private static final Map<String, SSHHostAddress> resolvedServices = new ConcurrentHashMap<>();
@@ -58,7 +59,7 @@ public class XdashbackendApplication {
                     }
 
                 } else {
-                    logger.warn("Service with server \"" + server + "\" not found in resolved services.");
+                    logger.warning("Service with server \"" + server + "\" not found in resolved services.");
                 }
 
             }
@@ -76,7 +77,7 @@ public class XdashbackendApplication {
                         resolvedServices.put(server, SSHHostAddress);
                         logger.info("XCaster Service resolved: \"" + serviceInfo.getName() + "\" at (" + serviceAddress + ") with hostname \"" + hostname + "\" at " + server);
                     } else {
-                        logger.warn("Duplicate service resolution detected: \"" + serviceInfo.getName() + "\" at (" + serviceAddress + ") with hostname \"" + hostname + "\"");
+                        logger.warning("Duplicate service resolution detected: \"" + serviceInfo.getName() + "\" at (" + serviceAddress + ") with hostname \"" + hostname + "\"");
                     }
                 }
             }
