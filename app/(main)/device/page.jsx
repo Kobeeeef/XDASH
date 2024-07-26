@@ -20,7 +20,7 @@ const Dashboard = () => {
     const searchParams = useSearchParams();
     const serverParam = searchParams.get('server');
     const [server, setServer] = useState(null);
-    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageTillCondition } = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessage, socket } = useContext(WebsocketContext);
     const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
     const [logs, setLogs] = useState([]);
     const logEndRef = useRef(null);
@@ -56,7 +56,32 @@ const Dashboard = () => {
         // Cleanup interval on component unmount
         return () => clearInterval(intervalId);
     }, [isConnected, server]);
+    useEffect(() => {
+        const listener = (event) => {
+            const data = JSON.parse(event.data);
+            if(data.type === "DEVICE-SHELL") {
+                const msg = JSON.parse(data.message)
 
+                setLogs((a) => {
+                    return [...a, "" + msg.response];
+                })
+                logEndRef.current?.scrollIntoView({ behavior: 'instant' });
+
+            }
+        };
+        if(socket.current) {
+            socket.current.addEventListener("message",listener)
+            setLogs((a) => {
+                return [...a, "\u001B[33mXDASH: Registered listener."];
+            })
+        }
+        return () => {
+            socket.current.removeEventListener("message",listener)
+            setLogs((a) => {
+                return [...a, "\u001B[33mXDASH: Unregistered listener."];
+            })
+        }
+    }, [socket.current]);
     function sendCommand() {
         if(input.trim().toLowerCase() === "clear") {
             setLogs([])
@@ -68,31 +93,15 @@ const Dashboard = () => {
             return [...a, "\u001B[35m$ " + data?.hostname + " " + input];
         })
         const type = "DEVICE-COMMAND"
-        sendMessageTillCondition({
+        sendMessage({
             type: type,
             message: JSON.stringify({
                 server: server,
                 command: input
             })
-        }, (message) => {
-
-            if(message?.type === type) {
-                const parsed = JSON.parse(message.message)
-                setLogs((a) => {
-                    return [...a, parsed.response];
-                })
-
-                logEndRef.current?.scrollIntoView({ behavior: 'instant' });
-                if(parsed?.finished) {
-                    setLoading(false)
-                    return true;
-                }
-                return false
-
-            }
-            return false;
         })
         setInput('');
+        setLoading(false)
     }
 
     return (
@@ -140,7 +149,7 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Machine Server</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (server ?? 'Unknown') : 'Unknown'}</div>
+                                className={'text-900 font-medium text-xl ' + (isConnected && server ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (server ?? 'Unknown') : 'Disconnected'}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
@@ -156,7 +165,7 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Hostname</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.hostname ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.hostname ?? 'Unknown') : 'Unknown'}</div>
+                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.hostname ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.hostname ?? 'Unknown') : 'Unknown'}</div>
 
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
@@ -173,7 +182,7 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">IP Address</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.address ?? 'Unknown') : 'Unknown'}</div>
+                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.address ?? 'Unknown') : 'Unknown'}</div>
 
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
@@ -196,7 +205,12 @@ const Dashboard = () => {
                     </div>
                     <div className="p-inputgroup flex-1 w-full">
                         <Button severity={"warning"} disabled={!isConnected || data?.status !== 'CONNECTED'} label="New Session"
-                                onClick={sendCommand} />
+                              onClick={() => {
+                                  sendMessage({
+                                      type: "DEVICE-COMMAND-NEW-SESSION",
+                                      message: server
+                                  })
+                              }}  />
                          <span className="p-inputgroup-addon">
         $ {server}
     </span>

@@ -259,12 +259,45 @@ const Dashboard = () => {
                                             return;
                                         }
                                         setLoadingStates(prev => ({ ...prev, [server]: true }));
+                                        toast.current.show({
+                                            severity: 'contrast',
+                                            summary: 'Redirecting...',
+                                            detail: 'You are being redirected to the machine control panel...'
+                                        });
 
 
-                                            router.prefetch('/device?server=' + server, {
-                                                kind: 'full'
-                                            })
-                                            router.replace('/device?server=' + server);
+                                        router.replace('/device/stats?server=' + server);
+
+
+                                    }} />
+                                </>
+                            )}
+                        />
+                        <Column
+                            header="Control"
+                            body={(data) => (
+                                <>
+                                    <Button loading={loadingStates[data?.server]}
+                                            disabled={!isConnected || data?.status !== 'CONNECTED'} icon="pi pi-desktop"
+                                            text onClick={() => {
+                                        const server = data?.server;
+                                        if (!server) {
+                                            toast.current.show({
+                                                severity: 'danger',
+                                                summary: 'Server Not Found!',
+                                                detail: 'The server was not found.'
+                                            });
+                                            return;
+                                        }
+                                        setLoadingStates(prev => ({ ...prev, [server]: true }));
+                                        toast.current.show({
+                                            severity: 'contrast',
+                                            summary: 'Redirecting...',
+                                            detail: 'You are being redirected to the machine control panel...'
+                                        });
+
+
+                                        router.replace('/device?server=' + server);
 
 
                                     }} />

@@ -60,7 +60,13 @@ export const WebSocketProvider = ({ children, url }) => {
 
         socket.current.addEventListener('message', listener);
     };
+    const sendMessage = (message) => {
+        if (!isConnected) {
+            return new Error('WebSocket is not connected');
+        }
 
+        socket.current.send(JSON.stringify(message));
+    }
     const sendMessageAndWaitForCondition = (message, conditionFunc, timeout = 1500) => {
         if (!isConnected) {
             return Promise.reject(new Error('WebSocket is not connected'));
@@ -88,5 +94,5 @@ export const WebSocketProvider = ({ children, url }) => {
         });
     };
 
-    return <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageTillCondition }}>{children}</WebsocketContext.Provider>;
+    return <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageTillCondition, socket, sendMessage }}>{children}</WebsocketContext.Provider>;
 };
