@@ -1,16 +1,13 @@
 package org.kobe.xbot.xdashbackend.Entities;
 
-import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.kobe.xbot.Utilities.Utilities;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.function.Consumer;
 
 public class SSHHostAddress {
@@ -20,6 +17,8 @@ public class SSHHostAddress {
     private final String address;
     private String status = "DISCONNECTED";
     private transient Session session = null;
+    private transient ChannelShell channel = null;
+    private transient OutputStream outputStream;
 
     public SSHHostAddress(String hostname, String address, String server) {
         this.hostname = hostname;
@@ -50,7 +49,6 @@ public class SSHHostAddress {
     }
 
     public String getAddress() {
-
         return address;
     }
 
@@ -60,56 +58,84 @@ public class SSHHostAddress {
 
     public void closeSession() {
         if (session != null && forceIsConnected()) {
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+            }
             session.disconnect();
             setStatus("DISCONNECTED");
         }
     }
+    public boolean isChannelActive() {
+        return channel != null && channel.isConnected();
+    }
+    public boolean createNewChannel(Consumer<String> lineConsumer) {
+        try {
+            if (lineConsumer != null) lineConsumer.accept("\u001B[33mXDASH: Creating new shell channel...");
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+                if (lineConsumer != null)
+                    lineConsumer.accept("\u001B[33mXDASH: Previous channel disconnected successfully.");
+            }
 
+            channel = (ChannelShell) session.openChannel("shell");
+            outputStream = channel.getOutputStream();
+            InputStream inputStream = channel.getInputStream();
+            InputStream errStream = channel.getExtInputStream();
+
+
+            new Thread(() -> readStream(inputStream, lineConsumer, false)).start();
+            new Thread(() -> readStream(errStream, lineConsumer, true)).start();
+            channel.connect();
+            setStatus("CONNECTED");
+            if (lineConsumer != null) lineConsumer.accept("\u001B[33mXDASH: Shell channel connected successfully.");
+            return true;
+        } catch (JSchException | IOException e) {
+            if (lineConsumer != null)
+                lineConsumer.accept("\u001B[33mXDASH: Failed to create new channel: " + e.getMessage());
+            setStatus("DISCONNECTED");
+            return false;
+        }
+    }
     public String sendCommandWithSudoPermissions(String command, Consumer<String> lineConsumer) {
         return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command), lineConsumer);
     }
-
     public String sendCommand(String command, Consumer<String> lineConsumer) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
         }
 
-        ChannelExec channel = null;
         try {
-            channel = (ChannelExec) session.openChannel("exec");
-            channel.setCommand(command);
-            channel.setInputStream(null);
-            channel.setErrStream(System.err);
+            if (channel == null || !channel.isConnected()) {
+                createNewChannel(lineConsumer);
+            }
 
-            InputStream input = channel.getInputStream();
-            channel.connect();
-            setStatus("CONNECTED");
-            return readStream(input, lineConsumer);
-        } catch (JSchException | IOException e) {
-            lineConsumer.accept(e.getMessage());
+            // Send the command to the shell
+            outputStream.write((command + "\n").getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            if (lineConsumer != null) lineConsumer.accept("\u001B[33mXDASH: Error Occurred: \n" + e.getMessage());
             setStatus("DISCONNECTED");
             logger.severe("Failed to execute command: " + command + "\n" + e);
             return null;
-        } finally {
-            if (channel != null && channel.isConnected()) {
-                channel.disconnect();
-            }
-            if(lineConsumer != null )lineConsumer.accept("\u001B[33mXDASH: Channel Disconnected & Cleaned up.");
         }
+        return "Command sent.";
     }
 
-    private String readStream(InputStream input, Consumer<String> lineConsumer) throws java.io.IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        StringBuilder result = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            result.append(line).append("\n");
-            try {
-                if (lineConsumer != null) lineConsumer.accept(line);
-            } catch (Exception e) {}
-            setStatus("CONNECTED");
+    private void readStream(InputStream input, Consumer<String> lineConsumer, boolean isErrorStream) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (isErrorStream && lineConsumer != null) {
+                    lineConsumer.accept("\u001B[33mXDASH: Error Stream started");
+                }
+                if (lineConsumer != null) {
+                    lineConsumer.accept(line);
+                }
+                setStatus("CONNECTED");
+            }
+        } catch (IOException e) {
+            logger.warning("Failed to consume line from " + (isErrorStream ? "error" : "input") + " stream: " + e.getMessage());
         }
-        return result.toString();
     }
 
     public boolean forceIsConnected() {
@@ -126,31 +152,4 @@ public class SSHHostAddress {
         setStatus("DISCONNECTED");
         return false;
     }
-
-    public Double getPingLatency() {
-        String inet4Address = Utilities.getLocalIPAddress();
-        if (inet4Address != null) {
-            // Send a single ping (-c 1) to the target address
-            String command = String.format("ping -c 1 %s", inet4Address);
-            String result = sendCommand(command, null);
-            if (result != null) {
-                try {
-                    String[] lines = result.split("\n");
-                    for (String line : lines) {
-                        if (line.contains("time=")) {
-                            // Extracting the round-trip time from the ping output
-                            String timePart = line.split("time=")[1];
-                            String timeString = timePart.split(" ")[0];
-                            return Double.parseDouble(timeString); // round-trip time in ms
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.severe("Failed to parse ping output.\n" + e);
-                }
-            }
-        }
-        return null;
-    }
-
-
 }

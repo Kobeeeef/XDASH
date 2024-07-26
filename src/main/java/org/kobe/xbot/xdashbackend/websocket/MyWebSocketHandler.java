@@ -105,38 +105,66 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             } else {
                 session.sendMessage(new TextMessage(new Message(new CommandReturn(null, "DISCONNECTED", false, true), "DEVICE-REBOOT").toJSON()));
             }
-        } else if (message.getType().startsWith("DEVICE-COMMAND")) {
+        }else if (message.getType().startsWith("DEVICE-COMMAND-NEW-SESSION")) {
+                String msg = message.getMessage();
+                if (msg != null) {
+                        SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(msg);
+                        if (sshHostAddress != null) {
+                            if (sshHostAddress.forceIsConnected()) {
+                                boolean status = sshHostAddress.createNewChannel((string) -> {
+                                    try {
+                                        session.sendMessage(new TextMessage(new Message(new CommandReturn(string, sshHostAddress.getStatus(), true, false), "DEVICE-SHELL").toJSON()));
+                                    } catch (Exception ignored) {
+                                    }
+                                });
+                                session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: Channel Creation Finished. Success?: " + status, sshHostAddress.getStatus(), true, true), "DEVICE-SHELL").toJSON()));
+                            } else {
+                                session.sendMessage(new TextMessage(new Message(new CommandReturn("Machine not connected.", sshHostAddress.getStatus(), false, true), "DEVICE-SHELL").toJSON()));
+                            }
+                        } else {
+                            session.sendMessage(new TextMessage(new Message(new CommandReturn("Machine not found.", "DISCONNECTED", false, true), "DEVICE-SHELL").toJSON()));
+                        }
+
+                } else {
+                    session.sendMessage(new TextMessage(new Message(new CommandReturn("No Message Found!", "DISCONNECTED", false, true), "DEVICE-SHELL").toJSON()));
+                }
+
+        }else if (message.getType().startsWith("DEVICE-COMMAND")) {
             String msg = message.getMessage();
             if (msg != null) {
                 Command command = null;
                 try {
                     command = gson.fromJson(msg, Command.class);
                 } catch (Exception e) {
-                    session.sendMessage(new TextMessage(new Message(new CommandReturn("Command cannot be parsed.", "DISCONNECTED", false, true), message.getType()).toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new CommandReturn("Command cannot be parsed.", "DISCONNECTED", false, true), "DEVICE-SHELL").toJSON()));
                     return;
                 }
                 if (command != null) {
                     SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(command.getServer());
                     if (sshHostAddress != null) {
                         if (sshHostAddress.forceIsConnected()) {
-                            sshHostAddress.sendCommandWithSudoPermissions(command.getCommand(), (string) -> {
-                                try {
-                                    session.sendMessage(new TextMessage(new Message(new CommandReturn(string, sshHostAddress.getStatus(), true, false), message.getType()).toJSON()));
-                                } catch (Exception ignored) {
-                                }
-                            });
-                            session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: Command Finished.", sshHostAddress.getStatus(), true, true), message.getType()).toJSON()));
-                        } else {
-                            session.sendMessage(new TextMessage(new Message(new CommandReturn("Machine not connected.", sshHostAddress.getStatus(), false, true), message.getType()).toJSON()));
+                            if(sshHostAddress.isChannelActive()) {
+                                String response = sshHostAddress.sendCommand(command.getCommand(), (string) -> {
+                                    try {
+                                        session.sendMessage(new TextMessage(new Message(new CommandReturn(string.replaceAll("\\e\\[[\\d;]*[^\\d;]", ""), sshHostAddress.getStatus(), true, false), "DEVICE-SHELL").toJSON()));
+                                    } catch (Exception ignored) {
+                                    }
+                                });
+                                session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: Command Finished: " + response, sshHostAddress.getStatus(), true, true), "DEVICE-SHELL").toJSON()));
+                            } else {
+                                session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: No channel is currently active.", sshHostAddress.getStatus(), false, true), "DEVICE-SHELL").toJSON()));
+                            }
+                            } else {
+                            session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: Machine not connected.", sshHostAddress.getStatus(), false, true), "DEVICE-SHELL").toJSON()));
                         }
                     } else {
-                        session.sendMessage(new TextMessage(new Message(new CommandReturn("Machine not found.", "DISCONNECTED", false, true), message.getType()).toJSON()));
+                        session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: Machine not found.", "DISCONNECTED", false, true), "DEVICE-SHELL").toJSON()));
                     }
                 } else {
-                    session.sendMessage(new TextMessage(new Message(new CommandReturn("Command not found.", "DISCONNECTED", false, true), message.getType()).toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new CommandReturn("Command not found.", "DISCONNECTED", false, true), "DEVICE-SHELL").toJSON()));
                 }
             } else {
-                session.sendMessage(new TextMessage(new Message(new CommandReturn("No Message Found!", "DISCONNECTED", false, true), message.getType()).toJSON()));
+                session.sendMessage(new TextMessage(new Message(new CommandReturn("No Message Found!", "DISCONNECTED", false, true), "DEVICE-SHELL").toJSON()));
             }
         } else {
             session.sendMessage(new TextMessage(new Message("Unknown Message", "UNKNOWN").toJSON()));

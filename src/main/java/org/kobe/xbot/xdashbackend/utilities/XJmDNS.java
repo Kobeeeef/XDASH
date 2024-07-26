@@ -80,7 +80,7 @@ public class XJmDNS {
 
     public void addServiceListener(ServiceListener listener) {
         if (jmdns != null) {
-            jmdns.addServiceListener("_xcaster._tcp.local.", listener);
+            jmdns.addServiceListener("", listener);
         }
     }
 
