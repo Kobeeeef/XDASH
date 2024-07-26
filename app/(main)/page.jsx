@@ -12,6 +12,7 @@ import LoadingDots from '../../components/LoadingDots';
 
 import { Toast } from 'primereact/toast';
 import ansiToHtml from '../../utilities/Ansi';
+import { useRouter } from 'next/navigation';
 
 
 const lineData = {
@@ -46,8 +47,9 @@ const Dashboard = () => {
     const [devicesData, setDevicesData] = useState([]);
     const [lastXTablesStatusUpdate, setLastXTablesStatusUpdate] = useState(new Date());
     const [lastDevicesUpdate, setLastDevicesUpdate] = useState(new Date());
-    const [logs, setLogs] = useState([])
+    const [logs, setLogs] = useState([]);
     const logEndRef = useRef(null);
+    const router = useRouter();
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -58,11 +60,11 @@ const Dashboard = () => {
                             return message.message?.xtablesConnectedStatus;
                         });
                         setLogs((a) => {
-                            if(message?.message?.logs?.toString() !== a.toString()) {
-                                logEndRef.current?.scrollIntoView({ behavior: "instant" });
+                            if (message?.message?.logs?.toString() !== a.toString()) {
+                                logEndRef.current?.scrollIntoView({ behavior: 'instant' });
                             }
-                            return message?.message?.logs ?? []
-                        })
+                            return message?.message?.logs ?? [];
+                        });
                         setDevicesData((a) => {
                             const json = JSON.parse(message?.message?.devices ?? []);
                             if (json?.length !== a?.length) setLastDevicesUpdate(new Date());
@@ -151,7 +153,7 @@ const Dashboard = () => {
     }, [layoutConfig.colorScheme]);
 
     return (
-        <div className="grid">
+        <div className="grid fadeIn">
             <Toast ref={toast} />
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
@@ -224,7 +226,7 @@ const Dashboard = () => {
                                rows={5} paginator responsiveLayout="scroll">
                         <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '25%' }}
                                 body={(data) => {
-                                    return (<span className={"text-lg font-bold"}>{data.hostname}</span>)
+                                    return (<span className={'text-lg font-bold'}>{data.hostname}</span>);
                                 }} />
                         <Column field="server" header="Server" style={{ width: '25%' }} />
                         <Column field="address" header="Address" style={{ width: '25%' }} />
@@ -245,28 +247,37 @@ const Dashboard = () => {
                             body={(data) => (
                                 <>
                                     <Button loading={loadingStates[data?.server]}
-                                            disabled={!isConnected || data?.status !== "CONNECTED"} icon="pi pi-search"
-                                            text />
+                                            disabled={!isConnected || data?.status !== 'CONNECTED'} icon="pi pi-search"
+                                            text onClick={() => {
+                                        const server = data?.server;
+                                        if (!server) {
+                                            toast.current.show({
+                                                severity: 'danger',
+                                                summary: 'Server Not Found!',
+                                                detail: 'The server was not found.'
+                                            });
+                                            return;
+                                        }
+                                        setLoadingStates(prev => ({ ...prev, [server]: true }));
+
+
+                                            router.prefetch('/device?server=' + server, {
+                                                kind: 'full'
+                                            })
+                                            router.replace('/device?server=' + server);
+
+
+                                    }} />
                                 </>
                             )}
                         />
-                        <Column
-                            header="Control"
-                            body={(data) => (
-                                <>
-                                    <Button loading={loadingStates[data?.server]}
-                                            disabled={!isConnected || data?.status !== "CONNECTED"}
-                                            className={'text-purple-500'}
-                                            icon="pi pi-desktop" text />
-                                </>
-                            )}
-                        />
+
                         <Column
                             header="Reboot"
                             body={(data) => (
                                 <>
                                     <Button loading={loadingStates[data?.server]}
-                                            disabled={!isConnected || data?.status !== "CONNECTED"}
+                                            disabled={!isConnected || data?.status !== 'CONNECTED'}
                                             className={'text-red-500'}
                                             icon="pi pi-sync" text onClick={() => {
                                         if (isConnected) {
@@ -316,7 +327,6 @@ const Dashboard = () => {
                         ))}
                         <div ref={logEndRef} />
                     </div>
-
                 </div>
             </div>
 

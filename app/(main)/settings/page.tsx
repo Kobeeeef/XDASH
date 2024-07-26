@@ -27,7 +27,7 @@ const FormLayoutDemo = () => {
     }, [dropdownItems]);
 
     return (
-        <div className="grid">
+        <div className="grid fadeIn">
             <div className="col-12">
                 <div className="card">
                     <h5>General Settings</h5>

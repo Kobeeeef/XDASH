@@ -211,7 +211,7 @@ const RecordPage = () => {
         </>
     );
     return (
-        <div className="grid p-fluid">
+        <div className="grid p-fluid fadeIn">
             <Toast ref={toast} />
             <Dialog
                 style={{ width: '450px' }}

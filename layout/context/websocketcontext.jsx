@@ -44,6 +44,22 @@ export const WebSocketProvider = ({ children, url }) => {
             socket.current.send(JSON.stringify({ type: 'ping' }));
         }
     };
+    const sendMessageTillCondition = (message, conditionFunc) => {
+        if (!isConnected) {
+            throw new Error('WebSocket is not connected');
+        }
+
+        socket.current.send(JSON.stringify(message));
+
+        const listener = (event) => {
+            const data = JSON.parse(event.data);
+            if (conditionFunc(data)) {
+                socket.current.removeEventListener('message', listener);
+            }
+        };
+
+        socket.current.addEventListener('message', listener);
+    };
 
     const sendMessageAndWaitForCondition = (message, conditionFunc, timeout = 1500) => {
         if (!isConnected) {
@@ -72,5 +88,5 @@ export const WebSocketProvider = ({ children, url }) => {
         });
     };
 
-    return <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition }}>{children}</WebsocketContext.Provider>;
+    return <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageTillCondition }}>{children}</WebsocketContext.Provider>;
 };
