@@ -10,16 +10,14 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MyWebSocketHandler extends TextWebSocketHandler {
     private static final Gson gson = new Gson();
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage msg) throws Exception {
-        String payload = msg.getPayload();
+    protected void handleTextMessage(WebSocketSession session, TextMessage textMessage) throws Exception {
+        String payload = textMessage.getPayload();
 
         XTablesClient xTablesClient = XdashbackendApplication.clientRef.get();
         Message message = gson.fromJson(payload, Message.class);
@@ -86,19 +84,62 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
-        } else if (message.getType().equals("DEVICE-REBOOT")) {
+        } else if (message.getType().equals("DEVICE-DATA")) {
+            String server = message.getMessage();
+            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
+            if (sshHostAddress != null) {
+                session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, sshHostAddress.getHostname(), sshHostAddress.getAddress(), sshHostAddress.getServer(), sshHostAddress.getStatus()), "DEVICE-DATA").toJSON()));
+            } else {
+                session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICE-DATA").toJSON()));
+            }
+          } else if (message.getType().equals("DEVICE-REBOOT")) {
             String server = message.getMessage();
             SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
             if (sshHostAddress != null) {
                 if (sshHostAddress.forceIsConnected()) {
-                    String response = sshHostAddress.sendCommandWithSudoPermissions("shutdown -r now");
-                    session.sendMessage(new TextMessage(new Message(new RebootReturn(response, sshHostAddress.getStatus(), true), "DEVICE-REBOOT").toJSON()));
+                    String response = sshHostAddress.sendCommandWithSudoPermissions("shutdown -r now", null);
+                    session.sendMessage(new TextMessage(new Message(new CommandReturn(response, sshHostAddress.getStatus(), true, true), "DEVICE-REBOOT").toJSON()));
                 } else {
-                    session.sendMessage(new TextMessage(new Message(new RebootReturn(null, sshHostAddress.getStatus(), false), "DEVICE-REBOOT").toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new CommandReturn(null, sshHostAddress.getStatus(), false, true), "DEVICE-REBOOT").toJSON()));
                 }
             } else {
-                session.sendMessage(new TextMessage(new Message(new RebootReturn(null, "DISCONNECTED", false), "DEVICE-REBOOT").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new CommandReturn(null, "DISCONNECTED", false, true), "DEVICE-REBOOT").toJSON()));
             }
+        } else if (message.getType().startsWith("DEVICE-COMMAND")) {
+            String msg = message.getMessage();
+            if (msg != null) {
+                Command command = null;
+                try {
+                    command = gson.fromJson(msg, Command.class);
+                } catch (Exception e) {
+                    session.sendMessage(new TextMessage(new Message(new CommandReturn("Command cannot be parsed.", "DISCONNECTED", false, true), message.getType()).toJSON()));
+                    return;
+                }
+                if (command != null) {
+                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(command.getServer());
+                    if (sshHostAddress != null) {
+                        if (sshHostAddress.forceIsConnected()) {
+                            sshHostAddress.sendCommandWithSudoPermissions(command.getCommand(), (string) -> {
+                                try {
+                                    session.sendMessage(new TextMessage(new Message(new CommandReturn(string, sshHostAddress.getStatus(), true, false), message.getType()).toJSON()));
+                                } catch (Exception ignored) {
+                                }
+                            });
+                            session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: Command Finished.", sshHostAddress.getStatus(), true, true), message.getType()).toJSON()));
+                        } else {
+                            session.sendMessage(new TextMessage(new Message(new CommandReturn("Machine not connected.", sshHostAddress.getStatus(), false, true), message.getType()).toJSON()));
+                        }
+                    } else {
+                        session.sendMessage(new TextMessage(new Message(new CommandReturn("Machine not found.", "DISCONNECTED", false, true), message.getType()).toJSON()));
+                    }
+                } else {
+                    session.sendMessage(new TextMessage(new Message(new CommandReturn("Command not found.", "DISCONNECTED", false, true), message.getType()).toJSON()));
+                }
+            } else {
+                session.sendMessage(new TextMessage(new Message(new CommandReturn("No Message Found!", "DISCONNECTED", false, true), message.getType()).toJSON()));
+            }
+        } else {
+            session.sendMessage(new TextMessage(new Message("Unknown Message", "UNKNOWN").toJSON()));
         }
     }
 }

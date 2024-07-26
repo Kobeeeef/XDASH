@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.function.Consumer;
 
 public class SSHHostAddress {
     private static final XDashLogger logger = XDashLogger.getLogger();
@@ -53,6 +54,10 @@ public class SSHHostAddress {
         return address;
     }
 
+    public String getServer() {
+        return server;
+    }
+
     public void closeSession() {
         if (session != null && forceIsConnected()) {
             session.disconnect();
@@ -60,11 +65,11 @@ public class SSHHostAddress {
         }
     }
 
-    public String sendCommandWithSudoPermissions(String command) {
-        return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command));
+    public String sendCommandWithSudoPermissions(String command, Consumer<String> lineConsumer) {
+        return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command), lineConsumer);
     }
 
-    public String sendCommand(String command) {
+    public String sendCommand(String command, Consumer<String> lineConsumer) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
         }
@@ -79,8 +84,9 @@ public class SSHHostAddress {
             InputStream input = channel.getInputStream();
             channel.connect();
             setStatus("CONNECTED");
-            return readStream(input);
+            return readStream(input, lineConsumer);
         } catch (JSchException | IOException e) {
+            lineConsumer.accept(e.getMessage());
             setStatus("DISCONNECTED");
             logger.severe("Failed to execute command: " + command + "\n" + e);
             return null;
@@ -88,15 +94,19 @@ public class SSHHostAddress {
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();
             }
+            if(lineConsumer != null )lineConsumer.accept("\u001B[33mXDASH: Channel Disconnected & Cleaned up.");
         }
     }
 
-    private String readStream(InputStream input) throws java.io.IOException {
+    private String readStream(InputStream input, Consumer<String> lineConsumer) throws java.io.IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         StringBuilder result = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
             result.append(line).append("\n");
+            try {
+                if (lineConsumer != null) lineConsumer.accept(line);
+            } catch (Exception e) {}
             setStatus("CONNECTED");
         }
         return result.toString();
@@ -122,7 +132,7 @@ public class SSHHostAddress {
         if (inet4Address != null) {
             // Send a single ping (-c 1) to the target address
             String command = String.format("ping -c 1 %s", inet4Address);
-            String result = sendCommand(command);
+            String result = sendCommand(command, null);
             if (result != null) {
                 try {
                     String[] lines = result.split("\n");
