@@ -13,6 +13,7 @@ import LoadingDots from '../../components/LoadingDots';
 import { Toast } from 'primereact/toast';
 import ansiToHtml from '../../utilities/Ansi';
 import { useRouter } from 'next/navigation';
+import LogComponent from '../../utilities/Ansi';
 
 
 const lineData = {
@@ -226,7 +227,7 @@ const Dashboard = () => {
                                rows={5} paginator responsiveLayout="scroll">
                         <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '25%' }}
                                 body={(data) => {
-                                    return (<span className={'text-lg font-bold'}>{data.hostname}</span>);
+                                    return (<span className={'text-lg'}>{data.hostname}</span>);
                                 }} />
                         <Column field="server" header="Server" style={{ width: '25%' }} />
                         <Column field="address" header="Address" style={{ width: '25%' }} />
@@ -236,6 +237,7 @@ const Dashboard = () => {
                             body={(data) => (
                                 <div>
                                     <Tag
+                                        className={data?.status === 'CONNECTING' ? 'animate-pulse-fast' : data?.status === 'DISCONNECTED' ? 'animate-pulse' : ''}
                                         severity={data.connected ? 'success' : data?.status === 'CONNECTED' ? 'success' : data?.status === 'CONNECTING' ? 'warning' : 'danger'}
                                         value={data.connected ? 'Connected' : data?.status === 'CONNECTED' ? 'Connected' : data?.status === 'CONNECTING' ? 'Connecting' : 'Disconnected'}
                                         rounded></Tag>
@@ -356,7 +358,7 @@ const Dashboard = () => {
                 <div className="card">
                     <div className="overflow-y-auto" style={{ 'maxHeight': '40rem' }}>
                         {logs.map((log, index) => (
-                            <pre key={index}>{ansiToHtml(log)}</pre>
+                            <LogComponent key={index} log={log}></LogComponent>
                         ))}
                         <div ref={logEndRef} />
                     </div>

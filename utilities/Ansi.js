@@ -11,7 +11,7 @@ const ansiToHtml = new AnsiToHtml({
 });
 
 const convertAnsiToHtml = (log) => {
-    return ansiToHtml.toHtml(log.replace("\u001B[?2004h", "\u001b[92m").replace("\u001B[?2004l", ""));
+    return ansiToHtml.toHtml(log?.replace("\u001B[?2004h", "\u001b[92m")?.replace("\u001B[?2004l", "") ?? "");
 };
 
 const LogComponent = ({ log }) => {
