@@ -1,31 +1,25 @@
+
 import React from 'react';
+import AnsiToHtml from 'ansi-to-html';
 
-const ansiToHtml = (log) => {
-    const ansiToHtmlMap = {
-        "\u001B[0m": null,
-        "\u001B[31m": 'red',
-        "\u001B[33m": 'yellow',
-        "\u001B[34m": 'blue',
-        "\u001B[35m": 'purple'
-    };
+const ansiToHtml = new AnsiToHtml({
+    fg: '#FFF', // Default foreground color
+    bg: '#000', // Default background color
+    newline: true,
+    escapeXML: false,
+    stream: false
+});
 
-    const parts = log.split(/(\u001B\[[0-9;]*m)/g);
-    const elements = [];
-
-    let currentColor = null;
-
-    parts.forEach((part, index) => {
-        const color = ansiToHtmlMap[part];
-        if (color !== undefined) {
-            currentColor = color;
-        } else if (part) {
-            elements.push(
-       <span key={index} style={{ color: currentColor }}>{part}</span>
-            );
-        }
-    });
-
-    return elements;
+const convertAnsiToHtml = (log) => {
+    return ansiToHtml.toHtml(log.replace("\u001B[?2004h", "\u001b[92m").replace("\u001B[?2004l", ""));
 };
 
-export default ansiToHtml;
+const LogComponent = ({ log }) => {
+    const htmlLog = convertAnsiToHtml(log);
+
+    return (
+        <pre dangerouslySetInnerHTML={{ __html: htmlLog }} />
+    );
+};
+
+export default LogComponent;

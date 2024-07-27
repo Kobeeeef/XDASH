@@ -354,7 +354,7 @@ const Dashboard = () => {
             </div>
             <div className={'col-12'}>
                 <div className="card">
-                    <div className="overflow-y-auto" style={{ 'max-height': '40rem' }}>
+                    <div className="overflow-y-auto" style={{ 'maxHeight': '40rem' }}>
                         {logs.map((log, index) => (
                             <pre key={index}>{ansiToHtml(log)}</pre>
                         ))}

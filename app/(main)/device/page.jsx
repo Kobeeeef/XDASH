@@ -7,20 +7,29 @@ import { WebsocketContext } from '@/layout/context/websocketcontext';
 import TimeAgo from '@/components/TimeAgo';
 
 import { Toast } from 'primereact/toast';
-import ansiToHtml from '../../../utilities/Ansi';
+
 import { useSearchParams } from 'next/navigation';
 import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
+
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import LogComponent from '../../../utilities/Ansi';
+import { SplitButton } from 'primereact/splitbutton';
 
 
 const Dashboard = () => {
+
     const toast = useRef(null);
     const searchParams = useSearchParams();
     const serverParam = searchParams.get('server');
     const [server, setServer] = useState(null);
-    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessage, socket } = useContext(WebsocketContext);
+    const {
+        isConnected,
+        lastConnectionUpdate,
+        sendMessageAndWaitForCondition,
+        sendMessage,
+        socket
+    } = useContext(WebsocketContext);
     const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
     const [logs, setLogs] = useState([]);
     const logEndRef = useRef(null);
@@ -28,7 +37,8 @@ const Dashboard = () => {
     const [data, setData] = useState({});
     const [warningDialogVisible, setWarningDialogVisible] = useState(false);
     const [loading, setLoading] = useState(false);
-
+    const [sudo, setSudo] = useState(false);
+    const [lock, setLock] = useState(true);
     useEffect(() => {
         setServer(serverParam);
     }, [serverParam]);
@@ -41,11 +51,11 @@ const Dashboard = () => {
                 }, (m) => m.type === 'DEVICE-DATA')
                     .then((message) => {
                         if (!message?.message?.exists) {
-                            setWarningDialogVisible(true)
+                            setWarningDialogVisible(true);
                             setData({});
                         } else {
                             setData(message.message);
-                            setWarningDialogVisible(false)
+                            setWarningDialogVisible(false);
                         }
 
                     }).catch(() => {
@@ -57,51 +67,54 @@ const Dashboard = () => {
         return () => clearInterval(intervalId);
     }, [isConnected, server]);
     useEffect(() => {
+        if (logEndRef && lock) logEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    }, [lock, logs]);
+    useEffect(() => {
         const listener = (event) => {
             const data = JSON.parse(event.data);
-            if(data.type === "DEVICE-SHELL") {
-                const msg = JSON.parse(data.message)
+            if (data.type === 'DEVICE-SHELL') {
+                const msg = JSON.parse(data.message);
 
                 setLogs((a) => {
-                    return [...a, "" + msg.response];
-                })
-                logEndRef.current?.scrollIntoView({ behavior: 'instant' });
+                    return [...a, '' + msg.response];
+                });
 
             }
         };
-        if(socket.current) {
-            socket.current.addEventListener("message",listener)
+        if (socket.current) {
+            socket.current.addEventListener('message', listener);
             setLogs((a) => {
-                return [...a, "\u001B[33mXDASH: Registered listener."];
-            })
+                return [...a, '\u001B[33mXDASH: Registered listener.'];
+            });
         }
         return () => {
-            socket.current.removeEventListener("message",listener)
+            socket.current.removeEventListener('message', listener);
             setLogs((a) => {
-                return [...a, "\u001B[33mXDASH: Unregistered listener."];
-            })
-        }
+                return [...a, '\u001B[33mXDASH: Unregistered listener.'];
+            });
+        };
     }, [socket.current]);
+
     function sendCommand() {
-        if(input.trim().toLowerCase() === "clear") {
-            setLogs([])
+        if (input.trim().toLowerCase() === 'clear') {
+            setLogs([]);
             setInput('');
             return;
         }
-        setLoading(true)
+        setLoading(true);
         setLogs((a) => {
-            return [...a, "\u001B[35m$ " + data?.hostname + " " + input];
-        })
-        const type = "DEVICE-COMMAND"
+            return [...a, '\u001B[35m$ ' + data?.hostname + ' ' + input];
+        });
+        const type = sudo ? "DEVICE-COMMAND-SUDO" : 'DEVICE-COMMAND';
         sendMessage({
             type: type,
             message: JSON.stringify({
                 server: server,
                 command: input
             })
-        })
+        });
         setInput('');
-        setLoading(false)
+        setLoading(false);
     }
 
     return (
@@ -131,7 +144,7 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                        <span className="block text-500 font-medium mb-3">Backend Status</span>
+                            <span className="block text-500 font-medium mb-3">Backend Status</span>
                             <div
                                 className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
@@ -196,31 +209,48 @@ const Dashboard = () => {
             <div className={'col-12'}>
                 <div className="card">
                     <div className="card">
-                        <div className="overflow-y-auto" style={{ 'max-height': '40rem' }}>
+                        <div className="overflow-y-auto" style={{ 'maxHeight': '40rem' }}>
                             {logs.map((log, index) => (
-                                <pre key={index}>{ansiToHtml(log)}</pre>
+
+                                <LogComponent key={index} log={log} />
                             ))}
                             <div ref={logEndRef} />
                         </div>
                     </div>
                     <div className="p-inputgroup flex-1 w-full">
-                        <Button severity={"warning"} disabled={!isConnected || data?.status !== 'CONNECTED'} label="New Session"
-                              onClick={() => {
-                                  sendMessage({
-                                      type: "DEVICE-COMMAND-NEW-SESSION",
-                                      message: server
-                                  })
-                              }}  />
-                         <span className="p-inputgroup-addon">
-        $ {server}
+                        <SplitButton severity={'warning'} disabled={!isConnected || data?.status !== 'CONNECTED'}
+                                     label="Restart"
+                                     onClick={() => {
+                                         sendMessage({
+                                             type: 'DEVICE-COMMAND-NEW-SESSION',
+                                             message: server
+                                         });
+                                     }} model={[{
+                            label: sudo ? 'Disable Sudo' : 'Enable Sudo',
+                            icon: sudo ? 'pi pi-user' : 'pi pi-crown',
+                            command: () => {
+                                setSudo(a => !a);
+                            }
+                        }, {
+                            label: lock ? 'Disable Lock' : 'Enable Lock',
+                            icon: lock ? 'pi pi-lock' : 'pi pi-unlock',
+                            command: () => {
+                                setLock(a => !a);
+                            }
+                        }]} />
+                        <span className="p-inputgroup-addon">
+        <i className={'pi ' + (sudo ? 'pi-crown' : 'pi-user')}></i>
     </span>
+                        <span
+                            className={'p-inputgroup-addon font-bold ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>$ {server}</span>
                         <InputText disabled={!isConnected || loading || data?.status !== 'CONNECTED'} value={input}
                                    onChange={(e) => setInput(e.target.value)} onKeyDown={(event) => {
                             if (input && event.key === 'Enter') {
                                 sendCommand();
                             }
                         }} />
-                        <Button disabled={!isConnected || !input || data?.status !== 'CONNECTED'} loading={loading} label="Send"
+                        <Button disabled={!isConnected || !input || data?.status !== 'CONNECTED'} loading={loading}
+                                label="Send"
                                 onClick={sendCommand} />
                     </div>
                 </div>
