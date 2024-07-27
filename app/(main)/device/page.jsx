@@ -15,6 +15,8 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import LogComponent from '../../../utilities/Ansi';
 import { SplitButton } from 'primereact/splitbutton';
+import { AutoComplete } from 'primereact/autocomplete';
+import linuxCommands from '../../../utilities/linuxCommands';
 
 
 const Dashboard = () => {
@@ -39,6 +41,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(false);
     const [sudo, setSudo] = useState(false);
     const [lock, setLock] = useState(true);
+    const [filteredCommands, setFilteredCommands] = useState([]);
     useEffect(() => {
         setServer(serverParam);
     }, [serverParam]);
@@ -84,13 +87,13 @@ const Dashboard = () => {
         if (socket.current) {
             socket.current.addEventListener('message', listener);
             setLogs((a) => {
-                return [...a, '\u001B[33mXDASH: Registered listener.'];
+                return [...a, '\u001B[92mXDASH: Registered listener.'];
             });
         }
         return () => {
             socket.current.removeEventListener('message', listener);
             setLogs((a) => {
-                return [...a, '\u001B[33mXDASH: Unregistered listener.'];
+                return [...a, '\u001B[92mXDASH: Unregistered listener.'];
             });
         };
     }, [socket.current]);
@@ -103,9 +106,9 @@ const Dashboard = () => {
         }
         setLoading(true);
         setLogs((a) => {
-            return [...a, '\u001B[35m$ ' + data?.hostname + ' ' + input];
+            return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input];
         });
-        const type = sudo ? "DEVICE-COMMAND-SUDO" : 'DEVICE-COMMAND';
+        const type = sudo ? 'DEVICE-COMMAND-SUDO' : 'DEVICE-COMMAND';
         sendMessage({
             type: type,
             message: JSON.stringify({
@@ -117,6 +120,27 @@ const Dashboard = () => {
         setLoading(false);
     }
 
+    function sendControl(control) {
+
+        setLoading(true);
+        setLogs((a) => {
+            return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + control];
+        });
+        const type = 'DEVICE-COMMAND-CONTROL';
+        sendMessage({
+            type: type,
+            message: JSON.stringify({
+                server: server,
+                command: control
+            })
+        });
+        setLoading(false);
+    }
+
+
+    const searchCommands = (event) => {
+        setFilteredCommands(linuxCommands.filter(cmd => cmd.startsWith(event.query)));
+    };
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
@@ -237,16 +261,31 @@ const Dashboard = () => {
                             command: () => {
                                 setLock(a => !a);
                             }
+                        },{
+                            label: 'Clear Terminal',
+                            icon: 'pi pi-eraser',
+                            command: () => {
+                                setLogs([])
+                            }
                         }]} />
                         <span className="p-inputgroup-addon">
         <i className={'pi ' + (sudo ? 'pi-crown' : 'pi-user')}></i>
     </span>
                         <span
                             className={'p-inputgroup-addon font-bold ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>$ {server}</span>
-                        <InputText disabled={!isConnected || loading || data?.status !== 'CONNECTED'} value={input}
+                        <AutoComplete completeMethod={searchCommands} suggestions={filteredCommands} disabled={!isConnected || loading || data?.status !== 'CONNECTED'} value={input}
                                    onChange={(e) => setInput(e.target.value)} onKeyDown={(event) => {
                             if (input && event.key === 'Enter') {
                                 sendCommand();
+                            } else if (event.ctrlKey && event.key === 'c') {
+                                event.preventDefault()
+                                sendControl('CTRL_C');
+                            }else if (event.ctrlKey && event.key === 'j') {
+                                event.preventDefault()
+                                sendControl('CTRL_J');
+                            }else if (event.ctrlKey && event.key === 'x') {
+                                event.preventDefault()
+                                sendControl('CTRL_X');
                             }
                         }} />
                         <Button disabled={!isConnected || !input || data?.status !== 'CONNECTED'} loading={loading}

@@ -49,8 +49,8 @@ const Dashboard = () => {
     const [lastXTablesStatusUpdate, setLastXTablesStatusUpdate] = useState(new Date());
     const [lastDevicesUpdate, setLastDevicesUpdate] = useState(new Date());
     const [logs, setLogs] = useState([]);
-    const logEndRef = useRef(null);
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -61,9 +61,6 @@ const Dashboard = () => {
                             return message.message?.xtablesConnectedStatus;
                         });
                         setLogs((a) => {
-                            if (message?.message?.logs?.toString() !== a.toString()) {
-                                logEndRef.current?.scrollIntoView({ behavior: 'instant' });
-                            }
                             return message?.message?.logs ?? [];
                         });
                         setDevicesData((a) => {
@@ -222,7 +219,39 @@ const Dashboard = () => {
             </div>
             <div className={'col-12'}>
                 <div className="card">
-                    <DataTable removableSort loading={!isConnected} value={devicesData}
+                    <DataTable header={() => {
+                        return (<div className={"flex flex-wrap align-items-center justify-content-between"}> <span className="text-xl text-900 font-bold">Device Auto Discovery</span><Button
+                            icon="pi pi-refresh" loading={loading} onClick={() => {
+                                setLoading(true)
+                            sendMessageAndWaitForCondition({ type: 'DEVICES-SEARCH' }, (m) => m.type === 'DEVICES-SEARCH', 6000)
+                                .then((message) => {
+                                    if(message?.message === "OK") {
+                                        toast.current.show({
+                                            severity: 'success',
+                                            summary: 'Machine Discovered!',
+                                            detail: 'The mDNS has discovered new machines.'
+                                        });
+                                    } else {
+                                        toast.current.show({
+                                            severity: 'error',
+                                            summary: 'Error Occurred.',
+                                            detail: "The mDNS failed to discover services."
+                                        });
+                                    }
+
+                                    setLoading(false)
+                                }).catch((e) => {
+                                const errorMessage = e.message || 'An unexpected error occurred.';
+                                toast.current.show({
+                                    severity: 'error',
+                                    summary: 'Error Occurred.',
+                                    detail: errorMessage,
+                                    life: 5000,
+                                });
+                                    setLoading(false)
+                            })
+                        }} /></div>)
+                    }} removableSort loading={!isConnected} value={devicesData}
                                emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={200} /></p>)}
                                rows={5} paginator responsiveLayout="scroll">
                         <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '25%' }}
@@ -254,7 +283,7 @@ const Dashboard = () => {
                                         const server = data?.server;
                                         if (!server) {
                                             toast.current.show({
-                                                severity: 'danger',
+                                                severity: 'error',
                                                 summary: 'Server Not Found!',
                                                 detail: 'The server was not found.'
                                             });
@@ -285,7 +314,7 @@ const Dashboard = () => {
                                         const server = data?.server;
                                         if (!server) {
                                             toast.current.show({
-                                                severity: 'danger',
+                                                severity: 'error',
                                                 summary: 'Server Not Found!',
                                                 detail: 'The server was not found.'
                                             });
@@ -293,7 +322,7 @@ const Dashboard = () => {
                                         }
                                         setLoadingStates(prev => ({ ...prev, [server]: true }));
                                         toast.current.show({
-                                            severity: 'contrast',
+                                            severity: 'info',
                                             summary: 'Redirecting...',
                                             detail: 'You are being redirected to the machine control panel...'
                                         });
@@ -319,7 +348,7 @@ const Dashboard = () => {
                                             const server = data?.server;
                                             if (!server) {
                                                 toast.current.show({
-                                                    severity: 'danger',
+                                                    severity: 'error',
                                                     summary: 'Server Not Found!',
                                                     detail: 'The server was not found.'
                                                 });
@@ -340,7 +369,7 @@ const Dashboard = () => {
                                                 })
                                                 .catch(() => {
                                                     toast.current.show({
-                                                        severity: 'danger',
+                                                        severity: 'error',
                                                         summary: 'Server Unresponsive!',
                                                         detail: 'The server did not respond in time.'
                                                     });
@@ -360,7 +389,7 @@ const Dashboard = () => {
                         {logs.map((log, index) => (
                             <LogComponent key={index} log={log}></LogComponent>
                         ))}
-                        <div ref={logEndRef} />
+
                     </div>
                 </div>
             </div>

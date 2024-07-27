@@ -31,7 +31,7 @@ const Dashboard = () => {
                     })
                     .catch(() => {});
             }
-        }, 50);
+        }, 100);
 
         // Cleanup interval on component unmount
         return () => clearInterval(intervalId);

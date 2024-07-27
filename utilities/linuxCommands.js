@@ -1,0 +1,30 @@
+const linuxCommands = [
+    'alias', 'apropos', 'apt-get', 'apt-cache', 'aptitude', 'arch', 'awk', 'basename',
+    'bash', 'bc', 'bg', 'bzip2', 'cal', 'cat', 'cd', 'cfdisk', 'chgrp', 'chmod', 'chown',
+    'chroot', 'chkconfig', 'cksum', 'clear', 'cmp', 'comm', 'command', 'compress',
+    'cp', 'cron', 'crontab', 'csplit', 'curl', 'cut', 'date', 'dc', 'dd', 'ddrescue',
+    'declare', 'df', 'diff', 'diff3', 'dig', 'dir', 'dircolors', 'dirname', 'dirs',
+    'dmesg', 'du', 'echo', 'egrep', 'eject', 'enable', 'env', 'ethtool', 'eval',
+    'exec', 'exit', 'expect', 'expand', 'export', 'expr', 'false', 'fdformat', 'fdisk',
+    'fg', 'fgrep', 'file', 'find', 'fmt', 'fold', 'for', 'free', 'fsck', 'ftp', 'gawk',
+    'getopts', 'grep', 'groupadd', 'groupdel', 'groupmod', 'groups', 'gzip', 'hash',
+    'head', 'help', 'history', 'hostname', 'htop', 'iconv', 'id', 'ifconfig', 'ifdown',
+    'ifup', 'import', 'install', 'jobs', 'join', 'journalctl', 'kill', 'killall', 'less',
+    'let', 'link', 'ln', 'locate', 'logname', 'logout', 'look', 'lpc', 'lpr', 'lprint',
+    'lprintd', 'lprintq', 'lprm', 'ls', 'lsblk', 'lsof', 'make', 'man', 'mkdir', 'mkfifo',
+    'mkisofs', 'mknod', 'more', 'most', 'mount', 'mtools', 'mv', 'mmv', 'nano', 'netstat',
+    'nice', 'nl', 'nohup', 'notify-send', 'nslookup', 'open', 'op', 'passwd', 'paste',
+    'pathchk', 'ping', 'pkill', 'popd', 'pr', 'printcap', 'printenv', 'printf', 'ps',
+    'pushd', 'pv', 'pwd', 'quota', 'quotacheck', 'quotactl', 'ram', 'rcp', 'read',
+    'readarray', 'readonly', 'reboot', 'rename', 'renice', 'remsync', 'return', 'rev',
+    'rm', 'rmdir', 'rsync', 'scp', 'screen', 'sdiff', 'sed', 'select', 'seq', 'set',
+    'sftp', 'shift', 'shopt', 'shutdown', 'sleep', 'slocate', 'sort', 'source', 'split',
+    'ssh', 'stat', 'strace', 'su', 'sudo', 'sum', 'suspend', 'sync', 'systemctl',
+    'systemd-analyze', 'tail', 'tar', 'tee', 'test', 'time', 'times', 'touch', 'top',
+    'traceroute', 'trap', 'true', 'tsort', 'tty', 'type', 'ulimit', 'umask', 'umount',
+    'unalias', 'uname', 'unexpand', 'uniq', 'units', 'unset', 'unshar', 'useradd',
+    'userdel', 'usermod', 'users', 'uudecode', 'uuencode', 'vdir', 'vi', 'vim', 'vmstat',
+    'w', 'watch', 'wc', 'whereis', 'which', 'who', 'whoami', 'xargs', 'yes', 'yum', 'zip', 'unzip'
+];
+
+export default linuxCommands
