@@ -28,7 +28,6 @@ public class XdashbackendApplication {
     public static void main(String[] args) {
 
         SpringApplication.run(XdashbackendApplication.class, args);
-        resolvedServices.put("MY_DESKTOP.local.", new SSHHostAddress("MY_DESKTOP", "192.168.0.29", "MY_DESKTOP.local."));
         XJmDNS xJmDNS = new XJmDNS();
         xJmDNS.addServiceListener(new ServiceListener() {
             @Override

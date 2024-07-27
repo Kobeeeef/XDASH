@@ -1,5 +1,6 @@
 package org.kobe.xbot.Utilities.Logger;
 
+import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
@@ -38,9 +39,37 @@ public class XTablesLogger extends Logger {
         } else return instance;
     }
 
+    @Override
+    public void log(Level level, String msg) {
+        super.log(level, msg);
+        addLogToLogSave(level, msg);
+    }
+
     // Method to log fatal messages
     public void fatal(String msg) {
         log(FATAL, msg);
+    }
+
+    private void addLogToLogSave(Level level, String msg) {
+        String formattedMessage = formatLogMessage(level, msg);
+        LogSave.getInstance().addLog(formattedMessage);
+    }
+
+    private String formatLogMessage(Level level, String msg) {
+        // Get current time and date
+        ZonedDateTime dateTime = ZonedDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm:ss a");
+        String formattedDateTime = dateTime.format(formatter);
+
+        // Get the calling class and method names
+        String classPath = new Throwable().getStackTrace()[3].getClassName();
+        String methodName = new Throwable().getStackTrace()[3].getMethodName();
+        String className = classPath.substring(classPath.lastIndexOf('.') + 1);
+
+        String color = getColorFromLevel(level);
+        return String.format("%s[%s] %s %s %s%s: \n%s[%s] [%s] %s%s%s",
+                color, level.getName(), formattedDateTime, classPath, RESET, methodName
+                , color, level.getName(), className, RESET, msg, System.lineSeparator());
     }
 
     // Custom formatter for XTablesLogger
