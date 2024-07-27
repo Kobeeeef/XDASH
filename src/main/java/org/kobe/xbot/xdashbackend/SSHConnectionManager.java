@@ -3,7 +3,7 @@ package org.kobe.xbot.xdashbackend;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import org.kobe.xbot.xdashbackend.Entities.SSHHostAddress;
+import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import java.util.Map;

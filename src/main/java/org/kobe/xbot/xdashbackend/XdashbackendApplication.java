@@ -2,11 +2,9 @@ package org.kobe.xbot.xdashbackend;
 
 
 import org.kobe.xbot.Client.XTablesClient;
-import org.kobe.xbot.xdashbackend.Entities.SSHHostAddress;
+import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.utilities.XJmDNS;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -24,16 +22,21 @@ public class XdashbackendApplication {
     public static AtomicReference<XTablesClient> clientRef = new AtomicReference<>(null);
     private static final AtomicBoolean lock = new AtomicBoolean(false);
     private static final Map<String, SSHHostAddress> resolvedServices = new ConcurrentHashMap<>();
+    private static XJmDNS xJmDNS;
+
+    public static XJmDNS getxJmDNS() {
+        return xJmDNS;
+    }
 
     public static void main(String[] args) {
 
         SpringApplication.run(XdashbackendApplication.class, args);
-        XJmDNS xJmDNS = new XJmDNS();
+        xJmDNS = new XJmDNS();
         xJmDNS.addServiceListener(new ServiceListener() {
             @Override
             public void serviceAdded(ServiceEvent event) {
                 logger.info("XCaster Service found: " + event.getName() + ". Requesting service info...");
-                xJmDNS.getJmDNS().requestServiceInfo(event.getType(), event.getName());
+                xJmDNS.getJmDNS().requestServiceInfo(event.getType(), event.getName(), 5000);
             }
 
             @Override

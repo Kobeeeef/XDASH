@@ -3,13 +3,14 @@ package org.kobe.xbot.xdashbackend.websocket;
 import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.ResponseStatus;
-import org.kobe.xbot.xdashbackend.Entities.*;
+import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import javax.jmdns.ServiceInfo;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -82,7 +83,11 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-REBOOT").toJSON()));
 
             }
-        } else if (message.getType().equals("DEVICES-DATA")) {
+        } else if (message.getType().equals("DEVICES-SEARCH")) {
+            Thread thread = getThread(session);
+            thread.start();
+
+        }else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
@@ -154,6 +159,15 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                                 String response;
                                 if (message.getType().equals("DEVICE-COMMAND-SUDO")) {
                                     response = sshHostAddress.sendCommandWithSudoPermissions(command.getCommand(), listener);
+                                } else if(message.getType().equals("DEVICE-COMMAND-CONTROL")) {
+                                    ControlCharacter controlCharacter;
+                                    try {
+                                       controlCharacter = ControlCharacter.valueOf(command.getCommand());
+                                    }catch (Exception ignored) {controlCharacter = null;}
+                                    if(controlCharacter != null) {
+                                        response = sshHostAddress.sendControlCharacter(controlCharacter, listener);
+                                    } else response = "This control command does not exist.";
+
                                 } else {
                                     response = sshHostAddress.sendCommand(command.getCommand(), listener);
                                 }
@@ -177,6 +191,26 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         } else {
             session.sendMessage(new TextMessage(new Message("Unknown Message", "UNKNOWN").toJSON()));
         }
+    }
+
+    private static Thread getThread(WebSocketSession session) {
+        Thread thread = new Thread(() -> {
+            try {
+                XdashbackendApplication.getxJmDNS().getJmDNS().requestServiceInfo("_xcaster._tcp.local.", "XCASTER - Service Broadcaster", true, 5000);
+                ServiceInfo serviceInfo = XdashbackendApplication.getxJmDNS().getJmDNS().getServiceInfo("_xcaster._tcp.local.", "XCASTER - Service Broadcaster", true, 5000);
+                if (serviceInfo != null) {
+                    session.sendMessage(new TextMessage(new Message("OK", "DEVICES-SEARCH").toJSON()));
+
+                } else {
+                    session.sendMessage(new TextMessage(new Message("FAIL", "DEVICES-SEARCH").toJSON()));
+
+                }
+            } catch (Exception ignored) {
+
+            }
+        });
+        thread.setDaemon(true);
+        return thread;
     }
 }
 

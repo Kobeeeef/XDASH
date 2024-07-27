@@ -70,7 +70,6 @@ public class XJmDNS {
             }
             previousAddress = newAddress;
             jmdns = JmDNS.create(newAddress);
-
             logger.info("New mDNS initialized successfully.");
         } catch (IOException e) {
             logger.severe("Failed to restart mDNS.:\n" + e);
