@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useContext, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 import { LayoutContext } from '@/layout/context/layoutcontext';
@@ -16,12 +16,15 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
     const toast = useRef(null);
-    const handleLogin = async (e) => {
+    useEffect(() => {
+        setError(null);
+    }, [password]);
+    const handleLogin = useCallback(async (e) => {
         e.preventDefault();
         if (!password) {
             return setError('Password is required');
         }
-        setError('');
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
 
@@ -39,9 +42,14 @@ const LoginPage = () => {
             clearTimeout(timeoutId);
             if (response.ok) {
                 setLoading(true);
-                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Redirecting to dashboard...', life: 3000 });
+                toast.current.show({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Redirecting to dashboard...',
+                    life: 2000
+                });
                 setTimeout(() => {
-                    router.push('/');
+                    router.replace('/');
                 }, 2000);
             } else {
                 setError('Invalid password, please try again.');
@@ -54,8 +62,21 @@ const LoginPage = () => {
                 setError('An error occurred. Please try again.');
             }
         }
-    };
+    }, [password, router]);
+    useEffect(() => {
+        const handleKeyDown = async (event) => {
+            if (event.key === 'Enter') {
+                await handleLogin(event);
+            }
+        };
 
+        window.addEventListener('keydown', handleKeyDown);
+
+        // Cleanup event listener on component unmount
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleLogin]);
     return (
         <div className={containerClassName}>
             <Toast ref={toast} />
@@ -80,9 +101,9 @@ const LoginPage = () => {
                                 <label htmlFor="password1" className="block text-900 font-medium text-xl mb-2">
                                     Password
                                 </label>
-                                <Password inputId="password1" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" toggleMask className="w-full mb-5" inputClassName="w-full p-3 md:w-30rem" />
+                                {error && <div className="mb-3 text-red-600">{error}</div>}
+                                <Password invalid={error} disabled={loading} inputId="password1" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" toggleMask className="w-full mb-5" inputClassName="w-full p-3 md:w-30rem" />
                             </div>
-                            {error && <div className="mb-3 text-red-600">{error}</div>}
                             <Button loading={loading} label="Sign In" className="w-full p-3 text-xl" onClick={handleLogin} />
                         </div>
                     </div>
