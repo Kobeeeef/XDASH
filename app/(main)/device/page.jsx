@@ -20,7 +20,7 @@ import linuxCommands from '../../../utilities/linuxCommands';
 
 
 const Dashboard = () => {
-
+    const [commands, setCommands] = useState([]);
     const toast = useRef(null);
     const searchParams = useSearchParams();
     const serverParam = searchParams.get('server');
@@ -32,6 +32,7 @@ const Dashboard = () => {
         sendMessage,
         socket
     } = useContext(WebsocketContext);
+    const [indexState, setIndexState] = useState(0);
     const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
     const [logs, setLogs] = useState([]);
     const logEndRef = useRef(null);
@@ -108,6 +109,9 @@ const Dashboard = () => {
         setLogs((a) => {
             return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input];
         });
+        setCommands(a => {
+            return [...a, input];
+        });
         const type = sudo ? 'DEVICE-COMMAND-SUDO' : 'DEVICE-COMMAND';
         sendMessage({
             type: type,
@@ -139,7 +143,7 @@ const Dashboard = () => {
 
 
     const searchCommands = (event) => {
-        setFilteredCommands(linuxCommands.filter(cmd => cmd.startsWith(event.query)));
+        setFilteredCommands([...new Set([...linuxCommands, ...(commands || [])])].filter(cmd => cmd?.startsWith(event.query)));
     };
     return (
         <div className="grid fadeIn">
@@ -250,7 +254,7 @@ const Dashboard = () => {
                                              message: server
                                          });
                                      }} model={[{
-                            label: sudo ? 'Disable Sudo' : 'Enable Sudo',
+                            label: sudo ? 'Disable Root' : 'Enable Root',
                             icon: sudo ? 'pi pi-user' : 'pi pi-crown',
                             command: () => {
                                 setSudo(a => !a);
@@ -261,11 +265,11 @@ const Dashboard = () => {
                             command: () => {
                                 setLock(a => !a);
                             }
-                        },{
+                        }, {
                             label: 'Clear Terminal',
                             icon: 'pi pi-eraser',
                             command: () => {
-                                setLogs([])
+                                setLogs([]);
                             }
                         }]} />
                         <span className="p-inputgroup-addon">
@@ -273,18 +277,43 @@ const Dashboard = () => {
     </span>
                         <span
                             className={'p-inputgroup-addon font-bold ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>$ {server}</span>
-                        <AutoComplete completeMethod={searchCommands} suggestions={filteredCommands} disabled={!isConnected || loading || data?.status !== 'CONNECTED'} value={input}
-                                   onChange={(e) => setInput(e.target.value)} onKeyDown={(event) => {
-                            if (input && event.key === 'Enter') {
+                        <AutoComplete completeMethod={searchCommands} suggestions={filteredCommands}
+                                      disabled={!isConnected || loading || data?.status !== 'CONNECTED'} value={input}
+                                      onChange={(e) => {
+                                          setInput(a => {
+                                                  setIndexState(0);
+                                                  return e.target.value;
+                                              }
+                                          );
+                                      }
+                                      } onKeyDown={(event) => {
+                            if (input && (event.key === 'Enter' || event.key === 'NumpadEnter')) {
+                                event.preventDefault();
                                 sendCommand();
+                            } else if (event.key === 'ArrowUp') {
+                                event.preventDefault();
+                                if (commands && commands.length) {
+                                    const prevIndex = indexState - 1 < 0 ? commands.length - 1 : indexState - 1;
+                                    const command = commands[prevIndex];
+                                    setIndexState(prevIndex);
+                                    setInput(command);
+                                }
+                            } else if (event.key === 'ArrowDown') {
+                                event.preventDefault();
+                                if (commands && commands.length) {
+                                    const nextIndex = indexState + 1 >= commands.length ? 0 : indexState + 1;
+                                    const command = commands[nextIndex];
+                                    setIndexState(nextIndex);
+                                    setInput(command);
+                                }
                             } else if (event.ctrlKey && event.key === 'c') {
-                                event.preventDefault()
+                                event.preventDefault();
                                 sendControl('CTRL_C');
-                            }else if (event.ctrlKey && event.key === 'j') {
-                                event.preventDefault()
+                            } else if (event.ctrlKey && event.key === 'j') {
+                                event.preventDefault();
                                 sendControl('CTRL_J');
-                            }else if (event.ctrlKey && event.key === 'x') {
-                                event.preventDefault()
+                            } else if (event.ctrlKey && event.key === 'x') {
+                                event.preventDefault();
                                 sendControl('CTRL_X');
                             }
                         }} />

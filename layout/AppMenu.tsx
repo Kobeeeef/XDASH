@@ -31,10 +31,10 @@ const AppMenu = () => {
                 { label: 'Graphs', icon: 'pi pi-chart-pie', to: '/xtables/graphs' }
             ]
         },
-        {
-            label: 'Settings',
-            items: [{ label: 'Settings', icon: 'pi pi-cog', to: '/settings' }]
-        },
+        // {
+        //     label: 'Settings',
+        //     items: [{ label: 'Settings', icon: 'pi pi-cog', to: '/settings' }]
+        // },
         // {
         //     label: 'UI Components',
         //     items: [
