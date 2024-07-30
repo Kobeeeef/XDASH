@@ -33,7 +33,15 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 
 ### XTABLES Graphs & Tables Recording
 ![image](https://github.com/user-attachments/assets/ef5118a4-7dc4-4b3c-9f12-a188f8f4afc2)
+
+### Tables Recording Data Export
 ![image](https://github.com/user-attachments/assets/770b6935-a78a-469e-bdc3-3bb433cbe64a)
+
+### Light & Dark Theme
+![image](https://github.com/user-attachments/assets/9b80b249-7926-4a64-b80c-56003f776e14)
+
+### Demo
+https://github.com/user-attachments/assets/b64dd52e-4795-4f81-b183-d5b5da928d7c
 
 
 
