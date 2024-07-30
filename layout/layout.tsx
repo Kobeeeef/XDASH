@@ -1,10 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEventListener, useMountEffect, useUnmountEffect } from 'primereact/hooks';
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { classNames } from 'primereact/utils';
+import 'primereact/resources/primereact.css';
+import 'primeflex/primeflex.css';
+import 'primeicons/primeicons.css';
 import AppFooter from './AppFooter';
 import AppSidebar from './AppSidebar';
 import AppTopbar from './AppTopbar';
@@ -12,7 +14,12 @@ import AppConfig from './AppConfig';
 import { LayoutContext } from './context/layoutcontext';
 import { ChildContainerProps, LayoutState, AppTopbarRef } from '@/types';
 import { usePathname, useSearchParams } from 'next/navigation';
+import LoadingDots from '@/components/LoadingDots';
+import { WebsocketContext } from '@/layout/context/websocketcontext';
+import { Image } from 'primereact/image';
+
 const Layout = ({ children }: ChildContainerProps) => {
+    const [isLoading, setIsLoading] = useState(true);
     const { layoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
     const topbarRef = useRef<AppTopbarRef>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
@@ -118,7 +125,29 @@ const Layout = ({ children }: ChildContainerProps) => {
         'p-input-filled': layoutConfig.inputStyle === 'filled',
         'p-ripple-disabled': false
     });
+    useEffect(() => {
+        const handleLoad = () => {
+            setIsLoading(false);
+        };
 
+        if (document.readyState === 'complete') {
+            setIsLoading(false);
+        } else {
+            window.addEventListener('load', handleLoad);
+        }
+
+        return () => {
+            window.removeEventListener('load', handleLoad);
+        };
+    }, []);
+    // if(isLoading) return (<div style={{
+    //     display: 'flex',
+    //     flexDirection: 'column',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //     height: '100vh'
+    // }}><Image className={"animate-pulse"} alt={"XBOT ROBOTICS LOGO"}
+    //            src={'/images/logo/logo.png'}/><p className={"font-bold"}>Loading resources<LoadingDots/></p></div>);
     return (
         <React.Fragment>
             <div className={containerClass}>

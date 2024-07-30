@@ -102,7 +102,7 @@ const LoginPage = () => {
                                     Password
                                 </label>
                                 {error && <div className="mb-3 text-red-600">{error}</div>}
-                                <Password invalid={error} disabled={loading} inputId="password1" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" toggleMask className="w-full mb-5" inputClassName="w-full p-3 md:w-30rem" />
+                                <Password disabled={loading} inputId="password1" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" toggleMask className="w-full mb-5" inputClassName="w-full p-3 md:w-30rem" />
                             </div>
                             <Button loading={loading} label="Sign In" className="w-full p-3 text-xl" onClick={handleLogin} />
                         </div>
