@@ -14,12 +14,8 @@ import AppConfig from './AppConfig';
 import { LayoutContext } from './context/layoutcontext';
 import { ChildContainerProps, LayoutState, AppTopbarRef } from '@/types';
 import { usePathname, useSearchParams } from 'next/navigation';
-import LoadingDots from '@/components/LoadingDots';
-import { WebsocketContext } from '@/layout/context/websocketcontext';
-import { Image } from 'primereact/image';
 
 const Layout = ({ children }: ChildContainerProps) => {
-    const [isLoading, setIsLoading] = useState(true);
     const { layoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
     const topbarRef = useRef<AppTopbarRef>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
@@ -125,21 +121,21 @@ const Layout = ({ children }: ChildContainerProps) => {
         'p-input-filled': layoutConfig.inputStyle === 'filled',
         'p-ripple-disabled': false
     });
-    useEffect(() => {
-        const handleLoad = () => {
-            setIsLoading(false);
-        };
-
-        if (document.readyState === 'complete') {
-            setIsLoading(false);
-        } else {
-            window.addEventListener('load', handleLoad);
-        }
-
-        return () => {
-            window.removeEventListener('load', handleLoad);
-        };
-    }, []);
+    // useEffect(() => {
+    //     const handleLoad = () => {
+    //         setIsLoading(false);
+    //     };
+    //
+    //     if (document.readyState === 'complete') {
+    //         setIsLoading(false);
+    //     } else {
+    //         window.addEventListener('load', handleLoad);
+    //     }
+    //
+    //     return () => {
+    //         window.removeEventListener('load', handleLoad);
+    //     };
+    // }, []);
     // if(isLoading) return (<div style={{
     //     display: 'flex',
     //     flexDirection: 'column',
