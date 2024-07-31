@@ -26,7 +26,7 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ![image](https://github.com/user-attachments/assets/9784848a-11f6-40b0-a736-c4259af63a49)
 
 ### Device Service Daemon Control
-![image](https://github.com/user-attachments/assets/f965bf2c-22ec-474a-ba74-8c5b22fda510)
+![image](https://github.com/user-attachments/assets/4e9c98db-3cce-421c-9224-0a693d02d3af)
 
 ### Realtime XTABLES Terminal & Visual Viewer
 ![image](https://github.com/user-attachments/assets/a6a37325-8e60-48ef-8189-fa5c3a711d3c)
