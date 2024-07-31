@@ -14,6 +14,9 @@ import javax.jmdns.ServiceInfo;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.kobe.xbot.xdashbackend.entities.ServiceInfo.ServiceInfoParser.parseServiceInfo;
+
+
 public class MyWebSocketHandler extends TextWebSocketHandler {
     private static final Gson gson = new Gson();
 
@@ -97,6 +100,22 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, sshHostAddress.getHostname(), sshHostAddress.getAddress(), sshHostAddress.getServer(), sshHostAddress.getStatus()), "DEVICE-DATA").toJSON()));
             } else {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICE-DATA").toJSON()));
+            }
+        } else if (message.getType().equals("DEVICE-SERVICES-DATA")) {
+            String server = message.getMessage();
+            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
+
+            if (sshHostAddress != null) {
+                if(sshHostAddress.getStatus().equals("CONNECTED")) {
+                    String data = sshHostAddress.sendExecCommand("systemctl list-units --type=service --state=running --no-page --no-legend | awk '{print $1}' | xargs -I{} systemctl show {} --property=Id,ExecMainPID,ActiveState,MemoryCurrent,CPUUsageNSec,ExecMainStartTimestamp");
+                    List<org.kobe.xbot.xdashbackend.entities.ServiceInfo> serviceInfoList = parseServiceInfo(data);
+                    String json = gson.toJson(serviceInfoList);
+                    session.sendMessage(new TextMessage(new Message(new ServicesDataReturn(true, sshHostAddress.getStatus(), json), message.getType()).toJSON()));
+                } else {
+                    session.sendMessage(new TextMessage(new Message(new ServicesDataReturn(true, sshHostAddress.getStatus(), null), message.getType()).toJSON()));
+                }
+            } else {
+                session.sendMessage(new TextMessage(new Message(new ServicesDataReturn(false, null, null), message.getType()).toJSON()));
             }
         } else if (message.getType().equals("DEVICE-REBOOT")) {
             String server = message.getMessage();

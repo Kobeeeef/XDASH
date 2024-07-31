@@ -1,5 +1,6 @@
 package org.kobe.xbot.xdashbackend.entities;
 
+import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -160,4 +161,44 @@ public class SSHHostAddress {
         setStatus("DISCONNECTED");
         return false;
     }
+    public String sendExecCommand(String command) {
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+        StringBuilder response = new StringBuilder();
+        try {
+            ChannelExec execChannel = (ChannelExec) session.openChannel("exec");
+            execChannel.setCommand(command);
+
+            InputStream inputStream = execChannel.getInputStream();
+            InputStream errStream = execChannel.getErrStream();
+
+            execChannel.connect();
+
+            // Read the input stream (standard output)
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line).append("\n");
+                }
+            }
+
+            // Read the error stream (standard error)
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(errStream))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line).append("\n");
+                }
+            }
+
+            execChannel.disconnect();
+        } catch (JSchException | IOException e) {
+            logger.severe("Failed to execute command: " + command + "\n" + e);
+            return "Error: " + e.getMessage();
+        }
+
+        return response.toString();
+    }
+
 }
