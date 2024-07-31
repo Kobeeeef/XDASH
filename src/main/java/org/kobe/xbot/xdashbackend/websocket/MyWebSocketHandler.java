@@ -3,6 +3,7 @@ package org.kobe.xbot.xdashbackend.websocket;
 import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.ResponseStatus;
+import org.kobe.xbot.xdashbackend.entities.ServiceData;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
@@ -107,7 +108,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
 
             if (sshHostAddress != null) {
                 if(sshHostAddress.getStatus().equals("CONNECTED")) {
-                    String data = sshHostAddress.sendExecCommand("systemctl list-units --type=service --state=running --no-page --no-legend | awk '{print $1}' | xargs -I{} systemctl show {} --property=Id,ExecMainPID,ActiveState,MemoryCurrent,CPUUsageNSec,ExecMainStartTimestamp");
+                    String data = sshHostAddress.sendExecCommand("systemctl list-units --type=service --no-page --no-legend | awk '{print $1}' | xargs -I{} systemctl show {} --property=Id,ExecMainPID,ActiveState,MemoryCurrent,CPUUsageNSec,ExecMainStartTimestamp");
                     List<org.kobe.xbot.xdashbackend.entities.ServiceInfo> serviceInfoList = parseServiceInfo(data);
                     String json = gson.toJson(serviceInfoList);
                     session.sendMessage(new TextMessage(new Message(new ServicesDataReturn(true, sshHostAddress.getStatus(), json), message.getType()).toJSON()));
@@ -116,6 +117,28 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 }
             } else {
                 session.sendMessage(new TextMessage(new Message(new ServicesDataReturn(false, null, null), message.getType()).toJSON()));
+            }
+        }else if (message.getType().equals("DEVICE-SERVICE-RESTART")) {
+            String msg = message.getMessage();
+            if (msg != null) {
+                ServiceData serviceData = null;
+                try {
+                    serviceData = gson.fromJson(msg, ServiceData.class);
+                } catch (Exception e) {
+                    session.sendMessage(new TextMessage(new Message(new ServiceRebootReturn(false, "Data cannot be parsed."), message.getType()).toJSON()));
+                    return;
+                }
+                SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(serviceData.getServer());
+                if (sshHostAddress != null) {
+                    if (sshHostAddress.getStatus().equals("CONNECTED")) {
+                        String response = sshHostAddress.sendExecCommandWithSudoPermissions(String.format("systemctl restart %1$s", serviceData.getServiceID().trim()));
+                        session.sendMessage(new TextMessage(new Message(new ServiceRebootReturn(true, response), message.getType()).toJSON()));
+                    } else {
+                        session.sendMessage(new TextMessage(new Message(new ServiceRebootReturn(false, "Session is not connected."), message.getType()).toJSON()));
+                    }
+                } else {
+                    session.sendMessage(new TextMessage(new Message(new ServiceRebootReturn(false, "Session does not exist."), message.getType()).toJSON()));
+                }
             }
         } else if (message.getType().equals("DEVICE-REBOOT")) {
             String server = message.getMessage();

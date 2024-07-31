@@ -3,12 +3,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceInfo {
-    private String id;
-    private int execMainPID;
-    private String activeState;
-    private long memoryCurrent;
-    private long cpuUsageNSec;
-    private String execMainStartTimestamp;
+    private final String id;
+    private final int execMainPID;
+    private final String activeState;
+    private final long memoryCurrent;
+    private final long cpuUsageNSec;
+    private final String execMainStartTimestamp;
 
     // Constructor
     public ServiceInfo(String id, int execMainPID, String activeState, long memoryCurrent, long cpuUsageNSec, String execMainStartTimestamp) {
@@ -79,11 +79,17 @@ public class ServiceInfo {
                     if (line.startsWith("ExecMainStartTimestamp")) {
                         execMainStartTimestamp = line.split("=", 2)[1].trim();
                     } else if (line.startsWith("ExecMainPID")) {
-                        execMainPID = Integer.parseInt(line.split("=", 2)[1].trim());
+                        try {
+                            execMainPID = Integer.parseInt(line.split("=", 2)[1].trim());
+                        } catch (NumberFormatException ignored) {}
                     } else if (line.startsWith("MemoryCurrent")) {
-                        memoryCurrent = Long.parseLong(line.split("=", 2)[1].trim());
+                        try {
+                            memoryCurrent = Long.parseLong(line.split("=", 2)[1].trim());
+                        } catch (Exception ignored){}
                     } else if (line.startsWith("CPUUsageNSec")) {
-                        cpuUsageNSec = Long.parseLong(line.split("=", 2)[1].trim());
+                        try {
+                            cpuUsageNSec = Long.parseLong(line.split("=", 2)[1].trim());
+                        } catch(Exception ignored) {}
                     } else if (line.startsWith("Id")) {
                         id = line.split("=", 2)[1].trim();
                     } else if (line.startsWith("ActiveState")) {

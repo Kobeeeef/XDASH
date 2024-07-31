@@ -43,7 +43,7 @@ public class SSHConnectionManager {
                     }
 
                     // Sleep for a bit before checking again
-                    Thread.sleep(4000);
+                    Thread.sleep(5000);
                 } catch (Exception e) {
                     logger.severe("Error in SSH Connection Manager:\n" + e);
                 }
@@ -55,6 +55,7 @@ public class SSHConnectionManager {
         try {
             JSch jsch = new JSch();
             Session session = jsch.getSession("kobe", sshHostAddress.getAddress(), 22);
+
             session.setPassword("kobe2609");
 
             // Avoid asking for key confirmation

@@ -1,9 +1,6 @@
 package org.kobe.xbot.xdashbackend.entities;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
@@ -160,6 +157,9 @@ public class SSHHostAddress {
         }
         setStatus("DISCONNECTED");
         return false;
+    }
+    public String sendExecCommandWithSudoPermissions(String command) {
+        return sendExecCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command));
     }
     public String sendExecCommand(String command) {
         if (session == null || !forceIsConnected()) {
