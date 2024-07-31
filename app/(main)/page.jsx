@@ -219,9 +219,9 @@ const Dashboard = () => {
             </div>
             <div className={'col-12'}>
                 <div className="card">
-                    <DataTable header={() => {
-                        return (<div className={"flex flex-wrap align-items-center justify-content-between"}> <span className="text-xl text-900 font-bold">Device Auto Discovery</span><Button
-                            icon="pi pi-refresh" loading={loading} onClick={() => {
+                    <DataTable paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink" rowsPerPageOptions={[5, 10, 25, 50]} paginatorLeft={() => {
+                        return (<Button
+                            icon="pi pi-refresh" text loading={loading} onClick={() => {
                                 setLoading(true)
                             sendMessageAndWaitForCondition({ type: 'DEVICES-SEARCH' }, (m) => m.type === 'DEVICES-SEARCH', 6000)
                                 .then((message) => {
@@ -250,10 +250,10 @@ const Dashboard = () => {
                                 });
                                     setLoading(false)
                             })
-                        }} /></div>)
+                        }} />)
                     }} removableSort loading={!isConnected} value={devicesData}
                                emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={200} /></p>)}
-                               rows={5} paginator responsiveLayout="scroll">
+                               rows={5} paginator>
                         <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '25%' }}
                                 body={(data) => {
                                     return (<span className={'text-lg'}>{data.hostname}</span>);
@@ -291,13 +291,13 @@ const Dashboard = () => {
                                         }
                                         setLoadingStates(prev => ({ ...prev, [server]: true }));
                                         toast.current.show({
-                                            severity: 'contrast',
+                                            severity: 'info',
                                             summary: 'Redirecting...',
                                             detail: 'You are being redirected to the machine control panel...'
                                         });
 
 
-                                        router.replace('/device/stats?server=' + server);
+                                        router.replace('/device/services?server=' + server);
 
 
                                     }} />
