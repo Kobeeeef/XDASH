@@ -32,8 +32,9 @@ const Dashboard = () => {
         sendMessage,
         socket
     } = useContext(WebsocketContext);
+    const inputRef = useRef(null)
     const [indexState, setIndexState] = useState(0);
-    const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
+    const [first, setFirst] = useState(true);
     const [logs, setLogs] = useState([]);
     const logEndRef = useRef(null);
     const [input, setInput] = useState('');
@@ -56,8 +57,10 @@ const Dashboard = () => {
                     .then((message) => {
                         if (!message?.message?.exists) {
                             setWarningDialogVisible(true);
+                            setFirst(true)
                             setData({});
                         } else {
+                            if(message.message?.status !== "CONNECTED") setFirst(true)
                             setData(message.message);
                             setWarningDialogVisible(false);
                         }
@@ -70,6 +73,20 @@ const Dashboard = () => {
         // Cleanup interval on component unmount
         return () => clearInterval(intervalId);
     }, [isConnected, server]);
+    useEffect(() => {
+        const handleTyping = () => {
+            if (document.activeElement !== inputRef.current) {
+                inputRef.current.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleTyping);
+
+        return () => {
+            document.removeEventListener('keydown', handleTyping);
+        };
+    }, []);
+
     useEffect(() => {
         if (logEndRef && lock) logEndRef.current?.scrollIntoView({ behavior: 'instant' });
     }, [lock, logs]);
@@ -104,6 +121,8 @@ const Dashboard = () => {
             setLogs([]);
             setInput('');
             return;
+        } else if (!sudo && input.trim().toLowerCase().startsWith('exit')) {
+            setFirst(true)
         }
         setLoading(true);
         setLogs((a) => {
@@ -214,7 +233,7 @@ const Dashboard = () => {
                             <i className="pi pi-address-book text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <TimeAgo date={lastDeviceUpdate} />
+                    <TimeAgo date={lastConnectionUpdate} />
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
@@ -231,7 +250,7 @@ const Dashboard = () => {
                             <i className="pi pi-map-marker text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <TimeAgo date={lastDeviceUpdate} />
+                    <TimeAgo date={lastConnectionUpdate} />
                 </div>
             </div>
             <div className={'col-12'}>
@@ -246,13 +265,40 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div className="p-inputgroup flex-1 w-full">
-                        <SplitButton severity={'warning'} disabled={!isConnected || data?.status !== 'CONNECTED'}
-                                     label="Restart"
+                        <SplitButton severity={first ? "success" : "danger"} disabled={!isConnected || data?.status !== 'CONNECTED'}
+                                     label={first ? "Connect" : "Reconnect"}
+                                     loading={loading}
                                      onClick={() => {
-                                         sendMessage({
+                                         setFirst(false)
+                                         setLoading(true)
+                                         sendMessageAndWaitForCondition({
                                              type: 'DEVICE-COMMAND-NEW-SESSION',
                                              message: server
-                                         });
+                                         }, (a) => a.type === "DEVICE-COMMAND-NEW-SESSION").then((m) => {
+                                             setLoading(false)
+                                            if(m?.message?.success) {
+                                                toast.current.show({
+                                                    severity: 'success',
+                                                    summary: 'Successful Creation',
+                                                    detail: "A new shell channel has been created."
+                                                });
+                                            } else {
+                                                toast.current.show({
+                                                    severity: 'error',
+                                                    summary: 'Unsuccessful Creation',
+                                                    detail: "The new shell channel failed to create."
+                                                });
+                                            }
+
+                                         }).catch(e => {
+                                             const errorMessage = e.message || 'An unexpected error occurred.';
+                                             toast.current.show({
+                                                 severity: 'error',
+                                                 summary: 'Failed To Connect',
+                                                 detail: errorMessage
+                                             });
+                                             setLoading(false)
+                                         }) ;
                                      }} model={[{
                             label: sudo ? 'Disable Root' : 'Enable Root',
                             icon: sudo ? 'pi pi-user' : 'pi pi-crown',
@@ -277,7 +323,7 @@ const Dashboard = () => {
     </span>
                         <span
                             className={'p-inputgroup-addon font-bold ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>$ {server}</span>
-                        <AutoComplete completeMethod={searchCommands} suggestions={filteredCommands}
+                        <AutoComplete inputRef={inputRef} completeMethod={searchCommands} suggestions={filteredCommands}
                                       disabled={!isConnected || loading || data?.status !== 'CONNECTED'} value={input}
                                       onChange={(e) => {
                                           setInput(a => {
@@ -315,6 +361,10 @@ const Dashboard = () => {
                             } else if (event.ctrlKey && event.key === 'x') {
                                 event.preventDefault();
                                 sendControl('CTRL_X');
+                            } else if (event.ctrlKey && event.key === 'd') {
+                                event.preventDefault();
+                                sendControl('CTRL_D');
+                                setFirst(true)
                             }
                         }} />
                         <Button disabled={!isConnected || !input || data?.status !== 'CONNECTED'} loading={loading}

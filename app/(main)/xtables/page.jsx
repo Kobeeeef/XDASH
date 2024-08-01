@@ -4,6 +4,7 @@
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 
+import { TreeTable } from 'primereact/treetable';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
@@ -201,23 +202,9 @@ const Dashboard = () => {
         };
     }, [commandHandler]);
     useEffect(() => {
-        setData(convertJSON(rawJSON));
+        setData(convertJSONForTreeTable(rawJSON));
     }, [rawJSON]);
-    const allowExpansion = (rowData) => {
-        return rowData.data && Object.keys(rowData.data).length > 0;
-    };
-    const rowExpansionTemplate = (data) => {
-        return (
-            <div className="p-3">
-                <DataTable showGridlines={false} value={data.data} rowExpansionTemplate={rowExpansionTemplate} onRowToggle={(e) => setExpandedRows(e.data)} selectionMode="single" expandedRows={expandedRows} dataKey="key" removableSort>
-                    <Column expander={allowExpansion} style={{ width: '5rem' }} />
-                    <Column field="name" header="" />
-                    <Column field="value" header="" frozen={true} className="font-bold max-w-1 overflow-hidden whitespace-nowrap" />
-                    <Column field="type" className="capitalize max-w-1 overflow-hidden whitespace-nowrap" />
-                </DataTable>
-            </div>
-        );
-    };
+
 
     // @ts-ignore
     return (
@@ -282,28 +269,25 @@ const Dashboard = () => {
             </div>
             <div className="col-12">
                 <div className="card mb-0">
-                    <DataTable
+                    <TreeTable
                         ref={dt}
                         value={isConnected && statusData?.connected ? data : []}
                         selectionMode="single"
                         showGridlines={false}
-                        globalFilterFields={['name', 'value']}
                         removableSort
                         filterDisplay="row"
-                        expandedRows={expandedRows}
-                        onRowToggle={(e) => setExpandedRows(e.data)}
+
                         emptyMessage={Loader({ message: isConnected ? statusData?.connected ? "No data found" : "Connecting to XTABLES" : "Connecting to backend"})}
-                        rowExpansionTemplate={rowExpansionTemplate}
                         dataKey="key"
                         scrollable
                         scrollHeight={'50vh'}
                         tableStyle={{ minWidth: '15rem' }}
                     >
-                        <Column expander={allowExpansion} style={{ width: '5rem' }} />
+                        <Column expander={true} style={{ width: '5rem' }} />
                         <Column field="name" header="Name" sortable f />
                         <Column field="value" header="Value" className="font-bold max-w-1 overflow-hidden whitespace-nowrap" sortable />
                         <Column field="type" header="Type" className="capitalize max-w-1 overflow-hidden whitespace-nowrap" sortable />
-                    </DataTable>
+                    </TreeTable>
                 </div>
             </div>
         </div>
@@ -318,28 +302,27 @@ function isValidJSON(jsonString) {
         return false; // The JSON is not valid
     }
 }
-
-function convertJSON(json) {
+function convertJSONForTreeTable(json) {
     const transformRecursively = (obj, parentKey = '') => {
         return Object.entries(obj).map(([key, value]) => {
-            // Create a new object for the array
+            // Create a new object for each entry
             let transformed = {
                 key: parentKey ? `${parentKey}.${key}` : key,
-                name: key
+                data: { name: key }
             };
 
             if (typeof value === 'object' && value !== null) {
                 if (value.hasOwnProperty('value')) {
-                    transformed.value = value.value;
-                    transformed.type = (typeof JSON.parse(value.value)).toString();
+                    transformed.data.value = value.value;
+                    transformed.data.type = (typeof JSON.parse(value.value)).toString();
                 }
                 // Recurse if there's nested data
                 if (value.data) {
-                    transformed.data = transformRecursively(value.data, transformed.key);
+                    transformed.children = transformRecursively(value.data, transformed.key);
                 }
             } else {
-                transformed.value = value;
-                transformed.type = (typeof JSON.parse(value)).toString();
+                transformed.data.value = value;
+                transformed.data.type = (typeof JSON.parse(value)).toString();
             }
 
             return transformed;
@@ -349,5 +332,6 @@ function convertJSON(json) {
     // Start the transformation with the top-level keys
     return transformRecursively(json);
 }
+
 
 export default Dashboard;
