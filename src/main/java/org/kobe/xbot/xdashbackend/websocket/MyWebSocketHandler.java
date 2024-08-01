@@ -3,10 +3,10 @@ package org.kobe.xbot.xdashbackend.websocket;
 import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.ResponseStatus;
-import org.kobe.xbot.xdashbackend.entities.ServiceData;
-import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
+import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -20,6 +20,7 @@ import static org.kobe.xbot.xdashbackend.entities.ServiceInfo.ServiceInfoParser.
 
 public class MyWebSocketHandler extends TextWebSocketHandler {
     private static final Gson gson = new Gson();
+    private static final XDashLogger logger = XDashLogger.getLogger();
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage textMessage) throws Exception {
@@ -249,14 +250,27 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
     private static Thread getThread(WebSocketSession session, int number) {
         Thread thread = new Thread(() -> {
             try {
-                System.out.println("XCASTER - Service Broadcaster" + (number > 1 ? String.format(" (%1$s)", number) : ""));
-                XdashbackendApplication.getxJmDNS().getJmDNS().requestServiceInfo("_xcaster._tcp.local.", "XCASTER - Service Broadcaster" + (number > 1 ? String.format(" (%1$s)", number) : ""), true, 5000);
-                ServiceInfo serviceInfo = XdashbackendApplication.getxJmDNS().getJmDNS().getServiceInfo("_xcaster._tcp.local.", "XCASTER - Service Broadcaster", true, 5000);
+                String name = "XCASTER - Service Broadcaster" + (number > 1 ? String.format(" (%1$s)", number) : "");
+                XdashbackendApplication.getxJmDNS().getJmDNS().requestServiceInfo("_xcaster._tcp.local.", name, true, 3000);
+                ServiceInfo serviceInfo = XdashbackendApplication.getxJmDNS().getJmDNS().getServiceInfo("_xcaster._tcp.local.", name, true, 500);
                 if (serviceInfo != null) {
-                    session.sendMessage(new TextMessage(new Message("OK", "DEVICES-SEARCH").toJSON()));
-
+                    String server = serviceInfo.getServer();
+                    String serviceAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
+                    String hostname = new String(serviceInfo.getPropertyBytes("hostname"));
+                    if (server == null || serviceAddress == null || hostname == null) {
+                        session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, hostname, serviceAddress, server, "DISCONNECTED"), "DEVICES-SEARCH").toJSON()));
+                    } else {
+                        if (!XdashbackendApplication.getResolvedServices().containsKey(server) || (!XdashbackendApplication.getResolvedServices().get(server).getHostname().equals(hostname) && !XdashbackendApplication.getResolvedServices().get(server).getAddress().equals(serviceAddress))) {
+                            SSHHostAddress sshHostAddress = new SSHHostAddress(hostname, serviceAddress, server);
+                            XdashbackendApplication.getResolvedServices().put(server, sshHostAddress);
+                            session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, hostname, serviceAddress, server, sshHostAddress.getStatus()), "DEVICES-SEARCH").toJSON()));
+                        } else {
+                            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
+                            session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, hostname, serviceAddress, server, sshHostAddress.getStatus()), "DEVICES-SEARCH").toJSON()));
+                        }
+                        }
                 } else {
-                    session.sendMessage(new TextMessage(new Message("FAIL", "DEVICES-SEARCH").toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICES-SEARCH").toJSON()));
 
                 }
             } catch (Exception ignored) {

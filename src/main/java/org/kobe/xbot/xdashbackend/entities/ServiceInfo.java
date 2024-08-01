@@ -68,7 +68,7 @@ public class ServiceInfo {
                 if (entry.trim().isEmpty()) continue;
 
                 String[] lines = entry.split("\n");
-                String execMainStartTimestamp = "ExecMainStartTimestamp=" + lines[0].trim();
+                String execMainStartTimestamp =  lines[0].trim();
                 String id = null;
                 int execMainPID = 0;
                 String activeState = null;
