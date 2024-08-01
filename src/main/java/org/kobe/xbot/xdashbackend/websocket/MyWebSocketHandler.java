@@ -88,10 +88,19 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
 
             }
         } else if (message.getType().equals("DEVICES-SEARCH")) {
-            Thread thread = getThread(session);
-            thread.start();
+            String msg = message.getMessage();
+            Integer number;
+            try {
+                number = Integer.parseInt(msg);
+            } catch (Exception e) {
+                number = null;
+            }
+            if (number != null && number > 0) {
+                Thread thread = getThread(session, number);
+                thread.start();
+            }
 
-        }else if (message.getType().equals("DEVICES-DATA")) {
+        } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
@@ -107,7 +116,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
 
             if (sshHostAddress != null) {
-                if(sshHostAddress.getStatus().equals("CONNECTED")) {
+                if (sshHostAddress.getStatus().equals("CONNECTED")) {
                     String data = sshHostAddress.sendExecCommand("systemctl list-units --type=service --no-page --no-legend | awk '{print $1}' | xargs -I{} systemctl show {} --property=Id,ExecMainPID,ActiveState,MemoryCurrent,CPUUsageNSec,ExecMainStartTimestamp");
                     List<org.kobe.xbot.xdashbackend.entities.ServiceInfo> serviceInfoList = parseServiceInfo(data);
                     String json = gson.toJson(serviceInfoList);
@@ -118,7 +127,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             } else {
                 session.sendMessage(new TextMessage(new Message(new ServicesDataReturn(false, null, null), message.getType()).toJSON()));
             }
-        }else if (message.getType().equals("DEVICE-SERVICE-RESTART")) {
+        } else if (message.getType().equals("DEVICE-SERVICE-RESTART")) {
             String msg = message.getMessage();
             if (msg != null) {
                 ServiceData serviceData = null;
@@ -201,12 +210,14 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                                 String response;
                                 if (message.getType().equals("DEVICE-COMMAND-SUDO")) {
                                     response = sshHostAddress.sendCommandWithSudoPermissions(command.getCommand(), listener);
-                                } else if(message.getType().equals("DEVICE-COMMAND-CONTROL")) {
+                                } else if (message.getType().equals("DEVICE-COMMAND-CONTROL")) {
                                     ControlCharacter controlCharacter;
                                     try {
-                                       controlCharacter = ControlCharacter.valueOf(command.getCommand());
-                                    }catch (Exception ignored) {controlCharacter = null;}
-                                    if(controlCharacter != null) {
+                                        controlCharacter = ControlCharacter.valueOf(command.getCommand());
+                                    } catch (Exception ignored) {
+                                        controlCharacter = null;
+                                    }
+                                    if (controlCharacter != null) {
                                         response = sshHostAddress.sendControlCharacter(controlCharacter, listener);
                                     } else response = "This control command does not exist.";
 
@@ -235,10 +246,11 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private static Thread getThread(WebSocketSession session) {
+    private static Thread getThread(WebSocketSession session, int number) {
         Thread thread = new Thread(() -> {
             try {
-                XdashbackendApplication.getxJmDNS().getJmDNS().requestServiceInfo("_xcaster._tcp.local.", "XCASTER - Service Broadcaster", true, 5000);
+                System.out.println("XCASTER - Service Broadcaster" + (number > 1 ? String.format(" (%1$s)", number) : ""));
+                XdashbackendApplication.getxJmDNS().getJmDNS().requestServiceInfo("_xcaster._tcp.local.", "XCASTER - Service Broadcaster" + (number > 1 ? String.format(" (%1$s)", number) : ""), true, 5000);
                 ServiceInfo serviceInfo = XdashbackendApplication.getxJmDNS().getJmDNS().getServiceInfo("_xcaster._tcp.local.", "XCASTER - Service Broadcaster", true, 5000);
                 if (serviceInfo != null) {
                     session.sendMessage(new TextMessage(new Message("OK", "DEVICES-SEARCH").toJSON()));
