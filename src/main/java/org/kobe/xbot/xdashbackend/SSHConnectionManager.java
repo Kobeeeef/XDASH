@@ -25,7 +25,7 @@ public class SSHConnectionManager {
         executor.submit(() -> {
             while (running.get()) {
                 try {
-                    for (Map.Entry<String, SSHHostAddress> entry : XdashbackendApplication.getResolvedServices().entrySet()) {
+                    for (Map.Entry<String, SSHHostAddress> entry : XdashbackendApplication.getResolvedXCASTERServices().entrySet()) {
                         String server = entry.getKey();
                         SSHHostAddress sshHostAddress = entry.getValue();
                         // Check if already connected
@@ -72,7 +72,7 @@ public class SSHConnectionManager {
     public static void stopConnectionManager() {
         running.set(false);
         executor.shutdownNow();
-        XdashbackendApplication.getResolvedServices().values().forEach(sshHostAddress -> {
+        XdashbackendApplication.getResolvedXCASTERServices().values().forEach(sshHostAddress -> {
             Session session = sshHostAddress.getSession();
             if (session != null) {
                 session.disconnect();

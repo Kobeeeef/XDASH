@@ -12,6 +12,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.jmdns.ServiceInfo;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -101,12 +102,16 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 thread.start();
             }
 
+        } else if (message.getType().equals("NETWORK-SCAN")) {
+            Collection<TransientServiceInfo> serviceInfoList = XdashbackendApplication.getServices().values();
+            String json = gson.toJson(serviceInfoList);
+            session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
         } else if (message.getType().equals("DEVICES-DATA")) {
-            List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedServices().values().stream().toList();
+            List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
             String server = message.getMessage();
-            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
+            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
             if (sshHostAddress != null) {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, sshHostAddress.getHostname(), sshHostAddress.getAddress(), sshHostAddress.getServer(), sshHostAddress.getStatus()), "DEVICE-DATA").toJSON()));
             } else {
@@ -114,7 +119,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             }
         } else if (message.getType().equals("DEVICE-SERVICES-DATA")) {
             String server = message.getMessage();
-            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
+            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
 
             if (sshHostAddress != null) {
                 if (sshHostAddress.getStatus().equals("CONNECTED")) {
@@ -138,7 +143,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                     session.sendMessage(new TextMessage(new Message(new ServiceRebootReturn(false, "Data cannot be parsed."), message.getType()).toJSON()));
                     return;
                 }
-                SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(serviceData.getServer());
+                SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(serviceData.getServer());
                 if (sshHostAddress != null) {
                     if (sshHostAddress.getStatus().equals("CONNECTED")) {
                         String response = sshHostAddress.sendExecCommandWithSudoPermissions(String.format("systemctl restart %1$s", serviceData.getServiceID().trim()));
@@ -152,7 +157,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             }
         } else if (message.getType().equals("DEVICE-REBOOT")) {
             String server = message.getMessage();
-            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
+            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
             if (sshHostAddress != null) {
                 if (sshHostAddress.forceIsConnected()) {
                     String response = sshHostAddress.sendCommandWithSudoPermissions("shutdown -r now", null);
@@ -166,7 +171,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         } else if (message.getType().startsWith("DEVICE-COMMAND-NEW-SESSION")) {
             String msg = message.getMessage();
             if (msg != null) {
-                SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(msg);
+                SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(msg);
                 if (sshHostAddress != null) {
                     if (sshHostAddress.forceIsConnected()) {
                         boolean status = sshHostAddress.createNewChannel((string) -> {
@@ -176,6 +181,8 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                             }
                         });
                         session.sendMessage(new TextMessage(new Message(new CommandReturn("\u001B[33mXDASH: Channel Creation Finished. Success?: " + status, sshHostAddress.getStatus(), true, true), "DEVICE-SHELL").toJSON()));
+                        session.sendMessage(new TextMessage(new Message(new CommandReturn("Channel creation finished.", sshHostAddress.getStatus(), status, true), "DEVICE-COMMAND-NEW-SESSION").toJSON()));
+
                     } else {
                         session.sendMessage(new TextMessage(new Message(new CommandReturn("Machine not connected.", sshHostAddress.getStatus(), false, true), "DEVICE-SHELL").toJSON()));
                     }
@@ -198,7 +205,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                     return;
                 }
                 if (command != null) {
-                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(command.getServer());
+                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(command.getServer());
                     if (sshHostAddress != null) {
                         if (sshHostAddress.forceIsConnected()) {
                             if (sshHostAddress.isChannelActive()) {
@@ -260,15 +267,15 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                     if (server == null || serviceAddress == null || hostname == null) {
                         session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, hostname, serviceAddress, server, "DISCONNECTED"), "DEVICES-SEARCH").toJSON()));
                     } else {
-                        if (!XdashbackendApplication.getResolvedServices().containsKey(server) || (!XdashbackendApplication.getResolvedServices().get(server).getHostname().equals(hostname) && !XdashbackendApplication.getResolvedServices().get(server).getAddress().equals(serviceAddress))) {
+                        if (!XdashbackendApplication.getResolvedXCASTERServices().containsKey(server) || (!XdashbackendApplication.getResolvedXCASTERServices().get(server).getHostname().equals(hostname) && !XdashbackendApplication.getResolvedXCASTERServices().get(server).getAddress().equals(serviceAddress))) {
                             SSHHostAddress sshHostAddress = new SSHHostAddress(hostname, serviceAddress, server);
-                            XdashbackendApplication.getResolvedServices().put(server, sshHostAddress);
+                            XdashbackendApplication.getResolvedXCASTERServices().put(server, sshHostAddress);
                             session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, hostname, serviceAddress, server, sshHostAddress.getStatus()), "DEVICES-SEARCH").toJSON()));
                         } else {
-                            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedServices().get(server);
+                            SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
                             session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, hostname, serviceAddress, server, sshHostAddress.getStatus()), "DEVICES-SEARCH").toJSON()));
                         }
-                        }
+                    }
                 } else {
                     session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICES-SEARCH").toJSON()));
 

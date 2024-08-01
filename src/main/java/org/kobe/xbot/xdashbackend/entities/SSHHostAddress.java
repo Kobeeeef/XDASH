@@ -63,7 +63,7 @@ public class SSHHostAddress {
         }
     }
     public boolean isChannelActive() {
-        return channel != null && channel.isConnected();
+        return channel != null && channel.isConnected() && !channel.isClosed();
     }
     public boolean createNewChannel(Consumer<String> lineConsumer) {
         try {

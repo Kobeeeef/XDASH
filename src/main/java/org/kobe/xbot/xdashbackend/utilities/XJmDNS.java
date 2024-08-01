@@ -5,6 +5,7 @@ import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceListener;
+import javax.jmdns.ServiceTypeListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Timer;
@@ -80,6 +81,20 @@ public class XJmDNS {
     public void addServiceListener(ServiceListener listener) {
         if (jmdns != null) {
             jmdns.addServiceListener("_xcaster._tcp.local.", listener);
+        }
+    }
+    public void addServiceTypeListener(ServiceTypeListener listener) {
+        if (jmdns != null) {
+            try {
+                jmdns.addServiceTypeListener(listener);
+            } catch (IOException e) {
+                logger.severe("Failed to add service type.:\n" + e);
+            }
+        }
+    }
+    public void addServiceListener(String domain, ServiceListener listener) {
+        if (jmdns != null) {
+            jmdns.addServiceListener(domain, listener);
         }
     }
 
