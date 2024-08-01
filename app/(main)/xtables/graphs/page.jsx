@@ -434,9 +434,9 @@ const GraphsPage = () => {
                                        ref={dt} emptyMessage={Loader({ message: isConnected ? xtableStatus ? "There is no data recorded" : "Connecting to XTABLES" : "Connecting to backend"})}
                                        value={isConnected && xtableStatus ? dataTable : []}
                             >
-                                <Column field="time" header="Time"></Column>
+                                {isConnected && xtableStatus && (dataTable ?? []).length > 0 && <Column field="time" header="Time"></Column>}
 
-                                {keys.map((key, i) => (
+                                {(dataTable ?? []).length > 0 && keys.map((key, i) => (
                                     <Column key={i} field={key} header={key} />
                                 ))}
                             </DataTable>

@@ -228,7 +228,7 @@ const Dashboard = () => {
             <div className="col-12">
                 <div className="card mb-0">
                     <DataTable
-
+                        showGridlines={false}
                         emptyMessage={Loader({message: loading && (services ?? []).length > 0 ? "Loading resources" : loading ? 'Requesting resources' : !isConnected ? 'Connecting to backend' : !data?.exists ? 'Machine not running XCASTER' : data?.status !== 'CONNECTED' ? 'Connecting to machine' : 'No resources found', speed: data?.status === 'CONNECTING' ? 'fast' : 'normal'})}
                         value={loading || (services ?? []).length === 0 || !isConnected || data?.status !== 'CONNECTED' || !data?.exists ? [] : services}
                         paginator rows={5}

@@ -8,14 +8,14 @@ import { LayoutContext } from '../../layout/context/layoutcontext';
 import { Tag } from 'primereact/tag';
 import { WebsocketContext } from '@/layout/context/websocketcontext';
 import TimeAgo from '@/components/TimeAgo';
-import LoadingDots from '../../components/LoadingDots';
 
 import { Toast } from 'primereact/toast';
-import ansiToHtml from '../../utilities/Ansi';
+
 import { useRouter } from 'next/navigation';
 import LogComponent from '../../utilities/Ansi';
 import Loader from '../../components/XBOTLoader';
-
+import { Dialog } from 'primereact/dialog';
+import { Image } from 'primereact/image';
 
 const lineData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -51,7 +51,12 @@ const Dashboard = () => {
     const [lastDevicesUpdate, setLastDevicesUpdate] = useState(new Date());
     const [logs, setLogs] = useState([]);
     const router = useRouter();
+    const [serviceNumber, setServiceNumber] = useState(1);
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [serviceRequestChildren, setServiceRequestChildren] = useState(null);
+    const [stopRequest, setStopRequest] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [timeoutIDs, setTimeoutIDs] = useState([])
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -109,7 +114,6 @@ const Dashboard = () => {
 
         setLineOptions(lineOptions);
     };
-
     const applyDarkTheme = () => {
         const lineOptions = {
             plugins: {
@@ -141,8 +145,6 @@ const Dashboard = () => {
 
         setLineOptions(lineOptions);
     };
-
-
     useEffect(() => {
         if (layoutConfig.colorScheme === 'light') {
             applyLightTheme();
@@ -150,39 +152,146 @@ const Dashboard = () => {
             applyDarkTheme();
         }
     }, [layoutConfig.colorScheme]);
-    function scanForDevices() {
-        setLoading(true)
-        sendMessageAndWaitForCondition({ type: 'DEVICES-SEARCH', message: 1 }, (m) => m.type === 'DEVICES-SEARCH', 6000)
+    const handleStop = () => {
+        setStopRequest(true);
+        setDialogVisible(false);
+        setServiceNumber(1);
+        timeoutIDs.forEach(id => {
+            clearTimeout(id);
+        })
+    };
+
+    const startScanning = () => {
+        setStopRequest(false);
+        setServiceNumber(1);
+        setDialogVisible(true);
+    };
+    useEffect(() => {
+        if (dialogVisible) {
+            scanForDevices();
+        }
+    }, [serviceNumber, dialogVisible]);
+
+    const scanForDevices = () => {
+        setLoading(true);
+        setServiceRequestChildren(Loader({ message: `Requesting service #${serviceNumber}` }));
+        sendMessageAndWaitForCondition({
+            type: 'DEVICES-SEARCH',
+            message: serviceNumber
+        }, (m) => m.type === 'DEVICES-SEARCH', 4000)
             .then((message) => {
-                if(message?.message === "OK") {
-                    toast.current.show({
-                        severity: 'success',
-                        summary: 'Machine Discovered!',
-                        detail: 'The mDNS has discovered new machines.'
-                    });
+                const data = message.message
+                if (data?.exists) {
+                    setServiceRequestChildren(
+                        <div className={'grid'}>
+                            <div className="col-12">
+                                <Image style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+
+                                }} alt={'XBOT ROBOTICS LOGO'}
+                                       src={'/images/logo/logo.png'} />
+                            </div>
+                        <div className="col-3">
+                            <div className="card mb-0">
+                                <div className="flex justify-content-between mb-3">
+                                    <div>
+                                        <span className="block text-500 font-medium mb-3">Machine Server</span>
+                                        <div
+                                            className={'text-900 font-medium text-xl text-green-600'}>{isConnected ? (data?.server ?? 'Unknown') : 'Unknown'}</div>
+                                    </div>
+                                    <div
+                                        className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                        style={{ width: '2.5rem', height: '2.5rem' }}>
+                                        <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-3">
+                            <div className="card mb-0">
+                                <div className="flex justify-content-between mb-3">
+                                    <div>
+                                        <span className="block text-500 font-medium mb-3">Hostname</span>
+                                        <div
+                                            className={'text-900 font-medium text-xl text-green-600'}>{isConnected ? (data?.hostname ?? 'Unknown') : 'Unknown'}</div>
+
+                                    </div>
+                                    <div
+                                        className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                        style={{ width: '2.5rem', height: '2.5rem' }}>
+                                        <i className="pi pi-address-book text-blue-500 text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-3">
+                            <div className="card mb-0">
+                                <div className="flex justify-content-between mb-3">
+                                    <div>
+                                        <span className="block text-500 font-medium mb-3">IP Address</span>
+                                        <div
+                                            className={'text-900 font-medium text-xl text-green-600'}>{isConnected ? (data?.address ?? 'Unknown') : 'Unknown'}</div>
+
+                                    </div>
+                                    <div
+                                        className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                        style={{ width: '2.5rem', height: '2.5rem' }}>
+                                        <i className="pi pi-map-marker text-blue-500 text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-3">
+                            <div className="card mb-0">
+                                <div className="flex justify-content-between mb-3">
+                                    <div>
+                                        <span className="block text-500 font-medium mb-3">Status</span>
+                                        <div
+                                            className={'text-900 font-medium text-xl ' + (data?.status === "CONNECTED" ? 'text-green-600' :data?.status === "CONNECTING" ? 'text-yellow-500 animate-pulse-fast' : 'text-red-600 animate-pulse')}>{isConnected ? (data?.status ?? 'Unknown') : 'Unknown'}</div>
+                                    </div>
+                                    <div
+                                        className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                        style={{ width: '2.5rem', height: '2.5rem' }}>
+                                        <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>);
                 } else {
-                    toast.current.show({
-                        severity: 'error',
-                        summary: 'Error Occurred.',
-                        detail: "The mDNS failed to discover services."
-                    });
+                    setServiceRequestChildren(Loader({ message: `Failed to find service #${serviceNumber}` }));
                 }
 
-                setLoading(false)
+               const id = setTimeout(() => {
+                    if (!stopRequest) {
+                        setServiceNumber(prev => prev + 1);
+                    }
+                }, data?.exists ? 5000 : 2000);
+                setTimeoutIDs(ids => [...ids, id])
+                setLoading(false);
             }).catch((e) => {
             const errorMessage = e.message || 'An unexpected error occurred.';
-            toast.current.show({
-                severity: 'error',
-                summary: 'Error Occurred.',
-                detail: errorMessage,
-                life: 5000,
-            });
-            setLoading(false)
-        })
-    }
+            setServiceRequestChildren(Loader({ message: `Failed to find service #${serviceNumber}. Reason: ${errorMessage}` }));
+           const id = setTimeout(() => {
+                if (!stopRequest) {
+                    setServiceNumber(prev => prev + 1);
+                }
+            }, 1000);
+            setTimeoutIDs(ids => [...ids, id])
+            setLoading(false);
+        });
+    };
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
+            <Dialog maximizable={true} closable={false} maximized={true} header="Machine Auto Discovery" visible={dialogVisible} onHide={handleStop}
+                    footer={<Button className={"w-full"} label="Stop" onClick={handleStop} />}>
+                {serviceRequestChildren}
+            </Dialog>
+
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
@@ -249,12 +358,14 @@ const Dashboard = () => {
             </div>
             <div className={'col-12'}>
                 <div className="card">
-                    <DataTable paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink" rowsPerPageOptions={[5, 10, 25, 50]} paginatorLeft={() => {
+                    <DataTable
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        rowsPerPageOptions={[5, 10, 25, 50]} paginatorLeft={() => {
                         return (<Button
-                            icon="pi pi-refresh" text loading={loading} onClick={scanForDevices} />)
+                            icon="pi pi-refresh" text loading={loading} onClick={startScanning} />);
                     }} removableSort value={isConnected ? devicesData : []}
-                               emptyMessage={Loader({message: isConnected ? "Searching for machines running XCASTER" :"Connecting to backend"})}
-                               rows={5} paginator>
+                        emptyMessage={Loader({ message: isConnected ? 'Searching for machines running XCASTER' : 'Connecting to backend' })}
+                        rows={5} paginator>
                         <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '25%' }}
                                 body={(data) => {
                                     return (<span className={'text-lg'}>{data.hostname}</span>);
