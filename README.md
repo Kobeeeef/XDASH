@@ -43,6 +43,9 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ### Light & Dark Theme
 ![image](https://github.com/user-attachments/assets/9b80b249-7926-4a64-b80c-56003f776e14)
 
+### Home Page
+![image](https://github.com/user-attachments/assets/c9777a3b-51e4-4a45-a46e-f2693b6eaff5)
+
 ### Demo
 https://github.com/user-attachments/assets/b64dd52e-4795-4f81-b183-d5b5da928d7c
 
