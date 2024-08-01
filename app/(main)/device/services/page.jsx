@@ -15,10 +15,7 @@ import { Toast } from 'primereact/toast';
 import { useSearchParams } from 'next/navigation';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { FilterMatchMode } from 'primereact/api';
-import LoadingDots from '../../../../components/LoadingDots';
-import { Image } from 'primereact/image';
+import Loader from '../../../../components/XBOTLoader';
 
 
 const Dashboard = () => {
@@ -27,13 +24,11 @@ const Dashboard = () => {
     const serverParam = searchParams.get('server');
     const [server, setServer] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [restartLoading, setRestartLoading] = useState(false)
+    const [restartLoading, setRestartLoading] = useState(false);
     const {
         isConnected,
         lastConnectionUpdate,
-        sendMessageAndWaitForCondition,
-        sendMessage,
-        socket
+        sendMessageAndWaitForCondition
     } = useContext(WebsocketContext);
     const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
     const [data, setData] = useState({});
@@ -66,61 +61,69 @@ const Dashboard = () => {
         // Cleanup interval on component unmount
         return () => clearInterval(intervalId);
     }, [isConnected, server]);
-function restartService(service) {
-    if (!server) {
-        toast.current.show({
-            severity: 'error',
-            summary: 'Server Not Found!',
-            detail: 'The server was not found.'
-        });
-        return;
-    }
-    if(!service) {
-        toast.current.show({
-            severity: 'error',
-            summary: 'Service Not Found!',
-            detail: 'The service was not found.'
-        });
-        return;
-    }
-    setRestartLoading(true)
-    sendMessageAndWaitForCondition({
-        type: 'DEVICE-SERVICE-RESTART',
-        message: JSON.stringify({
-            server:server,
-            serviceID: service
-        })
-    }, (m) => m.type === 'DEVICE-SERVICE-RESTART', 10000).then((e) => {
-        setRestartLoading(false);
-        toast.current.show({
-            severity: 'success',
-            summary: 'Service Daemon Restarted!',
-            detail: "The service has been restarted."
-        });
-        reloadServices()
-    }).catch((e) => {
-        const errorMessage = e.message || 'An unexpected error occurred.';
-        toast.current.show({
-            severity: 'error',
-            summary: 'Failed to restart',
-            detail: errorMessage
-        });
 
-        setRestartLoading(false);
-        reloadServices()
-    });
-}
+    function restartService(service) {
+        if (!server) {
+            toast.current.show({
+                severity: 'error',
+                summary: 'Server Not Found!',
+                detail: 'The server was not found.'
+            });
+            return;
+        }
+        if (!service) {
+            toast.current.show({
+                severity: 'error',
+                summary: 'Service Not Found!',
+                detail: 'The service was not found.'
+            });
+            return;
+        }
+        setRestartLoading(true);
+        sendMessageAndWaitForCondition({
+            type: 'DEVICE-SERVICE-RESTART',
+            message: JSON.stringify({
+                server: server,
+                serviceID: service
+            })
+        }, (m) => m.type === 'DEVICE-SERVICE-RESTART', 10000).then((e) => {
+            setRestartLoading(false);
+            toast.current.show({
+                severity: 'success',
+                summary: 'Service Daemon Restarted!',
+                detail: 'The service has been restarted.'
+            });
+            reloadServices();
+        }).catch((e) => {
+            const errorMessage = e.message || 'An unexpected error occurred.';
+            toast.current.show({
+                severity: 'error',
+                summary: 'Failed to restart',
+                detail: errorMessage
+            });
+
+            setRestartLoading(false);
+            reloadServices();
+        });
+    }
+
     function reloadServices() {
         if (isConnected) {
-
+            const startTime = new Date();
             setLoading(true);
+            setServices([])
             sendMessageAndWaitForCondition({
                 type: 'DEVICE-SERVICES-DATA',
                 message: server
             }, (m) => m.type === 'DEVICE-SERVICES-DATA').then((e) => {
-                setLoading(false);
+                const endTime = new Date();
+                const elapsedTime = endTime - startTime;
+                const waitTime = Math.max(2000 - elapsedTime, 0);
                 const services = JSON.parse(e.message.services);
                 setServices(services);
+                setTimeout(() => {
+                    setLoading(false);
+                }, waitTime);
             }).catch((e) => {
                 toast.current.show({
                     severity: 'error',
@@ -133,19 +136,6 @@ function restartService(service) {
     }
 
 
-    const renderLoader = (message) => {
-        return (<div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center'
-
-        }}>
-            <Image className={data?.status === "CONNECTING" ? 'animate-pulse-fast' : 'animate-pulse'} alt={'XBOT ROBOTICS LOGO'}
-                   src={'/images/logo/logo.png'} />
-            <p className={'font-bold'}>{message}<LoadingDots delay={400} /></p>
-        </div>);
-    };
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
@@ -198,7 +188,7 @@ function restartService(service) {
                             <i className="pi pi-desktop text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <TimeAgo date={lastConnectionUpdate} />
+                    <TimeAgo date={lastDeviceUpdate} />
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
@@ -239,16 +229,19 @@ function restartService(service) {
                 <div className="card mb-0">
                     <DataTable
 
-                        emptyMessage={renderLoader(loading ? "Requesting resources" : !isConnected ? "Connecting to backend" : !data?.exists ? "Machine not running XCASTER" : data?.status !== "CONNECTED" ? "Connecting to machine" : "No resources found" )}
-                        value={loading || (services ?? []).length === 0 || !isConnected || data?.status !== "CONNECTED" || !data?.exists ? [] : services} paginator rows={5}
+                        emptyMessage={Loader({message: loading && (services ?? []).length > 0 ? "Loading resources" : loading ? 'Requesting resources' : !isConnected ? 'Connecting to backend' : !data?.exists ? 'Machine not running XCASTER' : data?.status !== 'CONNECTED' ? 'Connecting to machine' : 'No resources found', speed: data?.status === 'CONNECTING' ? 'fast' : 'normal'})}
+                        value={loading || (services ?? []).length === 0 || !isConnected || data?.status !== 'CONNECTED' || !data?.exists ? [] : services}
+                        paginator rows={5}
                         rowsPerPageOptions={[5, 10, 25, 50, 75]}
                         tableStyle={{ minWidth: '50rem' }}
                         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                         currentPageReportTemplate="{first} to {last} of {totalRecords}"
-                        paginatorLeft={() => <Button disabled={!isConnected || data?.status !== "CONNECTED"} loading={loading || restartLoading} type="button" icon="pi pi-refresh" text
+                        paginatorLeft={() => <Button disabled={!isConnected || data?.status !== 'CONNECTED'}
+                                                     loading={loading || restartLoading} type="button"
+                                                     icon="pi pi-refresh" text
                                                      onClick={reloadServices} />}>
-                        <Column filter field="id" frozen={true} header="Name" style={{ width: '16%' }} key="id"/>
-                        <Column filter field="execMainPID" header="PID" style={{ width: '16%' }} key="execMainPID"/>
+                        <Column filter field="id" frozen={true} header="Name" style={{ width: '16%' }} key="id" />
+                        <Column filter field="execMainPID" header="PID" style={{ width: '16%' }} key="execMainPID" />
                         <Column
                             filter
                             body={(data) => (
@@ -280,7 +273,8 @@ function restartService(service) {
                             key="memory"
                         />
                         <Column field="cpuUsageNSec" header="CPU" style={{ width: '16%' }} key="cpu"></Column>
-                        <Column field="execMainStartTimestamp" header="Timestamp" style={{ width: '16%' }} key="timestamp"></Column>
+                        <Column field="execMainStartTimestamp" header="Timestamp" style={{ width: '16%' }}
+                                key="timestamp"></Column>
                         <Column
                             header="Restart"
                             body={(col) => (

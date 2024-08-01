@@ -12,6 +12,7 @@ import { TerminalService } from 'primereact/terminalservice';
 import { WebsocketContext } from '../../../layout/context/websocketcontext';
 import TimeAgo from '../../../components/TimeAgo';
 import validateKey from '../../../utilities/KeyValidator';
+import Loader from '../../../components/XBOTLoader';
 
 const helpMessage = `Available Commands: - clear: Clear the terminal screen. - put {key} {value}: Update a specific key value. - get {key}: Retrieve a value from the server. - reboot: Reboots the XTABLES server. - delete {key}: Deletes a key and all data below. - help: Show available commands and their descriptions.`;
 
@@ -283,7 +284,7 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <DataTable
                         ref={dt}
-                        value={data}
+                        value={isConnected && statusData?.connected ? data : []}
                         selectionMode="single"
                         showGridlines={false}
                         globalFilterFields={['name', 'value']}
@@ -291,7 +292,7 @@ const Dashboard = () => {
                         filterDisplay="row"
                         expandedRows={expandedRows}
                         onRowToggle={(e) => setExpandedRows(e.data)}
-                        loading={!isConnected || !statusData?.connected}
+                        emptyMessage={Loader({ message: isConnected ? statusData?.connected ? "No data found" : "Connecting to XTABLES" : "Connecting to backend"})}
                         rowExpansionTemplate={rowExpansionTemplate}
                         dataKey="key"
                         scrollable

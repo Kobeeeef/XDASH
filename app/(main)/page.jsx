@@ -14,6 +14,7 @@ import { Toast } from 'primereact/toast';
 import ansiToHtml from '../../utilities/Ansi';
 import { useRouter } from 'next/navigation';
 import LogComponent from '../../utilities/Ansi';
+import Loader from '../../components/XBOTLoader';
 
 
 const lineData = {
@@ -149,7 +150,36 @@ const Dashboard = () => {
             applyDarkTheme();
         }
     }, [layoutConfig.colorScheme]);
+    function scanForDevices() {
+        setLoading(true)
+        sendMessageAndWaitForCondition({ type: 'DEVICES-SEARCH', message: 1 }, (m) => m.type === 'DEVICES-SEARCH', 6000)
+            .then((message) => {
+                if(message?.message === "OK") {
+                    toast.current.show({
+                        severity: 'success',
+                        summary: 'Machine Discovered!',
+                        detail: 'The mDNS has discovered new machines.'
+                    });
+                } else {
+                    toast.current.show({
+                        severity: 'error',
+                        summary: 'Error Occurred.',
+                        detail: "The mDNS failed to discover services."
+                    });
+                }
 
+                setLoading(false)
+            }).catch((e) => {
+            const errorMessage = e.message || 'An unexpected error occurred.';
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error Occurred.',
+                detail: errorMessage,
+                life: 5000,
+            });
+            setLoading(false)
+        })
+    }
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
@@ -221,38 +251,9 @@ const Dashboard = () => {
                 <div className="card">
                     <DataTable paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink" rowsPerPageOptions={[5, 10, 25, 50]} paginatorLeft={() => {
                         return (<Button
-                            icon="pi pi-refresh" text loading={loading} onClick={() => {
-                                setLoading(true)
-                            sendMessageAndWaitForCondition({ type: 'DEVICES-SEARCH' }, (m) => m.type === 'DEVICES-SEARCH', 6000)
-                                .then((message) => {
-                                    if(message?.message === "OK") {
-                                        toast.current.show({
-                                            severity: 'success',
-                                            summary: 'Machine Discovered!',
-                                            detail: 'The mDNS has discovered new machines.'
-                                        });
-                                    } else {
-                                        toast.current.show({
-                                            severity: 'error',
-                                            summary: 'Error Occurred.',
-                                            detail: "The mDNS failed to discover services."
-                                        });
-                                    }
-
-                                    setLoading(false)
-                                }).catch((e) => {
-                                const errorMessage = e.message || 'An unexpected error occurred.';
-                                toast.current.show({
-                                    severity: 'error',
-                                    summary: 'Error Occurred.',
-                                    detail: errorMessage,
-                                    life: 5000,
-                                });
-                                    setLoading(false)
-                            })
-                        }} />)
-                    }} removableSort loading={!isConnected} value={devicesData}
-                               emptyMessage={(<p>Searching for machines running XCASTER<LoadingDots delay={200} /></p>)}
+                            icon="pi pi-refresh" text loading={loading} onClick={scanForDevices} />)
+                    }} removableSort value={isConnected ? devicesData : []}
+                               emptyMessage={Loader({message: isConnected ? "Searching for machines running XCASTER" :"Connecting to backend"})}
                                rows={5} paginator>
                         <Column frozen={true} field="hostname" header="Hostname" sortable style={{ width: '25%' }}
                                 body={(data) => {

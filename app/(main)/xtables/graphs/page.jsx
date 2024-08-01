@@ -18,6 +18,7 @@ import KeyValidator from '../../../../utilities/KeyValidator';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { exportExcel } from '../../../../utilities/fileManager';
+import Loader from '../../../../components/XBOTLoader';
 
 const GraphsPage = () => {
     const dt = useRef();
@@ -430,8 +431,8 @@ const GraphsPage = () => {
                         </div>
                         <div className={'col-12'}>
                             <DataTable scrollable virtualScrollerOptions={{ itemSize: 15 }} scrollHeight="500px"
-                                       ref={dt} emptyMessage="There is no data recorded."
-                                       value={dataTable}
+                                       ref={dt} emptyMessage={Loader({ message: isConnected ? xtableStatus ? "There is no data recorded" : "Connecting to XTABLES" : "Connecting to backend"})}
+                                       value={isConnected && xtableStatus ? dataTable : []}
                             >
                                 <Column field="time" header="Time"></Column>
 
