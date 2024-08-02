@@ -106,6 +106,10 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             Collection<TransientServiceInfo> serviceInfoList = XdashbackendApplication.getServices().values();
             String json = gson.toJson(serviceInfoList);
             session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
+        } else if (message.getType().equals("NETWORK-STATS")) {
+            List<NetworkInterfaceDetails> serviceInfoList = NetworkInterfaceDetails.getNetworkDetails();
+            String json = gson.toJson(serviceInfoList);
+            session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
         } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
