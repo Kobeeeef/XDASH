@@ -13,6 +13,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.jmdns.ServiceInfo;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -107,7 +108,12 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             String json = gson.toJson(serviceInfoList);
             session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
         } else if (message.getType().equals("NETWORK-STATS")) {
-            List<NetworkInterfaceDetails> serviceInfoList = NetworkInterfaceDetails.getNetworkDetails();
+            List<NetworkInterfaceDetails> serviceInfoList = NetworkInterfaceDetails.getNetworkDetails().stream().sorted(new Comparator<NetworkInterfaceDetails>() {
+                @Override
+                public int compare(NetworkInterfaceDetails o1, NetworkInterfaceDetails o2) {
+                    return Boolean.compare(o2.isUp(), o1.isUp());
+                }
+            }).toList();
             String json = gson.toJson(serviceInfoList);
             session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
         } else if (message.getType().equals("DEVICES-DATA")) {
