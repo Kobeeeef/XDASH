@@ -5,9 +5,29 @@ public class TransientServiceInfo extends DataReturn{
     private String type;
     private String hostname;
     private int port;
+    private String server;
     private String address;
+    private String application;
     public TransientServiceInfo(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public TransientServiceInfo setServer(String server) {
+        this.server = server;
+        return this;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public TransientServiceInfo setApplication(String application) {
+        this.application = application;
+        return this;
     }
 
     public String getServiceName() {

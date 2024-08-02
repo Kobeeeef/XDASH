@@ -59,6 +59,8 @@ public class XdashbackendApplication {
                         if (info == null) return; // Early exit if info is null
                         String name = info.getName();
                         String type = info.getType();
+                        String application = info.getApplication();
+                        String server = info.getServer();
                         String hostname = info.getPropertyString("hostname");
                         int port = info.getPort();
                         String address = info.getInet4Addresses()[0].getHostAddress();
@@ -66,13 +68,17 @@ public class XdashbackendApplication {
                             services.get(name).setAddress(address)
                                     .setType(type)
                                     .setPort(port)
-                                    .setHostname(hostname);
+                                    .setServer(server)
+                                    .setHostname(hostname)
+                                    .setApplication(application);
                         } else {
                             TransientServiceInfo transientServiceInfo = new TransientServiceInfo(event.getName())
                                     .setAddress(address)
                                     .setType(type)
                                     .setPort(port)
-                                    .setHostname(hostname);
+                                    .setServer(server)
+                                    .setHostname(hostname)
+                                    .setApplication(application);
                             services.put(event.getName(), transientServiceInfo);
                         }
                     }
