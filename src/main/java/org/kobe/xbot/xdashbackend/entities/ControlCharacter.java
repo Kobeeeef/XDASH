@@ -1,6 +1,7 @@
 package org.kobe.xbot.xdashbackend.entities;
 
 public enum ControlCharacter {
+    TAB('\t'),
     CTRL_A('\u0001'),      // Start of heading
     CTRL_B('\u0002'),      // Start of text
     CTRL_C('\u0003'),      // End of text (interrupt)
