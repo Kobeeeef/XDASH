@@ -31,6 +31,9 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ### Realtime Network mDNS Scanner
 ![image](https://github.com/user-attachments/assets/d1da50e2-704e-40c6-8297-ab0fdb13a0fc)
 
+### Realtime Network Statistics
+![image](https://github.com/user-attachments/assets/3f78c95f-e799-42a7-9d1e-60c585843599)
+
 ### Realtime XTABLES Terminal & Visual Viewer
 ![image](https://github.com/user-attachments/assets/a6a37325-8e60-48ef-8189-fa5c3a711d3c)
 
