@@ -7,22 +7,33 @@ import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.jmdns.ServiceInfo;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.kobe.xbot.xdashbackend.entities.ServiceInfo.ServiceInfoParser.parseServiceInfo;
 
 
-public class MyWebSocketHandler extends TextWebSocketHandler {
+public class WebSocketHandler extends TextWebSocketHandler {
     private static final Gson gson = new Gson();
     private static final XDashLogger logger = XDashLogger.getLogger();
+    private static final Set<WebSocketSession> sessions = Collections.synchronizedSet(new HashSet<>());
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        sessions.add(session); // Add the new session
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        sessions.remove(session); // Remove the closed session
+    }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage textMessage) throws Exception {
@@ -108,12 +119,22 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
             String json = gson.toJson(serviceInfoList);
             session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
         } else if (message.getType().equals("NETWORK-STATS")) {
-            List<NetworkInterfaceDetails> serviceInfoList = NetworkInterfaceDetails.getNetworkDetails().stream().sorted(new Comparator<NetworkInterfaceDetails>() {
-                @Override
-                public int compare(NetworkInterfaceDetails o1, NetworkInterfaceDetails o2) {
-                    return Boolean.compare(o2.isUp(), o1.isUp());
-                }
-            }).toList();
+            List<NetworkInterfaceDetails> serviceInfoList = NetworkInterfaceDetails.getNetworkDetails().stream()
+                    .sorted((o1, o2) -> {
+                        // First compare based on isUp
+                        int upComparison = Boolean.compare(o2.isUp(), o1.isUp());
+                        if (upComparison != 0) {
+                            return upComparison;
+                        }
+                        // If both are up, compare based on non-empty ipv4Addresses
+                        int ipv4Comparison = Boolean.compare(!o2.getIpv4Addresses().isEmpty(), !o1.getIpv4Addresses().isEmpty());
+                        if (ipv4Comparison != 0) {
+                            return ipv4Comparison;
+                        }
+                        // If both have the same ipv4Addresses state, compare based on non-empty ipv6Addresses
+                        return Boolean.compare(!o2.getIpv6Addresses().isEmpty(), !o1.getIpv6Addresses().isEmpty());
+                    })
+                    .collect(Collectors.toList());
             String json = gson.toJson(serviceInfoList);
             session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
         } else if (message.getType().equals("DEVICES-DATA")) {
@@ -296,6 +317,18 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         });
         thread.setDaemon(true);
         return thread;
+    }
+
+
+    public static void broadcast(DataReturn data, String type) {
+        synchronized (sessions) {
+            for (WebSocketSession session : sessions) {
+                try {
+                    session.sendMessage(new TextMessage(new Message(data, type).toJSON()));
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 }
 
