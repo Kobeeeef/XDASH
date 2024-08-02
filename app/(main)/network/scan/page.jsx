@@ -11,7 +11,6 @@ import Loader from '../../../../components/XBOTLoader';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 
-const helpMessage = `Available Commands: - clear: Clear the terminal screen. - put {key} {value}: Update a specific key value. - get {key}: Retrieve a value from the server. - reboot: Reboots the XTABLES server. - delete {key}: Deletes a key and all data below. - help: Show available commands and their descriptions.`;
 
 const Dashboard = () => {
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
