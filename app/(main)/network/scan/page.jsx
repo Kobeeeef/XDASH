@@ -24,16 +24,16 @@ const Dashboard = () => {
                 sendMessageAndWaitForCondition({ type: 'NETWORK-SCAN' }, (m) => m.type === 'NETWORK-SCAN')
                     .then((message) => {
                         setData(d => {
-                            const json = JSON.parse(message.message)
-                            if(d?.toString() !== json?.toString()) setLastUpdate(new Date())
+                            const json = JSON.parse(message.message);
+                            if (d?.toString() !== json?.toString()) setLastUpdate(new Date());
                             return json;
-                        })
+                        });
                     })
                     .catch(() => {
-                        setData([])
+                        setData([]);
                     });
             } else {
-                setData([])
+                setData([]);
             }
         }, 300);
 
@@ -82,17 +82,20 @@ const Dashboard = () => {
             <div className={'col-12'}>
                 <div className="card">
                     <DataTable
+                        size={'normal'}
                         rowsPerPageOptions={[5, 10, 25, 50]}
                         removableSort value={isConnected ? data : []}
                         emptyMessage={Loader({ message: isConnected ? 'Searching for services' : 'Connecting to backend' })}
                         rows={5} paginator>
-                        <Column frozen={true} field="hostname" header="Hostname" style={{ width: '20%' }} />
-
-                        <Column field="serviceName" filter header="Service" style={{ width: '20%' }} />
-                       <Column field="address" header="Address" style={{ width: '20%' }} />
-                        <Column field="port" header="Port" style={{ width: '20%' }} />
-                        <Column field="type" header="Type" style={{ width: '20%' }} />
-
+                        <Column frozen={true} field="serviceName" filter header="Name" style={{ width: '16%' }} />
+                        <Column field="address" body={(d) =>
+                            <Button tooltip={"Open in new tab"} tooltipOptions={{ showDelay: 100, position: "top", mouseTrack: true}} label={d?.address} link
+                                    onClick={() => window.open("http://" + d?.address + ":" + d?.port, '_blank')} />
+                        } header="Address" style={{ width: '16%' }} />
+                        <Column field="port" header="Port" style={{ width: '16%' }} />
+                        <Column field="type" header="Type" style={{ width: '16%' }} />
+                        <Column field="application" filter header="Application" style={{ width: '16%' }} />
+                        <Column field="server" filter header="Server" style={{ width: '16%' }} />
                     </DataTable>
                 </div>
             </div>
