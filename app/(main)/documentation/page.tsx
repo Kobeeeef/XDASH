@@ -4,7 +4,7 @@ import React from 'react';
 const Documentation = () => {
     return (
         <>
-            <div className="grid">
+            <div className="grid fadeIn">
                 <div className="col-12">
                     <div className="card docs">
                         <h4>About This Website</h4>
