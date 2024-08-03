@@ -31,6 +31,9 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ### Realtime Network mDNS Scanner
 ![image](https://github.com/user-attachments/assets/d1da50e2-704e-40c6-8297-ab0fdb13a0fc)
 
+### On-Demand Subnet Scanner
+![image](https://github.com/user-attachments/assets/141e3846-bc14-4d7c-a794-044145dcfa92)
+
 ### Realtime Network Statistics
 ![image](https://github.com/user-attachments/assets/3f78c95f-e799-42a7-9d1e-60c585843599)
 
