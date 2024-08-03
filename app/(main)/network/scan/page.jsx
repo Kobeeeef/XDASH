@@ -163,14 +163,7 @@ const Dashboard = () => {
                                 startScanning();
                             }
                         }} />
-                    <span className={' flex-1'} style={{
-                        background: 'var(--surface-card);',
-                        border: '1px solid var(--surface-border);',
-                        padding: '1rem;',
-                        'margin-bottom': '0rem;',
-                        'box-shadow': 'var(--card-shadow);',
-                        'border-radius': '12px;',
-                    }}><span className={"text-sm "+ (status === 'SHUTDOWN' || status === 'UNAVAILABLE' || status === 'FAILED' || !isConnected ? 'text-red-600' : status === 'CHECKING' || status === 'STARTING' ? 'text-yellow-600 animate-pulse-fast' : status === 'FOUND' || status === 'FINISHED' || status === 'QUEUED' ? 'text-green-600' : status === 'STOPPING' ? 'text-red-600 animate-pulse-fast' : '')}>{message}</span></span>
+                    <span className={'card-small flex-1'}><span className={"text-sm "+ (status === 'SHUTDOWN' || status === 'UNAVAILABLE' || status === 'FAILED' || !isConnected ? 'text-red-600' : status === 'CHECKING' || status === 'STARTING' ? 'text-yellow-600 animate-pulse-fast' : status === 'FOUND' || status === 'FINISHED' || status === 'QUEUED' ? 'text-green-600' : status === 'STOPPING' ? 'text-red-600 animate-pulse-fast' : '')}>{message}</span></span>
 
                 </div>
             </div>

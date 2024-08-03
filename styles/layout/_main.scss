@@ -16,6 +16,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -42,6 +43,14 @@ body {
     }
 }
 
+.card-small {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    padding: 1rem;
+    margin-bottom: 0;
+    box-shadow: var(--card-shadow);;
+    border-radius: 12px;
+}
 
 .animate-pulse-fast {
     animation: pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -55,6 +64,7 @@ body {
         }
     }
 }
+
 a {
     text-decoration: none;
     color: var(--primary-color);
