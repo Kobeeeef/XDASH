@@ -5,12 +5,14 @@ public class SubnetScanData extends DataReturn{
     private final boolean running;
     private final String address;
     private final String hostname;
+    private final String subnet;
 
-    public SubnetScanData(String message, boolean running, String address, String hostname) {
+    public SubnetScanData(String message, boolean running, String address, String hostname, String subnet) {
         this.message = message;
         this.running = running;
         this.address = address;
         this.hostname = hostname;
+        this.subnet = subnet;
     }
 
     public String getHostname() {

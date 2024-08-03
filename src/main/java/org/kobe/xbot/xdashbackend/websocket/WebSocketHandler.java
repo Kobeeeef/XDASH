@@ -7,6 +7,7 @@ import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -137,6 +138,18 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     .collect(Collectors.toList());
             String json = gson.toJson(serviceInfoList);
             session.sendMessage(new TextMessage(new Message(json, message.getType()).toJSON()));
+        } else if (message.getType().equals("NETWORK-START-SUBNET-SCAN")) {
+            String subnet = NetworkDiscovery.getSubnetBase();
+            if (subnet != null) {
+                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Starting subnet scanner.", NetworkDiscovery.isScanning(), null, null, subnet), "NETWORK-SUBNET-SCAN").toJSON()));
+                NetworkDiscovery.scanSubnet(subnet);
+            } else {
+                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Failed to find subnet.", NetworkDiscovery.isScanning(), null, null, null), "NETWORK-SUBNET-SCAN").toJSON()));
+            }
+        }
+        else if (message.getType().equals("NETWORK-STOP-SUBNET-SCAN")) {
+            session.sendMessage(new TextMessage(new Message(new SubnetScanData("Stopping subnet scanner.", NetworkDiscovery.isScanning(), null, null, null), "NETWORK-SUBNET-SCAN").toJSON()));
+            NetworkDiscovery.stopScanSubnet();
         } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));

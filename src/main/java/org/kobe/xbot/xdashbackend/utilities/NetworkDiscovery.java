@@ -74,23 +74,27 @@ public class NetworkDiscovery {
                 final int hostId = i;
                 completableFutures.add(CompletableFuture.runAsync(() -> {
                     String host = subnet + "." + hostId;
-                    WebSocketHandler.broadcast(new SubnetScanData("Checking " + host, running.get(), host, null), "SUBNET-SCAN");
+                    WebSocketHandler.broadcast(new SubnetScanData("Checking " + host, running.get(), host, null, null), "NETWORK-SUBNET-SCAN");
                     InetAddress address = checkReachable(host);
                     if (address != null) {
-                        WebSocketHandler.broadcast(new SubnetScanData("The device was found at " + address.getHostAddress(), running.get(), address.getHostAddress(), address.getHostName()), "SUBNET-SCAN");
+                        WebSocketHandler.broadcast(new SubnetScanData("The device was found at " + address.getHostAddress(), running.get(), address.getHostAddress(), address.getHostName(), subnet), "NETWORK-SUBNET-SCAN");
                     } else {
-                        WebSocketHandler.broadcast(new SubnetScanData("The device could not be found at: " + host, running.get(), host, null), "SUBNET-SCAN");
+                        WebSocketHandler.broadcast(new SubnetScanData("The device could not be found at: " + host, running.get(), host, null, subnet), "NETWORK-SUBNET-SCAN");
                     }
                 }, currentExecutor));
             }
             CompletableFuture<Void> allOf = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
-            Consumer<Void> allTasksCompleted = v -> WebSocketHandler.broadcast(new SubnetScanData("The subnet scan has been completed.", running.get(), null, null), "SUBNET-SCAN");
+            Consumer<Void> allTasksCompleted = v -> WebSocketHandler.broadcast(new SubnetScanData("The subnet scan has been completed.", running.get(), null, null, subnet), "NETWORK-SUBNET-SCAN");
             allOf.thenAccept(allTasksCompleted)
                     .thenRun(NetworkDiscovery::stopScanSubnet);
         } finally {
             lock.unlock();
-            WebSocketHandler.broadcast(new SubnetScanData("All scans have been queued.", running.get(), null, null), "SUBNET-SCAN");
+            WebSocketHandler.broadcast(new SubnetScanData("All scans have been queued.", running.get(), null, null, subnet), "NETWORK-SUBNET-SCAN");
         }
+    }
+
+    public static boolean isScanning() {
+        return running.get();
     }
 
     public static void stopScanSubnet() {
@@ -102,7 +106,7 @@ public class NetworkDiscovery {
                 try {
                     if (!currentExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
                         System.err.println("Executor service did not terminate");
-                        WebSocketHandler.broadcast(new SubnetScanData("The executor service did not terminate.", running.get(), null, null), "SUBNET-SCAN");
+                        WebSocketHandler.broadcast(new SubnetScanData("The executor service did not terminate.", running.get(), null, null, null), "NETWORK-SUBNET-SCAN");
                     }
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
