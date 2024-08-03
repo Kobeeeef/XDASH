@@ -141,14 +141,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
         } else if (message.getType().equals("NETWORK-START-SUBNET-SCAN")) {
             String subnet = NetworkDiscovery.getSubnetBase();
             if (subnet != null) {
-                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Starting subnet scanner.", NetworkDiscovery.isScanning(), null, null, subnet), "NETWORK-SUBNET-SCAN").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Starting subnet scanner.", NetworkDiscovery.isScanning(), null, null, subnet, "STARTING"), "NETWORK-SUBNET-SCAN").toJSON()));
                 NetworkDiscovery.scanSubnet(subnet);
             } else {
-                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Failed to find subnet.", NetworkDiscovery.isScanning(), null, null, null), "NETWORK-SUBNET-SCAN").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Failed to find subnet.", NetworkDiscovery.isScanning(), null, null, null, "FAILED"), "NETWORK-SUBNET-SCAN").toJSON()));
             }
         }
         else if (message.getType().equals("NETWORK-STOP-SUBNET-SCAN")) {
-            session.sendMessage(new TextMessage(new Message(new SubnetScanData("Stopping subnet scanner.", NetworkDiscovery.isScanning(), null, null, null), "NETWORK-SUBNET-SCAN").toJSON()));
+            session.sendMessage(new TextMessage(new Message(new SubnetScanData("Stopping subnet scanner.", NetworkDiscovery.isScanning(), null, null, null, "STOPPING"), "NETWORK-SUBNET-SCAN").toJSON()));
             NetworkDiscovery.stopScanSubnet();
         } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
