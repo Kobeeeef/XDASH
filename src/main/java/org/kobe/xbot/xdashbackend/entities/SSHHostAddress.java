@@ -5,6 +5,9 @@ import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class SSHHostAddress {
@@ -62,9 +65,11 @@ public class SSHHostAddress {
             setStatus("DISCONNECTED");
         }
     }
+
     public boolean isChannelActive() {
         return channel != null && channel.isConnected() && !channel.isClosed();
     }
+
     public boolean createNewChannel(Consumer<String> lineConsumer) {
         try {
             if (lineConsumer != null) lineConsumer.accept("\u001B[33mXDASH: Creating new shell channel...");
@@ -79,7 +84,6 @@ public class SSHHostAddress {
             InputStream inputStream = channel.getInputStream();
             InputStream errStream = channel.getExtInputStream();
 
-
             new Thread(() -> readStream(inputStream, lineConsumer, false)).start();
             new Thread(() -> readStream(errStream, lineConsumer, true)).start();
             channel.connect();
@@ -93,6 +97,7 @@ public class SSHHostAddress {
             return false;
         }
     }
+
     public String sendCommandWithSudoPermissions(String command, Consumer<String> lineConsumer) {
         return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command), lineConsumer);
     }
@@ -158,9 +163,11 @@ public class SSHHostAddress {
         setStatus("DISCONNECTED");
         return false;
     }
+
     public String sendExecCommandWithSudoPermissions(String command) {
         return sendExecCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command));
     }
+
     public String sendExecCommand(String command) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
@@ -201,4 +208,113 @@ public class SSHHostAddress {
         return response.toString();
     }
 
+    public List<FileInfo> listFilesAndDirectories(String remoteDir) {
+        List<FileInfo> filesList = new ArrayList<>();
+
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+        Channel channel = null;
+        try {
+            channel = session.openChannel("exec");
+            ChannelExec execChannel = (ChannelExec) channel;
+
+            // Use ls -lh to list files with human-readable sizes
+            execChannel.setCommand("ls -lh " + remoteDir);
+            InputStream inputStream = execChannel.getInputStream();
+            execChannel.connect();
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Parse the line to extract file details
+                    FileInfo fileInfo = parseLsOutput(line, remoteDir);
+                    if (fileInfo != null && !fileInfo.isSymbolicLink()) { // Filter out symbolic links
+                        filesList.add(fileInfo);
+                    }
+                }
+            }
+            execChannel.disconnect();
+        } catch (JSchException | IOException e) {
+            logger.severe("Failed to list files in directory: " + remoteDir + "\n" + e);
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
+
+        // Sort filesList: directories first, then files
+        filesList.sort(Comparator.comparing(FileInfo::isDirectory).reversed());
+
+        return filesList;
+    }
+
+    private FileInfo parseLsOutput(String line, String directory) {
+        // Example of `ls -lh` output:
+        // "-rw-r--r-- 1 user group 1.2K Jan 01 12:00 filename.txt"
+        String[] parts = line.split("\\s+");
+        if (parts.length < 9) {
+            return null; // Invalid line format
+        }
+
+        String permissions = parts[0];
+        String size = parts[4];
+        String date = parts[5] + " " + parts[6] + " " + parts[7];
+        String name = parts[8];
+
+        return new FileInfo(directory, permissions, size, date, name);
+    }
+
+    public static class FileInfo {
+        private final String directory;
+        private final String permissions;
+        private final String size;
+        private final String date;
+        private final String name;
+
+        public FileInfo(String directory, String permissions, String size, String date, String name) {
+            this.directory = directory;
+            this.permissions = permissions;
+            this.size = size;
+            this.date = date;
+            this.name = name;
+        }
+
+        public String getDirectory() {
+            return directory;
+        }
+
+        public String getPermissions() {
+            return permissions;
+        }
+
+        public String getSize() {
+            return size;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public String getName() {
+            return name;
+        }
+        public boolean isDirectory() {
+            return permissions.startsWith("d");
+        }
+
+        public boolean isFile() {
+            return permissions.startsWith("-");
+        }
+
+        public boolean isSymbolicLink() {
+            return permissions.startsWith("l");
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s/%s: %s %s %s %s", directory, name, permissions, size, date, name);
+        }
+    }
 }

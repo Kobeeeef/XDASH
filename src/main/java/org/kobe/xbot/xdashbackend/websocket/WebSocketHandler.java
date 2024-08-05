@@ -146,8 +146,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } else {
                 session.sendMessage(new TextMessage(new Message(new SubnetScanData("Failed to find subnet.", NetworkDiscovery.isScanning(), null, null, null, "FAILED"), "NETWORK-SUBNET-SCAN").toJSON()));
             }
-        }
-        else if (message.getType().equals("NETWORK-STOP-SUBNET-SCAN")) {
+        } else if (message.getType().equals("NETWORK-STOP-SUBNET-SCAN")) {
             session.sendMessage(new TextMessage(new Message(new SubnetScanData("Stopping subnet scanner.", NetworkDiscovery.isScanning(), null, null, null, "STOPPING"), "NETWORK-SUBNET-SCAN").toJSON()));
             NetworkDiscovery.stopScanSubnet();
         } else if (message.getType().equals("DEVICES-DATA")) {
@@ -160,6 +159,40 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, sshHostAddress.getHostname(), sshHostAddress.getAddress(), sshHostAddress.getServer(), sshHostAddress.getStatus()), "DEVICE-DATA").toJSON()));
             } else {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICE-DATA").toJSON()));
+            }
+        } else if (message.getType().equals("DEVICE-SCP-LIST")) {
+            String msg = message.getMessage();
+            if (msg != null) {
+                SCPList scpList = null;
+                try {
+                    scpList = gson.fromJson(msg, SCPList.class);
+                } catch (Exception e) {
+                    session.sendMessage(new TextMessage(new Message(new SCPListReturn(false, null, "The incoming data cannot be parsed."), message.getType()).toJSON()));
+                    return;
+                }
+                if (scpList != null) {
+                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(scpList.getServer());
+                    if (sshHostAddress != null) {
+                        if (sshHostAddress.forceIsConnected()) {
+                            String directory = scpList.getDirectory();
+                            if (directory != null) {
+                                List<SSHHostAddress.FileInfo> fileInfos = sshHostAddress.listFilesAndDirectories(directory);
+                                String json = gson.toJson(fileInfos);
+                                session.sendMessage(new TextMessage(new Message(new SCPListReturn(true, json, "The data has been found."), message.getType()).toJSON()));
+                            } else {
+                                session.sendMessage(new TextMessage(new Message(new SCPListReturn(false, null, "The directory is null."), message.getType()).toJSON()));
+                            }
+                        } else {
+                            session.sendMessage(new TextMessage(new Message(new SCPListReturn(false, null, "The machine is not connected."), message.getType()).toJSON()));
+                        }
+                    } else {
+                        session.sendMessage(new TextMessage(new Message(new SCPListReturn(false, null, "The machine was not found."), message.getType()).toJSON()));
+                    }
+                } else {
+                    session.sendMessage(new TextMessage(new Message(new SCPListReturn(false, null, "The incoming data cannot be found."), message.getType()).toJSON()));
+                }
+            } else {
+                session.sendMessage(new TextMessage(new Message(new SCPListReturn(false, null, "No message found!"), message.getType()).toJSON()));
             }
         } else if (message.getType().equals("DEVICE-SERVICES-DATA")) {
             String server = message.getMessage();
