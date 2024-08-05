@@ -1,15 +1,46 @@
 package org.kobe.xbot.xdashbackend.entities;
-public  class TransferProgress {
-    private final String message;
-    private final double percentage;
-    private final long currentBytes;
-    private final long totalBytes;
+
+public class TransferProgress extends DataReturn {
+    private String message;
+    private double percentage;
+    private long currentBytes;
+    private long totalBytes;
+    private boolean finished = false;
 
     public TransferProgress(String message, double percentage, long currentBytes, long totalBytes) {
         this.message = message;
         this.percentage = percentage;
         this.currentBytes = currentBytes;
         this.totalBytes = totalBytes;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public TransferProgress setFinished(boolean finished) {
+        this.finished = finished;
+        return this;
+    }
+
+    public TransferProgress setMessage(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public TransferProgress setPercentage(double percentage) {
+        this.percentage = percentage;
+        return this;
+    }
+
+    public TransferProgress setCurrentBytes(long currentBytes) {
+        this.currentBytes = currentBytes;
+        return this;
+    }
+
+    public TransferProgress setTotalBytes(long totalBytes) {
+        this.totalBytes = totalBytes;
+        return this;
     }
 
     public String getMessage() {

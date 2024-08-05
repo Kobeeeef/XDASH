@@ -3,12 +3,14 @@ package org.kobe.xbot.xdashbackend.entities;
 import com.jcraft.jsch.*;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 public class SSHHostAddress {
     private static final XDashLogger logger = XDashLogger.getLogger();
@@ -221,7 +223,8 @@ public class SSHHostAddress {
             ChannelExec execChannel = (ChannelExec) channel;
 
             // Use ls -lh to list files with human-readable sizes
-            execChannel.setCommand("ls -lh " + remoteDir);
+            execChannel.setCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), "ls -lh " + remoteDir));
+
             InputStream inputStream = execChannel.getInputStream();
             execChannel.connect();
 
@@ -385,6 +388,81 @@ public class SSHHostAddress {
         }
     }
 
+    public boolean uploadFile(MultipartFile multipartFile, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
+        if (session == null || !forceIsConnected()) {
+            logger.severe("SSH session is not connected.");
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+        Channel channel = null;
+        try {
+            channel = session.openChannel("exec");
+            ChannelExec execChannel = (ChannelExec) channel;
+
+            // Execute SCP command to upload file
+            execChannel.setCommand("scp -t " + remoteFilePath);
+            OutputStream out = execChannel.getOutputStream();
+            InputStream in = execChannel.getInputStream();
+
+            execChannel.connect();
+            logger.info("Connected to remote server for file upload.");
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
+
+            if (checkAck(in, progressConsumer) != 0) {
+                logger.severe("Failed during SCP initialization acknowledgment.");
+                return false;
+            }
+
+            long fileSize = multipartFile.getSize();
+            String command = "C0644 " + fileSize + " " + multipartFile.getOriginalFilename() + "\n";
+            out.write(command.getBytes());
+            out.flush();
+            logger.info("Sent file information for " + multipartFile.getOriginalFilename());
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Sent file information for " + multipartFile.getOriginalFilename(), 0, 0, fileSize));
+
+            if (checkAck(in, progressConsumer) != 0) {
+                logger.severe("Failed during file information acknowledgment.");
+                return false;
+            }
+
+            // Read file into memory
+            byte[] fileBytes = multipartFile.getBytes();
+            try (InputStream fis = new ByteArrayInputStream(fileBytes)) {
+                byte[] buffer = new byte[1024];
+                int length;
+                long totalRead = 0;
+                while ((length = fis.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
+                    totalRead += length;
+                    if (progressConsumer != null) {
+                        double percentage = ((double) totalRead / fileSize) * 100;
+                        progressConsumer.accept(new TransferProgress("Writing data to server...", percentage, totalRead, fileSize));
+                    }
+                }
+            }
+
+            // Send '\0' to indicate end of file transfer
+            out.write(0);
+            out.flush();
+
+            if (checkAck(in, progressConsumer) != 0) {
+                logger.severe("Failed during end-of-file acknowledgment.");
+                return false;
+            }
+
+            logger.info("File upload completed successfully.");
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+            return true;
+        } catch (JSchException | IOException e) {
+            e.printStackTrace();
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
+            return false;
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
+    }
     public boolean downloadFile(String remoteFilePath, String localFilePath, Consumer<TransferProgress> progressConsumer) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
