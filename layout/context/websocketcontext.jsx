@@ -36,14 +36,17 @@ export const WebSocketProvider = ({ children, url }) => {
             }
         };
     }, [url]);
+
     useEffect(() => {
         setLastConnectionUpdate(new Date());
     }, [isConnected]);
+
     const ping = () => {
         if (isConnected) {
             socket.current.send(JSON.stringify({ type: 'ping' }));
         }
     };
+
     const sendMessageTillCondition = (message, conditionFunc) => {
         if (!isConnected) {
             throw new Error('WebSocket is not connected');
@@ -60,13 +63,15 @@ export const WebSocketProvider = ({ children, url }) => {
 
         socket.current.addEventListener('message', listener);
     };
+
     const sendMessage = (message) => {
         if (!isConnected) {
             return new Error('WebSocket is not connected');
         }
 
         socket.current.send(JSON.stringify(message));
-    }
+    };
+
     const sendMessageAndWaitForCondition = (message, conditionFunc, timeout = 1500) => {
         if (!isConnected) {
             return Promise.reject(new Error('WebSocket is not connected'));
@@ -94,5 +99,38 @@ export const WebSocketProvider = ({ children, url }) => {
         });
     };
 
-    return <WebsocketContext.Provider value={{ isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageTillCondition, socket, sendMessage }}>{children}</WebsocketContext.Provider>;
+    const listenTillCondition = (conditionFunc) => {
+        if (!isConnected) {
+            return Promise.reject(new Error('WebSocket is not connected'));
+        }
+
+        return new Promise((resolve) => {
+            const listener = (event) => {
+                const data = JSON.parse(event.data);
+                if (conditionFunc(data)) {
+                    socket.current.removeEventListener('message', listener);
+                    resolve(data);
+                }
+            };
+
+            socket.current.addEventListener('message', listener);
+        });
+    };
+
+
+    return (
+        <WebsocketContext.Provider
+            value={{
+                isConnected,
+                lastConnectionUpdate,
+                sendMessageAndWaitForCondition,
+                sendMessageTillCondition,
+                listenTillCondition,
+                socket,
+                sendMessage
+            }}
+        >
+            {children}
+        </WebsocketContext.Provider>
+    );
 };
