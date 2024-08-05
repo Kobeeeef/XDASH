@@ -34,6 +34,12 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ### On-Demand Subnet Scanner
 ![image](https://github.com/user-attachments/assets/141e3846-bc14-4d7c-a794-044145dcfa92)
 
+### On-Demand File List
+![image](https://github.com/user-attachments/assets/948f14a3-62d4-46d4-ada4-4b7516bbec45)
+
+### Realtime File Management
+![image](https://github.com/user-attachments/assets/56f17a9a-475c-431f-8d1b-611658fceda4)
+
 ### Realtime Network Statistics
 ![image](https://github.com/user-attachments/assets/3f78c95f-e799-42a7-9d1e-60c585843599)
 
