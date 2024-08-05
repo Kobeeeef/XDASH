@@ -19,7 +19,7 @@ import Loader from '../../../../components/XBOTLoader';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Tooltip } from 'primereact/tooltip';
 import { FileUpload } from 'primereact/fileupload';
-import { ProgressBar } from 'primereact/progressbar'
+import { ProgressBar } from 'primereact/progressbar';
 import generateUuid from '../../../../utilities/uuid';
 
 
@@ -43,9 +43,9 @@ const Dashboard = () => {
     const [data, setData] = useState({});
     const [warningDialogVisible, setWarningDialogVisible] = useState(false);
     const [fileUploadDialogVisible, setFileUploadDialogVisible] = useState(false);
-    const [status, setStatus] = useState(null)
-    const [progress, setProgress] = useState(0)
-    const [disabled, setDisabled] = useState(false)
+    const [status, setStatus] = useState(null);
+    const [progress, setProgress] = useState(0);
+    const [disabled, setDisabled] = useState(false);
     useEffect(() => {
         if (serverParam) setServer(serverParam);
         if (directoryParam) setDirectory(directoryParam);
@@ -80,34 +80,30 @@ const Dashboard = () => {
     }, [server, directory, isConnected]);
 
     function reloadFiles() {
-        if (isConnected && server) {
-            if(!directory) {
+        if (isConnected && server && !disabled) {
+            if (!directory) {
                 router.replace(`/device/files?server=${server}&directory=/`);
                 return;
             }
             setLoading(true);
+            setDisabled(true);
             sendMessageAndWaitForCondition({
                 type: 'DEVICE-SCP-LIST',
                 message: JSON.stringify({
                     server: server,
                     directory: directory
                 })
-            }, (m) => m.type === 'DEVICE-SCP-LIST')
+            }, (m) => m.type === 'DEVICE-SCP-LIST', 5000)
                 .then((message) => {
-                    if(message.message.success) {
+                    if (message.message.success) {
                         const files = JSON.parse(message.message.files);
                         setFiles(files);
-                        setLoading(false);
                     }
+                    setLoading(false);
+                    setDisabled(false);
                 }).catch((e) => {
-                    console.log(e)
-                const errorMessage = e.message || 'An unexpected error occurred.';
-                toast.current.show({
-                    severity: 'error',
-                    summary: 'Failed to reload',
-                    detail: errorMessage
-                });
                 setLoading(false);
+                setDisabled(false);
             });
         }
     }
@@ -120,32 +116,36 @@ const Dashboard = () => {
         const formData = new FormData();
         formData.append('server', server);
         formData.append('directory', directory);
-        formData.append('id',uuid);
+        formData.append('id', uuid);
         // Append each file
         Array.from(files).forEach(file => {
             formData.append('files[]', file);
         });
-        setLoading(true)
-        setDisabled(true)
+        setLoading(true);
+        setDisabled(true);
         try {
-            let id = "TRANSFER-PROGRESS-" + uuid
+            let id = 'TRANSFER-PROGRESS-' + uuid;
             listenTillCondition((message) => {
-                if(message?.type === id) {
-                    const msg = JSON.parse(message.message)
-                    setProgress(msg?.percentage?.toFixed(0)  ?? 0)
-                    setStatus(msg?.message ?? "Unknown")
-                    if(msg?.finished) {
-                        setDisabled(false)
-                        toast.current.show({ severity: 'success', summary: 'Success', detail: 'Files uploaded successfully' });
-                        reloadFiles()
+                if (message?.type === id) {
+                    const msg = JSON.parse(message.message);
+                    setProgress(msg?.percentage?.toFixed(0) ?? 0);
+                    setStatus(msg?.message ?? 'Unknown');
+                    if (msg?.finished) {
+                        toast.current.show({
+                            severity: 'success',
+                            summary: 'Success',
+                            detail: 'Files uploaded successfully'
+                        });
+                        reloadFiles();
+                        setDisabled(false);
                         return true;
                     }
                     return false;
                 }
-            })
+            });
             const xhr = new XMLHttpRequest();
 
-            xhr.open('POST', 'http://localhost:8080/api/upload', true);
+            xhr.open('POST', '/api/upload', true);
 
             // Track progress
             xhr.upload.onprogress = (event) => {
@@ -160,7 +160,6 @@ const Dashboard = () => {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     setProgress(100);
                     setStatus('Upload complete...');
-                    setDisabled(false)
                 } else {
                     setProgress(0);
                     setStatus('Upload failed to backend');
@@ -171,22 +170,26 @@ const Dashboard = () => {
             xhr.onerror = () => {
                 setProgress(0);
                 setStatus('Upload error');
-                toast.current.show({ severity: 'error', summary: 'Error', detail: 'File upload failed due to a network error' });
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'File upload failed due to a network error'
+                });
             };
 
             xhr.send(formData);
 
 
         } catch (error) {
-            setLoading(false)
-            setDisabled(false)
+            setLoading(false);
+            setDisabled(false);
             console.error('Upload error:', error);
             toast.current.show({ severity: 'error', summary: 'Error', detail: error.message });
         }
     };
 
     const onTemplateRemove = (file, callback) => {
-        setProgress(0)
+        setProgress(0);
         callback();
     };
 
@@ -274,7 +277,8 @@ const Dashboard = () => {
                     XCASTER. Please check your network connection, verify the machine is on and try again later.
                 </p>
             </Dialog>
-            <Dialog   maximizable={true}  style={{ width: '80vw', height: '60vh' }} visible={fileUploadDialogVisible} resizable={false} onHide={() => {
+            <Dialog maximizable={true} style={{ width: '80vw', height: '60vh' }} visible={fileUploadDialogVisible}
+                    resizable={false} onHide={() => {
 
                 setFileUploadDialogVisible(false);
             }}>
@@ -289,7 +293,7 @@ const Dashboard = () => {
                                 customUpload={true}
                                 uploadHandler={uploadHandler}
                                 onClear={() => {
-                                    setProgress(0)
+                                    setProgress(0);
                                 }}
                                 headerTemplate={headerTemplate} itemTemplate={itemTemplate}
                                 emptyTemplate={emptyTemplate}
@@ -407,8 +411,8 @@ const Dashboard = () => {
                             <div className={'flex'}><Button disabled={!isConnected || data?.status !== 'CONNECTED'}
                                                             loading={loading} type="button"
                                                             icon="pi pi-upload" text onClick={() => {
-                                                                setProgress(0)
-                                                                setFileUploadDialogVisible(true)
+                                setProgress(0);
+                                setFileUploadDialogVisible(true);
                             }}
                             /><Button disabled={!isConnected || data?.status !== 'CONNECTED'}
                                       loading={loading} type="button"
