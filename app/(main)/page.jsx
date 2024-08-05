@@ -410,6 +410,35 @@ const Dashboard = () => {
                                             summary: 'Redirecting...',
                                             detail: 'You are being redirected to the machine control panel...'
                                         });
+                                        router.replace('/device/files?server=' + server + '&directory=/');
+
+
+                                    }} />
+                                </>
+                            )}
+                        />
+                        <Column
+                            header="Services"
+                            body={(data) => (
+                                <>
+                                    <Button loading={loadingStates[data?.server]}
+                                            disabled={!isConnected || data?.status !== 'CONNECTED'} icon="pi pi-search"
+                                            text onClick={() => {
+                                        const server = data?.server;
+                                        if (!server) {
+                                            toast.current.show({
+                                                severity: 'error',
+                                                summary: 'Server Not Found!',
+                                                detail: 'The server was not found.'
+                                            });
+                                            return;
+                                        }
+                                        setLoadingStates(prev => ({ ...prev, [server]: true }));
+                                        toast.current.show({
+                                            severity: 'info',
+                                            summary: 'Redirecting...',
+                                            detail: 'You are being redirected to the machine control panel...'
+                                        });
 
 
                                         router.replace('/device/services?server=' + server);

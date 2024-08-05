@@ -102,6 +102,7 @@ const Dashboard = () => {
                     setLoading(false);
                     setDisabled(false);
                 }).catch((e) => {
+                console.log(e);
                 setLoading(false);
                 setDisabled(false);
             });
