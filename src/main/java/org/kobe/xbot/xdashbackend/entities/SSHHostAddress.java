@@ -317,4 +317,177 @@ public class SSHHostAddress {
             return String.format("%s/%s: %s %s %s %s", directory, name, permissions, size, date, name);
         }
     }
+    public boolean uploadFile(String localFilePath, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+        Channel channel = null;
+        try {
+            channel = session.openChannel("exec");
+            ChannelExec execChannel = (ChannelExec) channel;
+
+            // Execute SCP command to upload file
+            execChannel.setCommand("scp -t " + remoteFilePath);
+            OutputStream out = execChannel.getOutputStream();
+            InputStream in = execChannel.getInputStream();
+
+            execChannel.connect();
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
+
+            if (checkAck(in, progressConsumer) != 0) {
+                return false;
+            }
+
+            File localFile = new File(localFilePath);
+            long fileSize = localFile.length();
+            String command = "C0644 " + fileSize + " " + localFile.getName() + "\n";
+            out.write(command.getBytes());
+            out.flush();
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Sent file information for " + localFile.getName(), 0, 0, fileSize));
+
+            if (checkAck(in, progressConsumer) != 0) {
+                return false;
+            }
+
+            try (FileInputStream fis = new FileInputStream(localFile)) {
+                byte[] buffer = new byte[1024];
+                int length;
+                long totalRead = 0;
+                while ((length = fis.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
+                    totalRead += length;
+                    if (progressConsumer != null) {
+                        double percentage = ((double) totalRead / fileSize) * 100;
+                        progressConsumer.accept(new TransferProgress("Uploading...", percentage, totalRead, fileSize));
+                    }
+                }
+            }
+
+            // Send '\0' to indicate end of file transfer
+            out.write(0);
+            out.flush();
+
+            if (checkAck(in, progressConsumer) != 0) {
+                return false;
+            }
+
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+            return true;
+        } catch (JSchException | IOException e) {
+            logger.severe("File upload failed: " + e.getMessage());
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
+            return false;
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
+    }
+
+    public boolean downloadFile(String remoteFilePath, String localFilePath, Consumer<TransferProgress> progressConsumer) {
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+        Channel channel = null;
+        try {
+            channel = session.openChannel("exec");
+            ChannelExec execChannel = (ChannelExec) channel;
+
+            // Execute SCP command to download file
+            execChannel.setCommand("scp -f " + remoteFilePath);
+            OutputStream out = execChannel.getOutputStream();
+            InputStream in = execChannel.getInputStream();
+
+            execChannel.connect();
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Connected to remote server for file download.", 0, 0, 0));
+
+            // Send '\0' to start file transfer
+            out.write(0);
+            out.flush();
+
+            if (checkAck(in, progressConsumer) != 'C') {
+                return false;
+            }
+
+            // Read file details
+            in.read(new byte[5]);
+            long fileSize = 0;
+            while (true) {
+                int c = in.read();
+                if (c == ' ') break;
+                fileSize = fileSize * 10 + (c - '0');
+            }
+
+            StringBuilder fileNameBuilder = new StringBuilder();
+            for (int i = 0; i < 256; i++) {
+                int c = in.read();
+                if (c == 0x0A) break;
+                fileNameBuilder.append((char) c);
+            }
+            String fileName = fileNameBuilder.toString();
+
+            // Send '\0' to confirm
+            out.write(0);
+            out.flush();
+
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Downloading file: " + fileName, 0, 0, fileSize));
+
+            try (FileOutputStream fos = new FileOutputStream(localFilePath)) {
+                byte[] buffer = new byte[1024];
+                int length;
+                long totalRead = 0;
+                while (fileSize > 0 && (length = in.read(buffer, 0, (int) Math.min(buffer.length, fileSize))) != -1) {
+                    fos.write(buffer, 0, length);
+                    fileSize -= length;
+                    totalRead += length;
+                    if (progressConsumer != null) {
+                        double percentage = ((double) totalRead / fileSize) * 100;
+                        progressConsumer.accept(new TransferProgress("Downloading file: " + percentage + "%...", percentage, totalRead, fileSize));
+                    }
+                }
+            }
+
+            if (checkAck(in, progressConsumer) != 0) {
+                return false;
+            }
+
+            // Send '\0' to end file transfer
+            out.write(0);
+            out.flush();
+
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("File download completed successfully.", 100, fileSize, fileSize));
+            return true;
+        } catch (JSchException | IOException e) {
+            logger.severe("File download failed: " + e.getMessage());
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error during file download: " + e.getMessage(), 0, 0, 0));
+            return false;
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
+    }
+
+    private int checkAck(InputStream in, Consumer<TransferProgress> progressConsumer) throws IOException {
+        int b = in.read();
+        if (b == 0) return b;
+        if (b == -1) return b;
+
+        if (b == 1 || b == 2) {
+            StringBuilder sb = new StringBuilder();
+            int c;
+            do {
+                c = in.read();
+                sb.append((char) c);
+            } while (c != '\n');
+            String errorMsg = sb.toString();
+            logger.warning(errorMsg);
+            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error: " + errorMsg, 0, 0, 0));
+        }
+
+        return b;
+    }
+
 }
