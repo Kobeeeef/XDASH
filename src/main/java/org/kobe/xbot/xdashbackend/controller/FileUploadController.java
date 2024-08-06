@@ -1,5 +1,6 @@
 package org.kobe.xbot.xdashbackend.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.entities.TransferProgress;
@@ -43,5 +44,24 @@ public class FileUploadController {
         }
 
         return ResponseEntity.ok("Files uploaded successfully");
+    }
+    @CrossOrigin(origins = "http://localhost:3000/")
+    @GetMapping("/download")
+    public void handleFileDownload(@RequestParam("server") String server,
+                                   @RequestParam("remoteFilePath") String remoteFilePath,
+                                   @RequestParam("id") String id,
+                                   HttpServletResponse response) {
+
+        SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
+        if (sshHostAddress == null) {
+            logger.severe("Invalid server address: " + server);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return;
+        }
+
+        boolean success = sshHostAddress.streamFile(remoteFilePath, response, id);
+        if (!success) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
     }
 }

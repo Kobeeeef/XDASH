@@ -1,8 +1,12 @@
 package org.kobe.xbot.xdashbackend.entities;
 
 import com.jcraft.jsch.*;
+import jakarta.servlet.http.HttpServletResponse;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.kobe.xbot.xdashbackend.websocket.WebSocketHandler;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -456,6 +460,94 @@ public class SSHHostAddress {
         } catch (JSchException | IOException e) {
             e.printStackTrace();
             if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
+            return false;
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
+    }
+    public boolean streamFile(String remoteFilePath, HttpServletResponse response, String id) {
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+        Channel channel = null;
+        try {
+            channel = session.openChannel("exec");
+            ChannelExec execChannel = (ChannelExec) channel;
+
+            // Execute SCP command to download file
+            execChannel.setCommand("scp -f " + remoteFilePath);
+            OutputStream out = execChannel.getOutputStream();
+            InputStream in = execChannel.getInputStream();
+
+            execChannel.connect();
+
+            // Send '\0' to start file transfer
+            out.write(0);
+            out.flush();
+
+            if (checkAck(in, null) != 'C') {
+                return false;
+            }
+
+            // Read file details
+            in.read(new byte[5]);
+            long fileSize = 0;
+            while (true) {
+                int c = in.read();
+                if (c == ' ') break;
+                fileSize = fileSize * 10 + (c - '0');
+            }
+
+            StringBuilder fileNameBuilder = new StringBuilder();
+            for (int i = 0; i < 256; i++) {
+                int c = in.read();
+                if (c == 0x0A) break;
+                fileNameBuilder.append((char) c);
+            }
+            String fileName = fileNameBuilder.toString();
+
+            // Send '\0' to confirm
+            out.write(0);
+            out.flush();
+
+            // Set response headers
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"" + fileName + "\"");
+            response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileSize));
+
+            try (OutputStream responseOutputStream = response.getOutputStream()) {
+                byte[] buffer = new byte[1024];
+                int length;
+                long totalRead = 0;
+                TransferProgress progress = new TransferProgress("Reading from server...", 0, 0, 0);
+                while (fileSize > 0 && (length = in.read(buffer, 0, (int) Math.min(buffer.length, fileSize))) != -1) {
+                    responseOutputStream.write(buffer, 0, length);
+                    totalRead += length;
+                    fileSize -= length;
+
+                    // Broadcast progress
+                    double percentage = ((double) totalRead / (fileSize + totalRead)) * 100;
+                    progress.setMessage("Writing to client from server...").setPercentage(percentage).setCurrentBytes(totalRead).setTotalBytes(fileSize + totalRead);
+                    WebSocketHandler.broadcast(progress, "TRANSFER-DOWNLOAD-PROGRESS-" + id);
+                }
+            }
+
+            if (checkAck(in, null) != 0) {
+                return false;
+            }
+
+            // Send '\0' to end file transfer
+            out.write(0);
+            out.flush();
+            WebSocketHandler.broadcast(new TransferProgress("File download completed successfully.", 100, fileSize, fileSize).setFinished(true), "TRANSFER-DOWNLOAD-PROGRESS-" + id);
+
+            return true;
+        } catch (JSchException | IOException e) {
+            logger.severe("File streaming failed: " + e.getMessage());
+            WebSocketHandler.broadcast(new TransferProgress("Error during file streaming: " + e.getMessage(), 0, 0, 0), "TRANSFER-DOWNLOAD-PROGRESS-" + id);
             return false;
         } finally {
             if (channel != null) {
