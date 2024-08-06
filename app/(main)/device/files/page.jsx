@@ -43,6 +43,7 @@ const Dashboard = () => {
     const [data, setData] = useState({});
     const [warningDialogVisible, setWarningDialogVisible] = useState(false);
     const [fileUploadDialogVisible, setFileUploadDialogVisible] = useState(false);
+    const [fileDownloadDialogVisible, setFileDownloadDialogVisible] = useState(false);
     const [status, setStatus] = useState(null);
     const [progress, setProgress] = useState(0);
     const [disabled, setDisabled] = useState(false);
@@ -188,7 +189,53 @@ const Dashboard = () => {
             toast.current.show({ severity: 'error', summary: 'Error', detail: error.message });
         }
     };
-
+    const handleDownload = (filename) => {
+        setProgress(50)
+        setFileDownloadDialogVisible(true)
+        const id = generateUuid()
+        const path = directory + `${directory.endsWith("/") ? "" : "/"}${filename}`
+        setStatus("Starting download...");
+        setDisabled(true)
+        listenTillCondition((message) => {
+            if (message?.type === "TRANSFER-DOWNLOAD-PROGRESS-" + id) {
+                const msg = JSON.parse(message.message);
+                setProgress(msg?.percentage?.toFixed(0) ?? 0);
+                setStatus(msg?.message ?? 'Unknown');
+                if (msg?.finished) {
+                    toast.current.show({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Files downloaded successfully'
+                    });
+                    setDisabled(false);
+                    return true;
+                }
+                return false;
+            }
+        });
+        fetch(`/api/download?server=${server}&remoteFilePath=${encodeURIComponent(path)}&id=${id}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.blob();
+            })
+            .then((blob) => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", path.split("/").pop());
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
+            })
+            .catch((error) => {
+                console.error("There was a problem with the download:", error);
+                setDisabled(false)
+                setStatus("Download failed: " + error?.message);
+                setProgress(-1)
+            });
+    };
     const onTemplateRemove = (file, callback) => {
         setProgress(0);
         callback();
@@ -308,6 +355,10 @@ const Dashboard = () => {
                     )}
                 </div>
             </Dialog>
+            <Dialog footer={() => <Button label={"Close"} onClick={() => setFileDownloadDialogVisible(false)}/>} maximizable={false} closable={false} draggable={false} style={{ width: '80vw' }} onHide={() => setFileDownloadDialogVisible(false)} visible={fileDownloadDialogVisible}>
+                <h5>{status}</h5>
+                <ProgressBar mode={progress === -1 ? "indeterminate" : "determinate"} value={progress} />
+            </Dialog>
             <div className="col-12 lg:col-6 sm:col-4 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
@@ -377,6 +428,13 @@ const Dashboard = () => {
             <div className="col-12">
                 <div className="card mb-0">
                     <DataTable
+                        selectionMode="single"
+                        onSelectionChange={(e) => {
+                            if(e.value?.permissions?.startsWith("d")) {
+                                const directory = e.value.directory
+                                router.replace(`/device/files?server=${server}&directory=` + directory + `${directory.endsWith('/') ? '' : '/'}${e.value.name}`);
+                            }
+                        }}
                         showGridlines={false}
                         emptyMessage={Loader({
                             message: loading && (files ?? []).length > 0 ? 'Loading resources' : loading ? 'Requesting resources' : !isConnected ? 'Connecting to backend' : !data?.exists ? 'Machine not running XCASTER' : data?.status !== 'CONNECTED' ? 'Connecting to machine' : 'No resources found',
@@ -412,7 +470,7 @@ const Dashboard = () => {
                             <div className={'flex'}><Button disabled={!isConnected || data?.status !== 'CONNECTED'}
                                                             loading={loading} type="button"
                                                             icon="pi pi-upload" text onClick={() => {
-                                setProgress(0);
+                                setProgress(50);
                                 setFileUploadDialogVisible(true);
                             }}
                             /><Button disabled={!isConnected || data?.status !== 'CONNECTED'}
@@ -436,6 +494,16 @@ const Dashboard = () => {
                                         if (col?.permissions?.startsWith('d')) {
                                             setLoading(true);
                                             router.replace(`/device/files?server=${server}&directory=` + directory + `${directory.endsWith('/') ? '' : '/'}${col.name}`);
+                                        } else if(col?.permissions?.startsWith('-')) {
+                                            if(col?.name) {
+                                                handleDownload(col.name)
+                                            } else {
+                                                toast.current.show({
+                                                    severity: 'error',
+                                                    summary: 'Name Not Found!',
+                                                    detail: 'The filename does not exist!'
+                                                });
+                                            }
                                         }
                                     }}
                                 />

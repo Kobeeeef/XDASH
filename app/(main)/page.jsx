@@ -422,7 +422,7 @@ const Dashboard = () => {
                             body={(data) => (
                                 <>
                                     <Button loading={loadingStates[data?.server]}
-                                            disabled={!isConnected || data?.status !== 'CONNECTED'} icon="pi pi-search"
+                                            disabled={!isConnected || data?.status !== 'CONNECTED'} icon="pi pi-server"
                                             text onClick={() => {
                                         const server = data?.server;
                                         if (!server) {
