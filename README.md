@@ -61,6 +61,9 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ### Home Page
 ![image](https://github.com/user-attachments/assets/c9777a3b-51e4-4a45-a46e-f2693b6eaff5)
 
+### Auto Configuration File
+![image](https://github.com/user-attachments/assets/57ca673c-a72a-4dcd-bc8f-f452ca91e560)
+
 ### Demo
 https://github.com/user-attachments/assets/63027477-9501-4c5f-be6a-cf3ab52b73f6
 
