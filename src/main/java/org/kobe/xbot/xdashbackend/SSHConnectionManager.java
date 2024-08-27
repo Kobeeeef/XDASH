@@ -15,13 +15,15 @@ public class SSHConnectionManager {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final XDashLogger logger = XDashLogger.getLogger();
-    private static final String password = "kobe2609";
-
     public static String getPassword() {
-        return password;
+        return XdashbackendApplication.getConfigLoader().getProperty("servers.password");
     }
-
-    public static void startConnectionManager() {
+    public static String getUser() {
+        return XdashbackendApplication.getConfigLoader().getProperty("servers.user");
+    }
+    public static void startConnectionManager(ConfigLoader config) {
+        String user = config.getProperty("servers.user");
+        String password = config.getProperty("servers.password");
         executor.submit(() -> {
             while (running.get()) {
                 try {
@@ -32,7 +34,7 @@ public class SSHConnectionManager {
                         if (sshHostAddress.getSession() == null || !sshHostAddress.getSession().isConnected()) {
                             logger.info(String.format("Connecting to %s with hostname %s...", sshHostAddress.getAddress(), sshHostAddress.getHostname()));
                             sshHostAddress.setStatus("CONNECTING");
-                            Session session = connectToHost(sshHostAddress);
+                            Session session = connectToHost(sshHostAddress, user, password);
                             if (session != null && session.isConnected()) {
                                 sshHostAddress.setSession(session);
                                 sshHostAddress.setStatus("CONNECTED");
@@ -51,12 +53,12 @@ public class SSHConnectionManager {
         });
     }
 
-    private static Session connectToHost(SSHHostAddress sshHostAddress) {
+    private static Session connectToHost(SSHHostAddress sshHostAddress, String user, String password) {
         try {
             JSch jsch = new JSch();
-            Session session = jsch.getSession("kobe", sshHostAddress.getAddress(), 22);
+            Session session = jsch.getSession(user, sshHostAddress.getAddress(), 22);
 
-            session.setPassword("kobe2609");
+            session.setPassword(password);
 
             // Avoid asking for key confirmation
             session.setConfig("StrictHostKeyChecking", "no");

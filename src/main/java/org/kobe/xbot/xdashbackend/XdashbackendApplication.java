@@ -30,13 +30,13 @@ public class XdashbackendApplication {
     private static final Map<String, TransientServiceInfo> services = new ConcurrentHashMap<>();
 
     private static XJmDNS xJmDNS;
-
+    private static ConfigLoader configLoader;
     public static XJmDNS getxJmDNS() {
         return xJmDNS;
     }
 
     public static void main(String[] args) {
-
+        configLoader = new ConfigLoader();
         SpringApplication.run(XdashbackendApplication.class, args);
         xJmDNS = new XJmDNS();
         xJmDNS.addServiceTypeListener(new ServiceTypeListener() {
@@ -145,7 +145,7 @@ public class XdashbackendApplication {
             }
         });
 
-        SSHConnectionManager.startConnectionManager();
+        SSHConnectionManager.startConnectionManager(configLoader);
         Thread main = new Thread(() -> {
 
             if (clientRef.get() == null && !lock.get()) {
@@ -160,6 +160,10 @@ public class XdashbackendApplication {
 
     public static Map<String, SSHHostAddress> getResolvedXCASTERServices() {
         return resolvedXCASTERServices;
+    }
+
+    public static ConfigLoader getConfigLoader() {
+        return configLoader;
     }
 
     public static Map<String, TransientServiceInfo> getServices() {

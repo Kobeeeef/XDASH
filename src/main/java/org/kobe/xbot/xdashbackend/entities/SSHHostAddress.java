@@ -478,7 +478,7 @@ public class SSHHostAddress {
             ChannelExec execChannel = (ChannelExec) channel;
 
             // Execute SCP command to download file
-            execChannel.setCommand("scp -f " + remoteFilePath);
+            execChannel.setCommand(prefixWithSudoPassword("scp -f " + remoteFilePath));
             OutputStream out = execChannel.getOutputStream();
             InputStream in = execChannel.getInputStream();
 
@@ -566,7 +566,7 @@ public class SSHHostAddress {
             ChannelExec execChannel = (ChannelExec) channel;
 
             // Execute SCP command to download file
-            execChannel.setCommand("scp -f " + remoteFilePath);
+            execChannel.setCommand(prefixWithSudoPassword("scp -f " + remoteFilePath));
             OutputStream out = execChannel.getOutputStream();
             InputStream in = execChannel.getInputStream();
 
@@ -639,7 +639,9 @@ public class SSHHostAddress {
             }
         }
     }
-
+    private String prefixWithSudoPassword(String command) {
+        return String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command);
+    }
     private int checkAck(InputStream in, Consumer<TransferProgress> progressConsumer) throws IOException {
         int b = in.read();
         if (b == 0) return b;

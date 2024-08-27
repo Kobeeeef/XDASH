@@ -1,5 +1,7 @@
 package org.kobe.xbot.xdashbackend.config;
 
+import org.kobe.xbot.xdashbackend.ConfigLoader;
+import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,8 +48,9 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
+        ConfigLoader config = XdashbackendApplication.getConfigLoader();
         UserDetails user = User.withUsername("user")
-                .password(passwordEncoder().encode("I<3Robotics!"))
+                .password(passwordEncoder().encode(config.getProperty("server.password")))
                 .roles("USER")
                 .build();
         return new InMemoryUserDetailsManager(user);
