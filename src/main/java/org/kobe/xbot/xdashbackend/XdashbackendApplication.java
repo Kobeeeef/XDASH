@@ -30,13 +30,12 @@ public class XdashbackendApplication {
     private static final Map<String, TransientServiceInfo> services = new ConcurrentHashMap<>();
 
     private static XJmDNS xJmDNS;
-    private static ConfigLoader configLoader;
+    private static final ConfigLoader configLoader = new ConfigLoader();;
     public static XJmDNS getxJmDNS() {
         return xJmDNS;
     }
 
     public static void main(String[] args) {
-        configLoader = new ConfigLoader();
         SpringApplication.run(XdashbackendApplication.class, args);
         xJmDNS = new XJmDNS();
         xJmDNS.addServiceTypeListener(new ServiceTypeListener() {
