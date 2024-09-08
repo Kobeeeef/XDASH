@@ -96,7 +96,14 @@ public class XTablesClient {
      */
     public XTablesClient(String name, int MAX_THREADS, boolean useCache) {
         try {
-            InetAddress addr = Utilities.getLocalInetAddress();
+            InetAddress addr = null;
+            while (addr == null) {
+                addr = Utilities.getLocalInetAddress();
+                if(addr == null) {
+                    logger.severe("No non-loopback IPv4 address found. Trying again in 1 second...");
+                    Thread.sleep(1000);
+                }
+            }
             try (JmDNS jmdns = JmDNS.create(addr)) {
                 CountDownLatch serviceLatch = new CountDownLatch(1);
                 final boolean[] serviceFound = {false};
@@ -107,7 +114,7 @@ public class XTablesClient {
                     @Override
                     public void serviceAdded(ServiceEvent event) {
                         logger.info("Service found: " + event.getName());
-                        jmdns.requestServiceInfo(event.getType(), event.getName());
+                        jmdns.requestServiceInfo(event.getType(), event.getName(), true);
                     }
 
                     @Override
@@ -152,6 +159,11 @@ public class XTablesClient {
                 });
                 if (name == null) logger.info("Listening for first instance of XTABLES service on port 5353...");
                 else logger.info("Listening for '" + name + "' XTABLES services on port 5353...");
+                while(serviceLatch.getCount() > 0 && !serviceFound[0] && !Thread.currentThread().isInterrupted()) {
+                    try {
+                        jmdns.requestServiceInfo("_xtables._tcp.local.", "XTablesService", true, 1000);
+                    } catch (Exception ignored) {}
+                }
                 serviceLatch.await();
                 logger.info("Service latch released, proceeding to close mDNS services...");
                 jmdns.close();
