@@ -44,7 +44,7 @@ public class DataCompression {
     public static String decompressAndConvertBase64(String base64) {
         byte[] decompressedDataString = Base64.getDecoder().decode(base64);
         byte[] decompressedData = decompress(decompressedDataString);
-        assert decompressedData != null;
+        if(decompressedData == null) return null;
         return new String(decompressedData);
     }
 
