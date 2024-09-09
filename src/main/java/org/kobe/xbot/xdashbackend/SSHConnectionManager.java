@@ -15,12 +15,7 @@ public class SSHConnectionManager {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final XDashLogger logger = XDashLogger.getLogger();
-    public static String getPassword() {
-        return XdashbackendApplication.getConfigLoader().getProperty("servers.password");
-    }
-    public static String getUser() {
-        return XdashbackendApplication.getConfigLoader().getProperty("servers.user");
-    }
+
     public static void startConnectionManager(ConfigLoader config) {
         String user = config.getProperty("servers.user");
         String password = config.getProperty("servers.password");
@@ -53,10 +48,13 @@ public class SSHConnectionManager {
         });
     }
 
-    private static Session connectToHost(SSHHostAddress sshHostAddress, String user, String password) {
+    private static Session connectToHost(SSHHostAddress sshHostAddress, String username, String password) {
         try {
             JSch jsch = new JSch();
-            Session session = jsch.getSession(user, sshHostAddress.getAddress(), 22);
+            if(sshHostAddress.getUsername() != null) username = sshHostAddress.getUsername();
+            if(sshHostAddress.getPassword() != null) password = sshHostAddress.getPassword();
+            logger.info(String.format("Connecting to %s with username '%s' and password '%s'", sshHostAddress.getAddress(), username, password));
+            Session session = jsch.getSession(username, sshHostAddress.getAddress(), 22);
 
             session.setPassword(password);
 

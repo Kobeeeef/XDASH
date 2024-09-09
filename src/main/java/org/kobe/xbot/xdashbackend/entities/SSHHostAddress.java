@@ -25,11 +25,22 @@ public class SSHHostAddress {
     private transient Session session = null;
     private transient ChannelShell channel = null;
     private transient OutputStream outputStream;
-
-    public SSHHostAddress(String hostname, String address, String server) {
+    private final String username;
+    private final String password;
+    public SSHHostAddress(String hostname, String username, String password, String address, String server) {
+        this.username = username;
+        this.password = password;
         this.hostname = hostname;
         this.address = address;
         this.server = server;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public String getStatus() {
@@ -105,7 +116,7 @@ public class SSHHostAddress {
     }
 
     public String sendCommandWithSudoPermissions(String command, Consumer<String> lineConsumer) {
-        return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command), lineConsumer);
+        return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", password, command), lineConsumer);
     }
 
     public String sendCommand(String command, Consumer<String> lineConsumer) {
@@ -171,7 +182,7 @@ public class SSHHostAddress {
     }
 
     public String sendExecCommandWithSudoPermissions(String command) {
-        return sendExecCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command));
+        return sendExecCommand(String.format("echo \"%1$s\" | sudo -S %2$s", password, command));
     }
 
     public String sendExecCommand(String command) {
@@ -227,7 +238,7 @@ public class SSHHostAddress {
             ChannelExec execChannel = (ChannelExec) channel;
 
             // Use ls -lh to list files with human-readable sizes
-            execChannel.setCommand(String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), "ls -lh " + remoteDir));
+            execChannel.setCommand(String.format("echo \"%1$s\" | sudo -S %2$s", password, "ls -lh " + remoteDir));
 
             InputStream inputStream = execChannel.getInputStream();
             execChannel.connect();
@@ -640,7 +651,7 @@ public class SSHHostAddress {
         }
     }
     private String prefixWithSudoPassword(String command) {
-        return String.format("echo \"%1$s\" | sudo -S %2$s", SSHConnectionManager.getPassword(), command);
+        return String.format("echo \"%1$s\" | sudo -S %2$s", password, command);
     }
     private int checkAck(InputStream in, Consumer<TransferProgress> progressConsumer) throws IOException {
         int b = in.read();

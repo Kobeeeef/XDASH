@@ -46,8 +46,8 @@ public class ConfigLoader {
 
 
     private void setDefaultProperties() {
-        properties.setProperty("servers.password", "kobe2609");
-        properties.setProperty("servers.user", "kobe");
+        properties.setProperty("servers.password", "I<3Robots!");
+        properties.setProperty("servers.user", "xbot");
         properties.setProperty("server.password", "I<3Robotics!");
         logger.info("Default properties set.");
     }

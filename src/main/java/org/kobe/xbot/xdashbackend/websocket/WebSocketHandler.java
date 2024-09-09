@@ -341,11 +341,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     String server = serviceInfo.getServer();
                     String serviceAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
                     String hostname = new String(serviceInfo.getPropertyBytes("hostname"));
+                    String username = new String(serviceInfo.getPropertyBytes("username"));
+                    String password = new String(serviceInfo.getPropertyBytes("password"));
                     if (server == null || serviceAddress == null || hostname == null) {
                         session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, hostname, serviceAddress, server, "DISCONNECTED"), "DEVICES-SEARCH").toJSON()));
                     } else {
                         if (!XdashbackendApplication.getResolvedXCASTERServices().containsKey(server) || (!XdashbackendApplication.getResolvedXCASTERServices().get(server).getHostname().equals(hostname) && !XdashbackendApplication.getResolvedXCASTERServices().get(server).getAddress().equals(serviceAddress))) {
-                            SSHHostAddress sshHostAddress = new SSHHostAddress(hostname, serviceAddress, server);
+                            SSHHostAddress sshHostAddress = new SSHHostAddress(hostname, username, password, serviceAddress, server);
                             XdashbackendApplication.getResolvedXCASTERServices().put(server, sshHostAddress);
                             session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, hostname, serviceAddress, server, sshHostAddress.getStatus()), "DEVICES-SEARCH").toJSON()));
                         } else {

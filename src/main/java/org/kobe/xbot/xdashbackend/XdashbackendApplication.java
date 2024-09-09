@@ -131,8 +131,10 @@ public class XdashbackendApplication {
                 ServiceInfo serviceInfo = event.getInfo();
                 String serviceAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
                 String hostname = serviceInfo.getPropertyString("hostname");
+                String username = serviceInfo.getPropertyString("username");
+                String password = serviceInfo.getPropertyString("password");
                 String server = serviceInfo.getServer();
-                SSHHostAddress SSHHostAddress = new SSHHostAddress(hostname, serviceAddress, server);
+                SSHHostAddress SSHHostAddress = new SSHHostAddress(hostname, username, password, serviceAddress, server);
                 if (hostname != null) {
                     if (!resolvedXCASTERServices.containsKey(server) || (!resolvedXCASTERServices.get(server).getHostname().equals(SSHHostAddress.getHostname()) && !resolvedXCASTERServices.get(server).getAddress().equals(SSHHostAddress.getAddress()))) {
                         resolvedXCASTERServices.put(server, SSHHostAddress);
