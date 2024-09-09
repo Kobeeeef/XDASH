@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { Button } from 'primereact/button';
 
 // Function to load emoji as a texture
 const loadEmoji = (emoji) => {
@@ -94,26 +95,29 @@ const ProbabilityMap = ({ initialRobotPosition, initialGamePieces, robotImagePat
 
         const loadAndCreate = async () => {
             // Load the robot image as a texture
-            const robotTexture = await loadImage(robotImagePath);
+            const robotTexture = await loadEmoji('🤖');
 
             // Add the robot to the scene (robot image in circular geometry)
             const robot = await createPiece(scene, initialRobotPosition.x, initialRobotPosition.y, robotTexture, 100, true);
-            robot.userData.probability = '100%';
+            robot.userData.probability = 100;
 
             // Add game pieces (emoji)
             for (const piece of initialGamePieces) {
                 const emojiTexture = loadEmoji('⭕');
                 const gamePiece = await createPiece(scene, piece.position.x, piece.position.y, emojiTexture, piece.probability);
-                gamePiece.userData.probability = `${piece?.probability?.toFixed(2) ?? 0}%`;
+                gamePiece.userData.probability = piece?.probability?.toFixed() ?? 0;
             }
         };
 
         loadAndCreate();
 
         const animate = () => {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-            updateLabels(scene, camera);
+            try {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+                updateLabels(scene, camera);
+            } catch (e) {
+            }
         };
         animate();
 
@@ -154,20 +158,23 @@ const ProbabilityMap = ({ initialRobotPosition, initialGamePieces, robotImagePat
         >
             {/* The Three.js scene will be rendered here */}
             {labels.map((label, index) => (
-                <div
+                <Button
+                    disabled={label.text <= 0}
+                    rounded={true}
+                    size={'small'}
                     key={index}
                     style={{
                         position: 'absolute',
-                        left: `${label.x}px`,
-                        top: `${label.y - 30}px`,  // Slight offset to position above the piece
+                        left: `${label.x + 2}px`,
+                        top: `${label.y - 25}px`,  // Slight offset to position above the piece
                         color: 'white',
                         fontSize: '14px',
                         fontWeight: 'bold',
                         transform: 'translate(-50%, -50%)'
                     }}
                 >
-                    {label.text}
-                </div>
+                    {label.text}%
+                </Button>
             ))}
         </div>
     );

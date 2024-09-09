@@ -1,54 +1,29 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { Column } from 'primereact/column';
 
-import { TreeTable } from 'primereact/treetable';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import React, { useContext, useEffect, useState } from 'react';
+import { ConfirmDialog } from 'primereact/confirmdialog';
 
-import { Terminal } from 'primereact/terminal';
-import { TerminalService } from 'primereact/terminalservice';
 import { WebsocketContext } from '../../../layout/context/websocketcontext';
 import TimeAgo from '../../../components/TimeAgo';
-import validateKey from '../../../utilities/KeyValidator';
-import Loader from '../../../components/XBOTLoader';
 import ProbabilityMap from '../../../components/ProbabilityMap';
+import { Button } from 'primereact/button';
 
 const Dashboard = () => {
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
     const [statusData, setStatusData] = useState({});
     const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
-    const [lastDataSizeUpdate, setLastDataSizeUpdate] = useState(new Date());
     const initialRobotPosition = { x: 0, y: 0 };
     const [gamePieces, setGamePieces] = useState(
         Array.from({ length: 5 }, (_, id) => ({
             id: id + 1,
             position: { x: Math.random() * 600 - 300, y: Math.random() * 400 - 200 },  // Random x, y between -300 and 300, -200 and 200
-            probability: Math.random() * 100,  // Random probability between 0 and 100
+            probability: Math.random() * 100  // Random probability between 0 and 100
         }))
     );
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setGamePieces((prevGamePieces) =>
-                prevGamePieces.map((piece, index) => {
-                    const newProbability =
-                        index === prevGamePieces.length - 1
-                            ? Math.max(piece.probability - 1, 0)  // Slowly decrease probability for the last piece
-                            : Math.random() * 100;  // Randomize for others
 
-                    return {
-                        ...piece,
-                        position: { x: Math.random() * 600 - 300, y: Math.random() * 400 - 200 },  // Random x, y
-                        probability: newProbability,
-                    };
-                })
-            );
-        }, 1000);  // Update every 1 second
-
-        return () => clearInterval(interval);  // Cleanup on component unmount
-    }, []);
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -119,13 +94,28 @@ const Dashboard = () => {
                             <i className="pi pi-hammer text-cyan-500 text-xl" />
                         </div>
                     </div>
-                    <TimeAgo date={lastDataSizeUpdate} />
+                    <TimeAgo date={lastStatusUpdate} />
+                </div>
+            </div>
+            <div className="col-12">
+                <div className="card mb-0">
+                    <div className={'grid mb-0'}>
+                        <div className={'col-12 lg:col-6'}>
+                        <Button style={{ width: "100%"}} label={'Move to Closest'} severity={'danger'} size={'large'}
+                                loading={true} />
+                        </div>
+                        <div className={'col-12 lg:col-6'}>
+                        <Button style={{ width: "100%"}} label={'Point to Closest'} severity={'danger'} size={'large'}
+                                loading={true} />
+                        </div>
+                    </div>
                 </div>
             </div>
             <div className="col-12">
                 <div className="card mb-0">
                     <div className="w-full bg-gray-200">
-                        <ProbabilityMap robotImagePath={"/images/logo/favicon.ico"} initialRobotPosition={initialRobotPosition}
+                        <ProbabilityMap robotImagePath={'/images/logo/favicon.ico'}
+                                        initialRobotPosition={initialRobotPosition}
                                         initialGamePieces={gamePieces} />
                     </div>
                 </div>
@@ -142,7 +132,6 @@ const Dashboard = () => {
         </div>
     );
 };
-
 
 
 export default Dashboard;
