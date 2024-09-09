@@ -13,7 +13,15 @@ const AppMenu = () => {
     const model: AppMenuItem[] = [
         {
             label: 'Home',
-            items: [{ label: 'Dashboard', icon: 'pi pi-home', to: '/' }, { label: 'Network', icon: "pi pi-sitemap", items: [{ label: 'Statistics', icon: 'pi pi-wifi', to: '/network/stats' }, { label: 'mDNS', icon: 'pi pi-globe', to: '/network/mDNS' },{ label: 'Scan', icon: 'pi pi-search', to: '/network/scan' }] }, { label: 'Statistics', icon: 'pi pi-chart-scatter', to: '/stats' }]
+            items: [{ label: 'Dashboard', icon: 'pi pi-home', to: '/' }, {
+                label: 'Network',
+                icon: 'pi pi-sitemap',
+                items: [{ label: 'Statistics', icon: 'pi pi-wifi', to: '/network/stats' }, {
+                    label: 'mDNS',
+                    icon: 'pi pi-globe',
+                    to: '/network/mDNS'
+                }, { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' }]
+            },{ label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' }]
         },
 
         {
@@ -29,6 +37,7 @@ const AppMenu = () => {
                     ]
                 },
                 { label: 'Graphs', icon: 'pi pi-chart-pie', to: '/xtables/graphs' }
+
             ]
         },
         // {
