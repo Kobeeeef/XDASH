@@ -7,9 +7,11 @@ import { AppTopbarRef } from '@/types';
 import { LayoutContext } from './context/layoutcontext';
 import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
+import { useRouter } from 'next/navigation';
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
+    const router = useRouter();
     const menubuttonRef = useRef(null);
     const topbarmenuRef = useRef(null);
     const topbarmenubuttonRef = useRef(null);
@@ -42,7 +44,13 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             items: [
                                 {
                                     label: 'Refresh',
-                                    icon: 'pi pi-refresh'
+                                    icon: 'pi pi-refresh',
+                                    command: () => {
+                                        const currentPath = window.location.pathname;
+                                        const queryString = window.location.search;
+                                        const newPath = `${currentPath}.html`;
+                                        window.location.href = `${newPath}${queryString}`;
+                                    }
                                 },
                                 {
                                     label: 'Logout',
