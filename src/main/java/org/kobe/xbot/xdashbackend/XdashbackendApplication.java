@@ -13,7 +13,6 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.jmdns.ServiceTypeListener;
-import javax.jmdns.impl.ServiceInfoImpl;
 import java.awt.*;
 import java.net.URI;
 import java.util.Map;
@@ -30,7 +29,9 @@ public class XdashbackendApplication {
     private static final Map<String, TransientServiceInfo> services = new ConcurrentHashMap<>();
 
     private static XJmDNS xJmDNS;
-    private static final ConfigLoader configLoader = new ConfigLoader();;
+    private static final ConfigLoader configLoader = new ConfigLoader();
+    ;
+
     public static XJmDNS getxJmDNS() {
         return xJmDNS;
     }
@@ -157,6 +158,13 @@ public class XdashbackendApplication {
 
         });
         main.start();
+        try {
+            System.setProperty("java.awt.headless", "false");
+            Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+        } catch (Exception e) {
+            logger.warning("Failed to open web browser");
+            logger.warning("Open the website here: http://localhost:8080/");
+        }
     }
 
     public static Map<String, SSHHostAddress> getResolvedXCASTERServices() {
