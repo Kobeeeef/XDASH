@@ -87,7 +87,7 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Status</span>
                             <div
-                                className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? getStringSize(statusData?.json) || 'Unknown' : 'Disconnected') : 'Disconnected'}</div>
+                                className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? 1 || 'Unknown' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>

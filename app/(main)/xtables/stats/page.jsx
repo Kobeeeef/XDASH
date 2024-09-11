@@ -6,6 +6,7 @@ import { WebsocketContext } from '../../../../layout/context/websocketcontext';
 import TimeAgo from '../../../../components/TimeAgo';
 
 import { ProgressBar } from 'primereact/progressbar';
+import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../../utilities/notification';
 
 const Dashboard = () => {
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
@@ -19,7 +20,9 @@ const Dashboard = () => {
                 sendMessageAndWaitForCondition({ type: 'XTABLES-STATISTICS' }, (m) => m.type === 'XTABLES-STATISTICS')
                     .then((message) => {
                         setInfoData((a) => {
-                            if (message.message.connected !== a?.connected) setLastStatusUpdate(new Date());
+                            if (message.message.connected !== a?.connected) {
+                                setLastStatusUpdate(new Date());
+                            }
                             if (message.message.connected) {
                                 message.message.info = JSON.parse(message.message.info);
                                 if (message.message.info.totalClients !== a?.info?.totalClients) setLastClientsUpdate(new Date());

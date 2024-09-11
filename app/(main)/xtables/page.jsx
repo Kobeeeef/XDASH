@@ -14,6 +14,7 @@ import { WebsocketContext } from '../../../layout/context/websocketcontext';
 import TimeAgo from '../../../components/TimeAgo';
 import validateKey from '../../../utilities/KeyValidator';
 import Loader from '../../../components/XBOTLoader';
+import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
 
 const helpMessage = `Available Commands: - clear: Clear the terminal screen. - put {key} {value}: Update a specific key value. - get {key}: Retrieve a value from the server. - reboot: Reboots the XTABLES server. - delete {key}: Deletes a key and all data below. - help: Show available commands and their descriptions.`;
 
@@ -182,7 +183,9 @@ const Dashboard = () => {
                 sendMessageAndWaitForCondition({ type: 'XTABLES-DATA' }, (m) => m.type === 'XTABLES-DATA')
                     .then((message) => {
                         setStatusData((a) => {
-                            if (message.message.connected !== a?.connected) setLastStatusUpdate(new Date());
+                            if (message.message.connected !== a?.connected) {
+                                setLastStatusUpdate(new Date());
+                            }
                             if (message.message.json !== a?.json) setLastDataSizeUpdate(new Date());
                             return message.message;
                         });

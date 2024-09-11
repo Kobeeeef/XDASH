@@ -16,6 +16,11 @@ import LogComponent from '../../utilities/Ansi';
 import Loader from '../../components/XBOTLoader';
 import { Dialog } from 'primereact/dialog';
 import { Image } from 'primereact/image';
+import {
+    playErrorNotificationSound,
+    playNotificationSound,
+    playSuccessNotificationSound
+} from '../../utilities/notification';
 
 const lineData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -58,13 +63,24 @@ const Dashboard = () => {
     const [stopRequest, setStopRequest] = useState(false);
     const [loading, setLoading] = useState(false);
     const [timeoutIDs, setTimeoutIDs] = useState([]);
+    const [, setLock] = useState(false);
+    const [, setLock2] = useState(false);
+
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
                 sendMessageAndWaitForCondition({ type: 'DEVICES-DATA' }, (m) => m.type === 'DEVICES-DATA')
                     .then((message) => {
                         setXtableStatus((a) => {
-                            if (message?.message?.xtablesConnectedStatus !== a) setLastXTablesStatusUpdate(new Date());
+                            if (message?.message?.xtablesConnectedStatus !== a) {
+                                setLastXTablesStatusUpdate(new Date());
+                                setLock(a => {
+                                    if(a) {
+                                        if (!message?.message?.xtablesConnectedStatus) playErrorNotificationSound(); else playSuccessNotificationSound();
+                                    }
+                                    return true;
+                                })
+                            }
                             return message.message?.xtablesConnectedStatus;
                         });
                         setLogs((a) => {
@@ -73,7 +89,15 @@ const Dashboard = () => {
                         });
                         setDevicesData((a) => {
                             const json = JSON.parse(message?.message?.devices ?? []);
-                            if (json?.length !== a?.length) setLastDevicesUpdate(new Date());
+                            if (json?.length !== a?.length) {
+                                setLastDevicesUpdate(new Date());
+                                setLock2(a => {
+                                    if(a) {
+                                        playNotificationSound()
+                                    }
+                                    return true;
+                                })
+                            }
                             return json;
                         });
                     })

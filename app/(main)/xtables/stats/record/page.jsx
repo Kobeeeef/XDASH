@@ -18,6 +18,7 @@ import KeyValidator from '../../../../../utilities/KeyValidator';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { exportExcel } from '../../../../../utilities/fileManager';
+import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../../../utilities/notification';
 
 const RecordPage = () => {
     const dt = useRef();
@@ -43,7 +44,10 @@ const RecordPage = () => {
                 sendMessageAndWaitForCondition({ type: 'XTABLES-DATA' }, (m) => m.type === 'XTABLES-DATA')
                     .then((message) => {
                         setXtableStatus((a) => {
-                            if (message?.message?.connected !== a) setLastStatusUpdate(new Date());
+                            if (message?.message?.connected !== a) {
+                                setLastStatusUpdate(new Date());
+                                if(!message.message.connected) playErrorNotificationSound(); else playSuccessNotificationSound();
+                            }
                             if (!message?.message?.connected) setRecording(false);
                             return message?.message?.connected ?? false;
                         });
@@ -127,7 +131,9 @@ const RecordPage = () => {
                 sendMessageAndWaitForCondition({ type: 'XTABLES-STATUS' }, (m) => m.type === 'XTABLES-STATUS')
                     .then((message) => {
                         setXtableStatus((a) => {
-                            if (message?.message?.connected !== a) setLastStatusUpdate(new Date());
+                            if (message?.message?.connected !== a) {
+                                setLastStatusUpdate(new Date());
+                            }
                             return message?.message?.connected ?? false;
                         });
                     })
