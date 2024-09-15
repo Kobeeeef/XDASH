@@ -32,7 +32,8 @@ const Dashboard = () => {
                             return message.message;
                         });
                     })
-                    .catch(() => {});
+                    .catch(() => {
+                    });
             }
         }, 100);
 
@@ -48,9 +49,11 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}> {isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -62,9 +65,11 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected && infoData?.connected ? 'Connected' : 'Disconnected'}</div>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected && infoData?.connected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -79,14 +84,15 @@ const Dashboard = () => {
                             <span className="block text-500 font-medium mb-3">Health</span>
                             <div
                                 className={
-                                    'text-900 font-medium text-xl ' +
-                                    (isConnected && infoData?.connected ? (infoData?.info?.health === 'GOOD' ? 'text-green-600' : infoData?.info?.health === 'OK' ? 'text-yellow-500' : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')
+                                    'text-900 text-xl ' +
+                                    (isConnected && infoData?.connected ? (infoData?.info?.health === 'GOOD' ? 'text-green-600 font-medium' : infoData?.info?.health === 'OKAY' ? 'text-yellow-500 font-medium' : infoData?.info?.health === 'BAD' ? 'text-orange-500 font-semibold' : infoData?.info?.health === 'OVERLOAD' ? 'text-red-500 animate-pulse font-bold' : infoData?.info?.health === 'CRITICAL' ? 'text-red-700 animate-pulse-fast font-extrabold' : infoData?.info?.health === 'UNKNOWN' ? 'text-gray-500 font-extrabold' : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')
                                 }
                             >
                                 {isConnected ? (infoData?.connected ? infoData?.info?.health || 'Unknown' : 'Disconnected') : 'Disconnected'}
                             </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-heart-fill text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -98,11 +104,13 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Clients</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? (infoData?.info?.totalClients ? 'text-white' : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? (infoData?.info?.totalClients ? 'text-white' : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
                                 {isConnected ? (infoData?.connected ? infoData?.info?.totalClients ?? 'Unknown' : 'Disconnected') : 'Disconnected'}
                             </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-android text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -114,11 +122,13 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">IP Address</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.info?.ip : 'text-red-600 animate-pulse')}>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.info?.ip : 'text-red-600 animate-pulse')}>
                                 {isConnected && infoData?.connected ? infoData?.info?.ip || 'Unknown' : 'Disconnected'}
                             </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-map-marker text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -130,11 +140,13 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Round Trip Latency</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.roundTripLatencyMS : 'text-red-600 animate-pulse')}>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected && infoData?.connected ? infoData?.roundTripLatencyMS : 'text-red-600 animate-pulse')}>
                                 {isConnected && infoData?.connected ? infoData?.roundTripLatencyMS || 'Unknown' : 'Disconnected'}
                             </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-bolt text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -146,11 +158,13 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Network Latency</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? infoData?.networkLatencyMS : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? infoData?.networkLatencyMS : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
                                 {isConnected ? (infoData?.connected ? infoData?.networkLatencyMS || 'Unknown' : 'Disconnected') : 'Disconnected'}
                             </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-wifi text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -162,11 +176,13 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Total Messages</span>
-                            <div className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? infoData?.info?.totalMessages : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
+                            <div
+                                className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? infoData?.info?.totalMessages : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
                                 {isConnected ? (infoData?.connected ? infoData?.info?.totalMessages?.toLocaleString() ?? 'Unknown' : 'Disconnected') : 'Disconnected'}
                             </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-send text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -176,9 +192,11 @@ const Dashboard = () => {
             <div className="col-12">
                 <div className="card mb-0">
                     <h5>CPU Usage</h5>
-                    <ProgressBar mode={isConnected && infoData?.connected ? 'determinate' : 'indeterminate'} value={isConnected && infoData?.connected ? (infoData.info.processCpuLoadPercentage ?? 0).toFixed(3) : 0}></ProgressBar>
+                    <ProgressBar mode={isConnected && infoData?.connected ? 'determinate' : 'indeterminate'}
+                                 value={isConnected && infoData?.connected ? (infoData.info.processCpuLoadPercentage ?? 0).toFixed(3) : 0}></ProgressBar>
                     <h5>Memory Usage</h5>
-                    <ProgressBar mode={isConnected && infoData?.connected ? 'determinate' : 'indeterminate'} value={isConnected && infoData?.connected ? ((infoData.info.usedMemoryMB / infoData.info.maxMemoryMB) * 100).toFixed(3) : 0}></ProgressBar>
+                    <ProgressBar mode={isConnected && infoData?.connected ? 'determinate' : 'indeterminate'}
+                                 value={isConnected && infoData?.connected ? ((infoData.info.usedMemoryMB / infoData.info.maxMemoryMB) * 100).toFixed(3) : 0}></ProgressBar>
                     <h5>Total Threads</h5>
                     <ProgressBar
                         mode={isConnected && infoData?.connected ? 'determinate' : 'indeterminate'}
