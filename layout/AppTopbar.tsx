@@ -48,8 +48,12 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                     command: () => {
                                         const currentPath = window.location.pathname;
                                         const queryString = window.location.search;
-                                        const newPath = currentPath === '/' || currentPath === "/index.html" ? "/index.html" : `${currentPath}.html`;
+                                        const newPath = currentPath === '/' || currentPath === "/index.html" || currentPath.endsWith('.html')
+                                            ? currentPath
+                                            : `${currentPath}.html`;
+
                                         window.location.href = `${newPath}${queryString}`;
+
                                     }
                                 },
                                 {
