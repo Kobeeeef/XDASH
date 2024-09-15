@@ -84,8 +84,8 @@ const Dashboard = () => {
                             <span className="block text-500 font-medium mb-3">Health</span>
                             <div
                                 className={
-                                    'text-900 text-xl ' +
-                                    (isConnected && infoData?.connected ? (infoData?.info?.health === 'GOOD' ? 'text-green-600 font-medium' : infoData?.info?.health === 'OKAY' ? 'text-yellow-500 font-medium' : infoData?.info?.health === 'BAD' ? 'text-orange-500 font-semibold' : infoData?.info?.health === 'OVERLOAD' ? 'text-red-500 animate-pulse font-bold' : infoData?.info?.health === 'CRITICAL' ? 'text-red-700 animate-pulse-fast font-extrabold' : infoData?.info?.health === 'UNKNOWN' ? 'text-gray-500 font-extrabold' : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')
+                                    'text-xl ' +
+                                    (isConnected && infoData?.connected ? (infoData?.info?.health === 'GOOD' ? 'text-green-600 font-medium' : infoData?.info?.health === 'OKAY' ? 'text-yellow-500 font-medium' : infoData?.info?.health === 'STRESSED' ? 'text-orange-500 font-semibold' : infoData?.info?.health === 'OVERLOAD' ? 'text-red-500 animate-pulse font-bold' : infoData?.info?.health === 'CRITICAL' ? 'text-red-700 animate-pulse-fast font-extrabold' : infoData?.info?.health === 'UNKNOWN' ? 'text-gray-500 font-extrabold' : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')
                                 }
                             >
                                 {isConnected ? (infoData?.connected ? infoData?.info?.health || 'Unknown' : 'Disconnected') : 'Disconnected'}
