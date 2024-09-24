@@ -65,7 +65,7 @@ body {
     }
 }
 .animate-pulse-fast-lite {
-    animation: pulse 0.75s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     @keyframes pulse {
         0%, 100% {
@@ -73,6 +73,18 @@ body {
         }
         50% {
             opacity: 0.5;
+        }
+    }
+}
+
+.animate-pulse-sequential {
+    animation: pulse 1.1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.4;
         }
     }
 }

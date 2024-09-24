@@ -10,13 +10,17 @@ import TimeAgo from '../../../components/TimeAgo';
 import { Button } from 'primereact/button';
 import Grid from '../../../components/ProbabilityMap';
 import ProbabilityMap from '../../../components/prob2';
+import { InputNumber } from 'primereact/inputnumber';
+const totalMapSizeXInches = 651;
+const totalMapSizeYInches = 323;
+
 
 const Dashboard = () => {
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
     const [statusData, setStatusData] = useState({});
     const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
-
-
+    const [inchesPerSquare, setInchesPerSquare] = useState(10);
+    const [resize, setResize] = useState(inchesPerSquare)
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -35,9 +39,7 @@ const Dashboard = () => {
         // Cleanup interval on component unmount
         return () => clearInterval(intervalId);
     }, [isConnected, sendMessageAndWaitForCondition]);
-    const inchesPerSquare = 10;
-    const totalMapSizeXInches = 651;
-    const totalMapSizeYInches = 323;
+
     const robotLocation = [2, 1]; // Robot's starting position
     const goalLocation = [10, 30]; // Goal location
     const obstacles = [
@@ -143,8 +145,44 @@ const Dashboard = () => {
             </div>
             <div className="col-12">
                 <div className="card mb-0">
+                    <div className="grid mb-3">
+                        <div className="col-12 lg:col-6">
+
+                            <label htmlFor="minmax-buttons" className="font-bold block mb-2">Inches Per Square</label>
+                            <InputNumber suffix={' Inches'} className={'w-full'} inputId="minmax-buttons" min={1}
+                                         max={Math.min(totalMapSizeXInches, totalMapSizeYInches)}
+                                         value={inchesPerSquare}
+                                         onValueChange={(e) => {
+                                             setInchesPerSquare(e.value);
+                                             setResize(e.value);
+                                         }} showButtons
+
+                            />
+                        </div>
+                        <div className="col-12 lg:col-6">
+                            <label htmlFor="minmax-buttons" className="font-bold block mb-2">Inches Per Square
+                                Zoom</label>
+                            <InputNumber suffix={' Inches'} className={'w-full'} inputId="minmax-buttons"
+                                         min={inchesPerSquare}
+                                         max={Math.min(totalMapSizeXInches, totalMapSizeYInches)} value={resize}
+                                         onValueChange={(e) => setResize(e.value)} showButtons
+
+                            />
+                        </div>
+                        <div className={'col-12 lg:col-6'}>
+                            <Button style={{ width: '100%' }} label={'Move to Closest'} severity={'success'}
+                                    size={'large'}
+                                    loading={false} />
+                        </div>
+                        <div className={'col-12 lg:col-6'}>
+                            <Button style={{ width: '100%' }} label={'Point to Closest'} severity={'success'}
+                                    size={'large'}
+                                    loading={false} />
+                        </div>
+                    </div>
                     <div className="w-full bg-gray-200">
                         <Grid
+                            resizedInchesPerSquare={resize}
                             inchesPerSquare={inchesPerSquare}
                             totalMapSizeXInches={totalMapSizeXInches}
                             totalMapSizeYInches={totalMapSizeYInches}
