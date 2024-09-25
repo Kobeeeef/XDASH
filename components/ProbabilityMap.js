@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 
 // Grid Component
@@ -12,6 +12,14 @@ const Grid = ({
                   obstacles,
                   path
               }) => {
+    const [gridKey, setGridKey] = useState(0);
+
+    // Effect to reset the grid animation when size updates
+    useEffect(() => {
+        setGridKey(prevKey => {
+            if(prevKey !== 0) return 0; else return 1;
+        }); // Update key to force re-render
+    }, [inchesPerSquare, resizedInchesPerSquare]);
     // Calculate the total size of the grid in terms of squares
     let mapSizeXSquares = Math.floor(totalMapSizeXInches / inchesPerSquare);
     let mapSizeYSquares = Math.floor(totalMapSizeYInches / inchesPerSquare);
@@ -45,6 +53,7 @@ const Grid = ({
     }
     return (
         <div
+            key={gridKey}
             className="grid"
             style={{
                 display: 'grid',
