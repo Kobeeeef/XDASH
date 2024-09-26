@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from 'primereact/button';
 
 // Grid Component
 const Grid = ({
@@ -10,22 +9,23 @@ const Grid = ({
                   robotLocation,
                   goalLocation,
                   obstacles,
-                  path
+                  path,
+                  status
               }) => {
     const [gridKey, setGridKey] = useState(0);
 
     // Effect to reset the grid animation when size updates
     useEffect(() => {
         setGridKey(prevKey => {
-            if(prevKey !== 0) return 0; else return 1;
+            if (prevKey !== 0) return 0; else return 1;
         }); // Update key to force re-render
     }, [inchesPerSquare, resizedInchesPerSquare]);
     // Calculate the total size of the grid in terms of squares
     let mapSizeXSquares = Math.floor(totalMapSizeXInches / inchesPerSquare);
     let mapSizeYSquares = Math.floor(totalMapSizeYInches / inchesPerSquare);
-    if(resizedInchesPerSquare > inchesPerSquare) {
-        if(resizedInchesPerSquare > totalMapSizeXInches || resizedInchesPerSquare > totalMapSizeYInches) {
-            resizedInchesPerSquare = Math.min(totalMapSizeYInches , totalMapSizeXInches);
+    if (resizedInchesPerSquare > inchesPerSquare) {
+        if (resizedInchesPerSquare > totalMapSizeXInches || resizedInchesPerSquare > totalMapSizeYInches) {
+            resizedInchesPerSquare = Math.min(totalMapSizeYInches, totalMapSizeXInches);
         }
         const {
             newPath,
@@ -42,12 +42,12 @@ const Grid = ({
             obstacles,
             totalMapSizeXInches,
             totalMapSizeYInches,
-            inchesPerSquare,
+            inchesPerSquare
         );
         mapSizeXSquares = newMapSizeXSquares;
         mapSizeYSquares = newMapSizeYSquares;
-        path = newPath
-        robotLocation = newRobotPos
+        path = newPath;
+        robotLocation = newRobotPos;
         goalLocation = newGoalPos;
         obstacles = newObstacles;
     }
@@ -91,7 +91,7 @@ const Grid = ({
                                         : isObstacle
                                             ? 'bg-red-500 ' // Obstacles
                                             : isPath
-                                                ? 'bg-yellow-500 animate-pulse-sequential' // Path
+                                                ? `bg-yellow-500 ${status === "NAVIGATING" && "animate-trail"}` // Path
                                                 : 'bg-gray-800' // Empty spaces
                             }`}
                             style={{
@@ -99,7 +99,7 @@ const Grid = ({
                                 cursor: 'pointer',
                                 outline: 'none',
                                 transition: 'border 0.2s, box-shadow 0.2s',
-                                animationDelay: `${pathIndex * 0.04}s`, // Stagger delay based on index
+                                animationDelay: `${pathIndex * 0.04}s`
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.border = '2px solid #3B82F6'; // Highlight border on hover
