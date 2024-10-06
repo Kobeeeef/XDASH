@@ -1,5 +1,7 @@
 import { saveAs } from 'file-saver'
-import xlsx, { utils } from 'xlsx'
+
+import * as xlsx from 'xlsx';
+
 const saveAsExcelFile = (buffer, fileName) => {
 
     import('file-saver').then((module) => {

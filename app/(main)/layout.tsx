@@ -39,7 +39,7 @@ function AppLayout({ children }: AppLayoutProps) {
 // Wrap the AppLayout inside the WebSocketProvider
 export default function App({ children }: AppLayoutProps) {
     return (
-        <WebSocketProvider url="ws://localhost:8080/ws">
+        <WebSocketProvider url={'ws://localhost:8080/ws'}>
             <AppLayout>{children}</AppLayout>
         </WebSocketProvider>
     );
