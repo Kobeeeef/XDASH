@@ -313,7 +313,7 @@ const Dashboard = () => {
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
-            <Dialog maximizable={true} closable={false} maximized={true} header="Machine Auto Discovery"
+            <Dialog maximizable={false} closable={false} maximized={false} header="Machine Auto Discovery"
                     visible={dialogVisible} onHide={handleStop}
                     footer={<Button className={'w-full'} label="Stop" onClick={handleStop} />}>
                 {serviceRequestChildren}
@@ -412,6 +412,7 @@ const Dashboard = () => {
                                 </div>
                             )}
                         />
+
                         <Column
                             header="View"
                             body={(data) => (
@@ -435,6 +436,35 @@ const Dashboard = () => {
                                             detail: 'You are being redirected to the machine control panel...'
                                         });
                                         router.replace('/device/files?server=' + server + '&directory=/');
+
+
+                                    }} />
+                                </>
+                            )}
+                        />
+                        <Column
+                            header="Logs"
+                            body={(data) => (
+                                <>
+                                    <Button loading={loadingStates[data?.server]}
+                                            disabled={!isConnected || data?.status !== 'CONNECTED'} icon="pi pi-bell"
+                                            text onClick={() => {
+                                        const server = data?.server;
+                                        if (!server) {
+                                            toast.current.show({
+                                                severity: 'error',
+                                                summary: 'Server Not Found!',
+                                                detail: 'The server was not found.'
+                                            });
+                                            return;
+                                        }
+                                        setLoadingStates(prev => ({ ...prev, [server]: true }));
+                                        toast.current.show({
+                                            severity: 'info',
+                                            summary: 'Redirecting...',
+                                            detail: 'You are being redirected to the machine logs panel...'
+                                        });
+                                        router.replace('/device/notifications?server=' + server);
 
 
                                     }} />

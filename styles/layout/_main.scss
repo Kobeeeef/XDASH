@@ -5,7 +5,14 @@
 html {
     height: 100%;
 }
+.no-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
 
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}
 body {
     font-family: var(--font-family);
     color: var(--text-color);
@@ -16,7 +23,9 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-
+.max-w-sm {
+    max-width: 24rem;
+}
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -29,6 +38,7 @@ body {
 .fadeIn {
     animation: fadeIn 1s ease-in-out;
 }
+
 
 .animate-pulse {
     animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;

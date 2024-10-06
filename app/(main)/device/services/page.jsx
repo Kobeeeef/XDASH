@@ -246,11 +246,7 @@ const Dashboard = () => {
                             filter
                             body={(data) => (
                                 <Tag
-                                    className={
-                                        data?.activeState === 'active' ? 'glow-green-weak' :
-                                            data?.activeState === 'inactive' ? 'animate-pulse' :
-                                                data?.activeState === 'activating' || data?.activeState === 'reloading' || data?.activeState === 'maintenance' ? 'animate-pulse-fast' : ''
-                                    }
+
                                     severity={
                                         data?.activeState === 'active' ? 'success' :
                                             data?.activeState === 'inactive' ? 'danger' :

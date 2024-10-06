@@ -27,11 +27,11 @@ const Preloader = ({ children }) => {
                         return prev + finalMessage[finalIndex - 1];
                     } else {
                         clearInterval(finalTextInterval);
-                        setTimeout(() => setIsLoaded(true), 800); // Delay before showing content
+                        setTimeout(() => setIsLoaded(true), 500); // Delay before showing content
                         return prev;
                     }
                 });
-            }, 80); // Adjust the speed of the final typing animation here
+            }, 50); // Adjust the speed of the final typing animation here
         };
 
         // Check if the document is already loaded
@@ -42,7 +42,7 @@ const Preloader = ({ children }) => {
                 clearInterval(textInterval);
                 setText(''); // Clear any current text
                 typeFinalText(); // Start the final typing animation
-            }, 1000);
+            }, 500);
         };
 
         // Attach event listeners to check if the document is fully loaded

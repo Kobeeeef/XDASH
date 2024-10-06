@@ -5,19 +5,20 @@ import { formatTimeAgo } from '@/utilities/timeago';
 interface TimeAgoProps {
     date: Date;
     className?: string;
+    refresh: number;
 }
 
-const TimeAgo: React.FC<TimeAgoProps> = ({ date, className }) => {
+const TimeAgo: React.FC<TimeAgoProps> = ({ date, className, refresh = 100 }) => {
     const [timeAgo, setTimeAgo] = useState('');
 
     useEffect(() => {
         setTimeAgo(formatTimeAgo(date));
         const interval = setInterval(() => {
             setTimeAgo(formatTimeAgo(date));
-        }, 100); // Update interval to 1000ms (1 second)
+        }, refresh); // Update interval to 1000ms (1 second)
 
         return () => clearInterval(interval);
-    }, [date]);
+    }, [date, refresh]);
 
     return <span className={className}>{timeAgo}</span>;
 };

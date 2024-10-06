@@ -7,7 +7,7 @@ export const WebSocketProvider = ({ children, url }) => {
     const [isConnected, setIsConnected] = useState(false);
     const [lastConnectionUpdate, setLastConnectionUpdate] = useState(new Date());
     const socket = useRef(null);
-
+    const [latestLog, setLatestLog] =useState(null)
     useEffect(() => {
         function connect() {
             console.log('Connecting to websocket');
@@ -98,7 +98,22 @@ export const WebSocketProvider = ({ children, url }) => {
             socket.current.addEventListener('message', listener);
         });
     };
+    useEffect(() => {
+        const listener = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'DEVICE-ERROR-LOG') {
+                const msg = JSON.parse(data.message);
+                setLatestLog(msg)
 
+            }
+        };
+        if (socket.current) {
+            socket.current.addEventListener('message', listener);
+        }
+        return () => {
+            socket.current.removeEventListener('message', listener);
+        };
+    }, [socket.current]);
     const listenTillCondition = (conditionFunc) => {
         if (!isConnected) {
             return Promise.reject(new Error('WebSocket is not connected'));
@@ -127,6 +142,7 @@ export const WebSocketProvider = ({ children, url }) => {
                 sendMessageTillCondition,
                 listenTillCondition,
                 socket,
+                latestLog,
                 sendMessage
             }}
         >
