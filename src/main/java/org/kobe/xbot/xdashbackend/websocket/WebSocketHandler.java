@@ -150,6 +150,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             session.sendMessage(new TextMessage(new Message(new SubnetScanData("Stopping subnet scanner.", NetworkDiscovery.isScanning(), null, null, null, "STOPPING"), "NETWORK-SUBNET-SCAN").toJSON()));
             NetworkDiscovery.stopScanSubnet();
         } else if (message.getType().equals("DEVICES-DATA")) {
+
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
@@ -159,6 +160,33 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(true, sshHostAddress.getHostname(), sshHostAddress.getAddress(), sshHostAddress.getServer(), sshHostAddress.getStatus()), "DEVICE-DATA").toJSON()));
             } else {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICE-DATA").toJSON()));
+            }
+        } else if (message.getType().equals("DEVICE-LOGS")) {
+            String msg = message.getMessage();
+            if (msg != null) {
+                DeviceLogRange deviceLogRange;
+                try {
+                    deviceLogRange = gson.fromJson(msg, DeviceLogRange.class);
+                } catch (Exception e) {
+                    session.sendMessage(new TextMessage(new Message(new DeviceLogRange(false), message.getType()).toJSON()));
+                    return;
+                }
+                SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(deviceLogRange.getServer());
+                if (sshHostAddress != null) {
+                    List<JournalEntry> entries;
+                    int start = deviceLogRange.getStart();
+                    int end = deviceLogRange.getEnd();
+
+                    if(start == 0 && end == 0) end = 100;
+                    try {
+                        entries = sshHostAddress.getLogs(start, end);
+                    } catch (Exception ignored) {
+                        entries = new ArrayList<>();
+                    }
+                    session.sendMessage(new TextMessage(new Message(entries, message.getType()).toJSON()));
+                } else {
+                    session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICE-DATA").toJSON()));
+                }
             }
         } else if (message.getType().equals("DEVICE-SCP-LIST")) {
             String msg = message.getMessage();

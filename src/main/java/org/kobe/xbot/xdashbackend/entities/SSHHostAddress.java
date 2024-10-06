@@ -1,5 +1,6 @@
 package org.kobe.xbot.xdashbackend.entities;
 
+import com.google.gson.Gson;
 import com.jcraft.jsch.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
@@ -17,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class SSHHostAddress {
+    private static final Gson gson = new Gson();
     private static final XDashLogger logger = XDashLogger.getLogger();
     private final String server;
     private final String hostname;
@@ -283,6 +285,136 @@ public class SSHHostAddress {
 
         return new FileInfo(directory, permissions, size, date, name);
     }
+
+
+    public List<JournalEntry> getLogs(int startIndex, int endIndex) throws IOException {
+        // Validate startIndex and endIndex
+
+
+        // Validate log file
+        File logFile = new File("XDASH_LOGS" + File.separator + getHostname() + ".txt");
+        if (!logFile.exists() || logFile.isDirectory()) {
+            throw new FileNotFoundException("Log file not found or is a directory.");
+        }
+
+        if (logFile.length() == 0) {
+            throw new IOException("Log file is empty.");
+        }
+
+        List<JournalEntry> journalEntries = new ArrayList<>();
+
+        try (RandomAccessFile file = new RandomAccessFile(logFile, "r")) {
+            long fileLength = file.length();
+            int linesRead = 0;
+            int targetLines = endIndex - startIndex + 1;  // Calculate number of lines we need to read
+            long pointer = fileLength - 1;
+
+            // Start reading from the end of the file
+            file.seek(pointer);
+            StringBuilder currentLine = new StringBuilder();
+
+            while (pointer >= 0 && linesRead < targetLines) {
+                file.seek(pointer);  // Move the pointer
+                char c = (char) file.readByte();  // Read a byte (character)
+                pointer--;
+
+                if (c == '\n' || pointer == -1) {  // End of a line or start of file
+                    if (pointer == -1 && c != '\n') {
+                        currentLine.append(c);  // Add last char if not a newline
+                    }
+
+                    // If we have a full line, process it
+                    if (currentLine.length() > 0) {
+                        String line = currentLine.reverse().toString().trim();
+                        currentLine.setLength(0);  // Reset StringBuilder for next line
+
+                        if (!line.isEmpty()) {
+                            try {
+                                JournalEntry entry = gson.fromJson(line, JournalEntry.class);
+                                entry.setServer(server);
+                                journalEntries.add(entry);
+                            } catch (Exception ignored) {}
+                        }
+
+                        linesRead++;
+                    }
+                } else {
+                    currentLine.append(c);  // Keep adding characters until newline
+                }
+            }
+        }
+
+        return journalEntries;
+    }
+
+
+    public boolean startJournalCtlReader() {
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+        // Create the directory if it doesn't exist
+        File logDir = new File("XDASH_LOGS");
+        if (!logDir.exists()) {
+            if (!logDir.mkdir()) {
+                logger.severe("Failed to create XDASH_LOGS directory");
+                return false;
+            }
+        }
+
+        // Log file path in XDASH_LOGS directory
+        String logFileName = "XDASH_LOGS" + File.separator + getHostname() + ".txt";
+        File logFile = new File(logFileName);
+
+        try {
+            // Open a new exec channel for running the command
+            ChannelExec channel = (ChannelExec) session.openChannel("exec");
+            channel.setCommand("journalctl -o json -p 0..5 --follow");
+
+            // Set up the input stream and output file
+            InputStream inputStream = channel.getInputStream();
+            channel.connect(); // Connect the channel
+
+            // Start a new thread to keep the channel open and stream logs
+            new Thread(() -> {
+                // Overwrite the file if it exists (non-append mode)
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                     BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false))) {  // 'false' for overwrite mode
+
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String trimmed = line.trim();
+                        writer.write(trimmed);
+                        writer.newLine();
+                        writer.flush();
+                        try {
+                            JournalEntry entry = gson.fromJson(trimmed, JournalEntry.class);
+                            entry.setServer(server);
+                            if(entry.getPRIORITY() < 5 && !entry.get_COMM().equals("update-notifier") ) {
+                                WebSocketHandler.broadcast(entry, "DEVICE-ERROR-LOG");
+                            }
+                        } catch (Exception ignored) {}
+                    }
+
+                } catch (IOException e) {
+                    logger.severe("Error writing logs to file: " + e.getMessage());
+                } finally {
+                    // Ensure the channel is closed properly
+                    if (channel != null && channel.isConnected()) {
+                        channel.disconnect();
+                    }
+                }
+            }).start(); // Start the log streaming thread
+
+        } catch (JSchException | IOException e) {
+            logger.severe("Failed to start journalctl reader on host: " + getHostname() + "\n" + e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+
 
     public static class FileInfo {
         private final String directory;

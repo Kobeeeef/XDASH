@@ -34,7 +34,9 @@ public class SSHConnectionManager {
                                 sshHostAddress.setSession(session);
                                 sshHostAddress.setStatus("CONNECTED");
                                 logger.info(String.format("Connected to %s with hostname %s", sshHostAddress.getAddress(), sshHostAddress.getHostname()));
-
+                                if (!sshHostAddress.startJournalCtlReader()) {
+                                    logger.severe("Failed to start journalctl log reader for host: " + sshHostAddress.getHostname());
+                                }
                             }
                         }
                     }
