@@ -1,8 +1,8 @@
 # XDASH - REALTIME DATA CONTROL
 
-XDASH is a very heavy-weight tool developed for XBOT Robotics that is designed to control all machines that host the cameras, AI models, and XTABLES. The dashboard provides a user-friendly interface that simplifies the management and operation of these systems.
-
 ![image](https://github.com/user-attachments/assets/d3f00b3e-5134-4ecd-a415-6dae90c4f6b5)
+
+XDASH is a very heavy-weight tool developed for XBOT Robotics that is designed to control all machines that host the cameras, AI models, and XTABLES. The dashboard provides a user-friendly interface that simplifies the management and operation of these systems.
 
 ## Download
 
