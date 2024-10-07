@@ -317,7 +317,11 @@ function convertJSONForTreeTable(json) {
             if (typeof value === 'object' && value !== null) {
                 if (value.hasOwnProperty('value')) {
                     transformed.data.value = value.value;
-                    transformed.data.type = (typeof JSON.parse(value.value)).toString();
+                    try {
+                        transformed.data.type = (typeof JSON.parse(value.value)).toString();
+                    } catch (e) {
+                        transformed.data.type = "string"
+                    }
                 }
                 // Recurse if there's nested data
                 if (value.data) {
@@ -325,7 +329,11 @@ function convertJSONForTreeTable(json) {
                 }
             } else {
                 transformed.data.value = value;
-                transformed.data.type = (typeof JSON.parse(value)).toString();
+                try {
+                    transformed.data.type = (typeof JSON.parse(value)).toString();
+                } catch (e) {
+                    transformed.data.type = "string"
+                }
             }
 
             return transformed;
