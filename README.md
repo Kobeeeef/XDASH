@@ -28,6 +28,12 @@ java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ### Device Service Daemon Control
 ![image](https://github.com/user-attachments/assets/37684485-4cb7-44a3-8df8-ca0f330cba5c)
 
+### Realtime Detailed Systemd Logging
+![image](https://github.com/user-attachments/assets/206e2ebf-a82a-465d-8d28-c39bfc447b06)
+
+### Realtime Error Notifications
+![image](https://github.com/user-attachments/assets/4632e22d-71c8-4db7-a4f1-f1bd392e152f)
+
 ### Realtime Network mDNS Scanner
 ![image](https://github.com/user-attachments/assets/d1da50e2-704e-40c6-8297-ab0fdb13a0fc)
 
