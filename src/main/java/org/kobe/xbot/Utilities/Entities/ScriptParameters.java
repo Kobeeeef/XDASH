@@ -1,6 +1,6 @@
 package org.kobe.xbot.Utilities.Entities;
 
-import org.kobe.xbot.Server.XTablesData;
+import org.kobe.xbot.Utilities.XTablesData;
 
 public class ScriptParameters {
     private XTablesData data;

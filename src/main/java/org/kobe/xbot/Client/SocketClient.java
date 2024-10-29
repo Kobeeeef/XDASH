@@ -1,6 +1,6 @@
 package org.kobe.xbot.Client;
 
-import com.sun.jdi.connect.spi.ClosedConnectionException;
+import org.kobe.xbot.Utilities.Entities.KeyValuePair;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.Utilities.*;
 
@@ -43,7 +43,7 @@ public class SocketClient {
         }
     };
     private final int MAX_THREADS;
-    public Boolean isConnected = false;
+    public boolean isConnected = false;
     private PrintWriter out = null;
     private BufferedReader in = null;
     private Socket socket;
@@ -384,10 +384,10 @@ public class SocketClient {
         executor.execute(() -> {
             try {
                 RequestInfo requestInfo = sendMessageAndWaitForReply(ResponseInfo.from(message), timeoutMS, TimeUnit.MILLISECONDS);
-                if (requestInfo == null) throw new ClosedConnectionException();
+                if (requestInfo == null) throw new RuntimeException("Nothing received back from server when sending: " + message);
                 String[] tokens = requestInfo.getTokens();
                 future.complete(String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length)));
-            } catch (InterruptedException | ClosedConnectionException e) {
+            } catch (InterruptedException e) {
                 future.completeExceptionally(e);
             }
         });
@@ -406,31 +406,6 @@ public class SocketClient {
         return sendAsync(message, msTimeout).get(msTimeout, TimeUnit.MILLISECONDS);
     }
 
-    public static class KeyValuePair<T> {
-        private String key;
-        private T value;
-
-        public KeyValuePair(String key, T value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public void setKey(String key) {
-            this.key = key;
-        }
-
-        public T getValue() {
-            return value;
-        }
-
-        public void setValue(T value) {
-            this.value = value;
-        }
-    }
 
 }
 

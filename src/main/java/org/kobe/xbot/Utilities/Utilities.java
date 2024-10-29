@@ -28,6 +28,7 @@ public class Utilities {
             }
             return localHost.getHostAddress();
         } catch (UnknownHostException | SocketException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -39,8 +40,7 @@ public class Utilities {
                 return findNonLoopbackAddress();
             }
             return localHost;
-        } catch (UnknownHostException | SocketException e) {
-            e.printStackTrace();
+        } catch (UnknownHostException | SocketException ignored) {
         }
         return null;
     }
@@ -123,14 +123,34 @@ public class Utilities {
 
         // Check if each part of the key separated by '.' is empty
         if (!key.isEmpty()) {
-            String[] parts = key.split("\\.");
-            for (String part : parts) {
-                if (part.isEmpty()) {
-                    if (throwError) throw new IllegalArgumentException("Key contains empty part(s).");
-                    else return false;
+            int length = key.length();
+            int start = 0;
+            boolean partFound = false;
+
+            for (int i = 0; i < length; i++) {
+                if (key.charAt(i) == '.') {
+                    if (i == start) {
+                        // Empty part found
+                        if (throwError) throw new IllegalArgumentException("Key contains empty part(s).");
+                        else return false;
+                    }
+                    // Process the part if needed here
+                    start = i + 1;
+                    partFound = true;
                 }
             }
+
+            // Check the last part
+            if (start < length) {
+                partFound = true;
+            } else {
+                if (throwError) throw new IllegalArgumentException("Key contains empty part(s).");
+                else return false;
+            }
+
+            return partFound;
         }
+
         return true;
     }
 

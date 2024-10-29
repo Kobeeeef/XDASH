@@ -26,6 +26,7 @@ public class SystemStatistics {
     private XTableStatus status;
     private int totalMessages;
     private String ip;
+    private int framesForwarded;
     private List<ClientData> clientDataList;
 
     private static final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -52,20 +53,28 @@ public class SystemStatistics {
         this.powerUsageWatts = getEstimatedPowerConsumption();
         this.totalThreads = threadMXBean.getThreadCount();
         this.ip = Utilities.getLocalIPAddress();
-
-        if (usedMemoryMB > maxMemoryMB * 0.8 && processCpuLoadPercentage < 50 && totalThreads < availableProcessors * 20) {
+        if (usedMemoryMB <= maxMemoryMB * 0.5 && processCpuLoadPercentage < 50 && totalThreads <= availableProcessors * 4) {
             this.health = HealthStatus.GOOD.name();
-        } else if (usedMemoryMB > maxMemoryMB * 0.5 && processCpuLoadPercentage < 70 && totalThreads < availableProcessors * 50) {
-            this.health = HealthStatus.OK.name();
-        } else if (usedMemoryMB > maxMemoryMB * 0.2 && processCpuLoadPercentage < 90 && totalThreads < availableProcessors * 70) {
-            this.health = HealthStatus.BAD.name();
-        } else {
+        } else if (usedMemoryMB <= maxMemoryMB * 0.6 && processCpuLoadPercentage < 70 && totalThreads <= availableProcessors * 6) {
+            this.health = HealthStatus.OKAY.name();
+        } else if (usedMemoryMB <= maxMemoryMB * 0.7 && processCpuLoadPercentage < 85 && totalThreads <= availableProcessors * 8) {
+            this.health = HealthStatus.STRESSED.name();
+        } else if (usedMemoryMB <= maxMemoryMB * 0.85 && processCpuLoadPercentage < 95 && totalThreads <= availableProcessors * 10) {
             this.health = HealthStatus.OVERLOAD.name();
+        } else {
+            this.health = HealthStatus.CRITICAL.name();
         }
+
+
     }
 
     public enum HealthStatus {
-        GOOD, OK, BAD, OVERLOAD, CRITICAL, UNKNOWN
+        GOOD, OKAY, STRESSED, OVERLOAD, CRITICAL, UNKNOWN
+    }
+
+    public SystemStatistics setFramesForwarded(int framesForwarded) {
+        this.framesForwarded = framesForwarded;
+        return this;
     }
 
     public String getIp() {
@@ -154,7 +163,7 @@ public class SystemStatistics {
         // Estimation of power consumption
         double maxFreqGHz = processor.getMaxFreq() / 1_000_000_000.0;
         int logicalProcessorCount = processor.getLogicalProcessorCount();
-
+        // CPU Load Between Ticks x Max Frequency in GHz x Logical Processor Count x 10
         double estimatedPower = cpuLoadBetweenTicks * maxFreqGHz * logicalProcessorCount * 10;
         lastPowerUsageWatts.set(estimatedPower);
 

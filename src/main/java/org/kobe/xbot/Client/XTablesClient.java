@@ -2,8 +2,8 @@ package org.kobe.xbot.Client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import org.kobe.xbot.Server.XTablesData;
 import org.kobe.xbot.Utilities.*;
+import org.kobe.xbot.Utilities.Entities.KeyValuePair;
 import org.kobe.xbot.Utilities.Entities.UpdateConsumer;
 import org.kobe.xbot.Utilities.Exceptions.BackupException;
 import org.kobe.xbot.Utilities.Exceptions.ServerFlaggedValueException;
@@ -28,8 +28,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 /**
- * Handles client-side interactions with the XTables server.
- * This class provides various constructors to connect to the XTables server using different configurations:
+ * Handles client-side interactions with the XTablesServer server.
+ * This class provides various constructors to connect to the XTablesServer server using different configurations:
  * direct connection with specified address and port, or service discovery via mDNS with optional settings.
  * <p>
  * The XTablesClient class supports operations like caching, subscribing to updates and delete events,
@@ -44,7 +44,7 @@ import java.util.function.Consumer;
 public class XTablesClient {
 
     /**
-     * Connects to the XTables instance using the specified server address and port with direct connection settings.
+     * Connects to the XTablesServer instance using the specified server address and port with direct connection settings.
      *
      * @param SERVER_ADDRESS the address of the server to connect to.
      * @param SERVER_PORT    the port of the server to connect to.
@@ -59,8 +59,8 @@ public class XTablesClient {
     }
 
     /**
-     * Connects to the first instance of XTables found with default settings (mDNS).
-     * This constructor uses mDNS (Multicast DNS) to discover the first available XTables instance on the network.
+     * Connects to the first instance of XTablesServer found with default settings (mDNS).
+     * This constructor uses mDNS (Multicast DNS) to discover the first available XTablesServer instance on the network.
      * The default settings include using a maximum of five threads for client operations and disabling caching.
      * It is designed for quick and simple client initialization without needing to specify server details manually.
      */
@@ -70,8 +70,8 @@ public class XTablesClient {
 
 
     /**
-     * Connects to the first instance of XTables found with the specified settings (mDNS).
-     * This constructor uses mDNS (Multicast DNS) to discover the first available XTables instance on the network.
+     * Connects to the first instance of XTablesServer found with the specified settings (mDNS).
+     * This constructor uses mDNS (Multicast DNS) to discover the first available XTablesServer instance on the network.
      * It allows for customized client configuration by specifying the maximum number of threads for client operations
      * and whether to enable caching. This is useful for scenarios where you want to use custom settings but do not
      * want to manually specify the server details.
@@ -85,12 +85,12 @@ public class XTablesClient {
 
 
     /**
-     * Connects to the XTables instance with the specified mDNS service name and settings.
-     * This constructor uses mDNS (Multicast DNS) to discover the XTables instance on the network
+     * Connects to the XTablesServer instance with the specified mDNS service name and settings.
+     * This constructor uses mDNS (Multicast DNS) to discover the XTablesServer instance on the network
      * that matches the provided service name. It allows for customized client configuration
      * by specifying the maximum number of threads for client operations and whether to enable caching.
      *
-     * @param name        the mDNS service name of the XTables instance to connect to. If null, connect to the first found instance.
+     * @param name        the mDNS service name of the XTablesServer instance to connect to. If null, connect to the first found instance.
      * @param MAX_THREADS the maximum number of threads to use for client operations, ensuring efficient handling of multiple requests.
      * @param useCache    flag indicating whether to use client-side caching for faster data retrieval and reduced server load.
      */
@@ -98,11 +98,11 @@ public class XTablesClient {
         try {
             InetAddress addr = null;
             while (addr == null) {
-                addr = Utilities.getLocalInetAddress();
-                if(addr == null) {
-                    logger.severe("No non-loopback IPv4 address found. Trying again in 1 second...");
-                    Thread.sleep(1000);
-                }
+                    addr = Utilities.getLocalInetAddress();
+                    if(addr == null) {
+                        logger.severe("No non-loopback IPv4 address found. Trying again in 1 second...");
+                        Thread.sleep(1000);
+                    }
             }
             try (JmDNS jmdns = JmDNS.create(addr)) {
                 CountDownLatch serviceLatch = new CountDownLatch(1);
@@ -293,12 +293,12 @@ public class XTablesClient {
     }
 
 
-    public <T> RequestAction<ResponseStatus> subscribeUpdateEvent(String key, Class<T> type, Consumer<SocketClient.KeyValuePair<T>> consumer) {
+    public <T> RequestAction<ResponseStatus> subscribeUpdateEvent(String key, Class<T> type, Consumer<KeyValuePair<T>> consumer) {
         Utilities.validateKey(key, true);
         return subscribeUpdateEventNoCheck(key, type, consumer);
     }
 
-    private <T> RequestAction<ResponseStatus> subscribeUpdateEventNoCheck(String key, Class<T> type, Consumer<SocketClient.KeyValuePair<T>> consumer) {
+    private <T> RequestAction<ResponseStatus> subscribeUpdateEventNoCheck(String key, Class<T> type, Consumer<KeyValuePair<T>> consumer) {
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.SUBSCRIBE_UPDATE, key).parsed(), ResponseStatus.class) {
             @Override
             public boolean onResponse(ResponseStatus result) {
@@ -338,12 +338,12 @@ public class XTablesClient {
         }
     }
 
-    public RequestAction<ResponseStatus> subscribeUpdateEvent(Consumer<SocketClient.KeyValuePair<String>> consumer) {
+    public RequestAction<ResponseStatus> subscribeUpdateEvent(Consumer<KeyValuePair<String>> consumer) {
         String key = " ";
         return subscribeUpdateEventNoCheck(key, null, consumer);
     }
 
-    public <T> RequestAction<ResponseStatus> unsubscribeUpdateEvent(String key, Class<T> type, Consumer<SocketClient.KeyValuePair<T>> consumer) {
+    public <T> RequestAction<ResponseStatus> unsubscribeUpdateEvent(String key, Class<T> type, Consumer<KeyValuePair<T>> consumer) {
         Utilities.validateKey(key, true);
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.UNSUBSCRIBE_UPDATE, key).parsed(), ResponseStatus.class) {
             @Override
@@ -372,7 +372,7 @@ public class XTablesClient {
         };
     }
 
-    public RequestAction<ResponseStatus> unsubscribeUpdateEvent(Consumer<SocketClient.KeyValuePair<String>> consumer) {
+    public RequestAction<ResponseStatus> unsubscribeUpdateEvent(Consumer<KeyValuePair<String>> consumer) {
         String key = " ";
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.UNSUBSCRIBE_UPDATE, key).parsed(), ResponseStatus.class) {
             @Override
@@ -440,7 +440,7 @@ public class XTablesClient {
 
 
 
-    private <T> void on_update(SocketClient.KeyValuePair<String> keyValuePair) {
+    private <T> void on_update(KeyValuePair<String> keyValuePair) {
         processUpdate(keyValuePair, keyValuePair.getKey());
         if (update_consumers.containsKey(" ")) {
             processUpdate(keyValuePair, " ");
@@ -459,29 +459,31 @@ public class XTablesClient {
         }
     }
 
-    private <T> void processUpdate(SocketClient.KeyValuePair<String> keyValuePair, String key) {
-        List<UpdateConsumer<?>> consumers = update_consumers.computeIfAbsent(key, k -> new ArrayList<>());
-        for (UpdateConsumer<?> updateConsumer : consumers) {
-            UpdateConsumer<T> typedUpdateConsumer = (UpdateConsumer<T>) updateConsumer;
-            Consumer<? super SocketClient.KeyValuePair<T>> consumer = typedUpdateConsumer.getConsumer();
-            Class<T> type = typedUpdateConsumer.getType();
-            if (type != null) {
-                try {
-                    T parsed = gson.fromJson(keyValuePair.getValue(), type);
-                    consumer.accept(new SocketClient.KeyValuePair<>(keyValuePair.getKey(), parsed));
-                } catch (JsonSyntaxException ignored) {
-                } catch (Exception e) {
-                    logger.severe("There was a exception while running update subscriber callback: " + e.getMessage());
+    private <T> void processUpdate(KeyValuePair<String> keyValuePair, String key) {
+        if(update_consumers.containsKey(key)) {
+            List<UpdateConsumer<?>> consumers = update_consumers.computeIfAbsent(key, k -> new ArrayList<>());
+            for (UpdateConsumer<?> updateConsumer : consumers) {
+                UpdateConsumer<T> typedUpdateConsumer = (UpdateConsumer<T>) updateConsumer;
+                Consumer<? super KeyValuePair<T>> consumer = typedUpdateConsumer.getConsumer();
+                Class<T> type = typedUpdateConsumer.getType();
+                if (type != null) {
+                    try {
+                        T parsed = gson.fromJson(keyValuePair.getValue(), type);
+                        consumer.accept(new KeyValuePair<>(keyValuePair.getKey(), parsed));
+                    } catch (JsonSyntaxException ignored) {
+                    } catch (Exception e) {
+                        logger.severe("There was a exception while running update subscriber callback: " + e.getMessage());
 
-                }
-            } else {
-                UpdateConsumer<String> typedUpdateConsumer2 = (UpdateConsumer<String>) updateConsumer;
-                Consumer<? super SocketClient.KeyValuePair<String>> consumer2 = typedUpdateConsumer2.getConsumer();
-                try {
-                    consumer2.accept(keyValuePair);
-                } catch (Exception e) {
-                    logger.severe("There was a exception while running subscriber callback: " + e.getMessage());
+                    }
+                } else {
+                    UpdateConsumer<String> typedUpdateConsumer2 = (UpdateConsumer<String>) updateConsumer;
+                    Consumer<? super KeyValuePair<String>> consumer2 = typedUpdateConsumer2.getConsumer();
+                    try {
+                        consumer2.accept(keyValuePair);
+                    } catch (Exception e) {
+                        logger.severe("There was a exception while running subscriber callback: " + e.getMessage());
 
+                    }
                 }
             }
         }

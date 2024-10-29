@@ -3,6 +3,7 @@ package org.kobe.xbot.xdashbackend.websocket;
 import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.ResponseStatus;
+import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
@@ -59,12 +60,27 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new XTablesStatisticsReturn(false, null), "XTABLES-STATISTICS").toJSON()));
 
             }
+        } else if (message.getType().equals("XTABLES-VIEWER-TOGGLE")) {
+           XTablesViewer viewer = XdashbackendApplication.xTablesViewerRef.get();
+           if(viewer != null) {
+               if(viewer.isVisible()) {
+                   viewer.setVisible(false);
+               } else {
+                   viewer.setVisible(true);
+                   viewer.toFront();
+                   viewer.setAlwaysOnTop(true);
+                   viewer.setAlwaysOnTop(false);
+               }
+               session.sendMessage(new TextMessage(new Message(new StatusCode(true), "XTABLES-VIEWER-TOGGLE").toJSON()));
+           } else {
+               session.sendMessage(new TextMessage(new Message(new StatusCode(false), "XTABLES-VIEWER-TOGGLE").toJSON()));
+           }
         } else if (message.getType().equals("XTABLES-DATA")) {
             if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
                 String json = xTablesClient.getRawJSON().complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(true, json), "XTABLES-DATA").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(true,XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json), "XTABLES-DATA").toJSON()));
             } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(false, null), "XTABLES-DATA").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(false,XdashbackendApplication.xTablesViewerRef.get() != null &&XdashbackendApplication.xTablesViewerRef.get().isVisible(), null), "XTABLES-DATA").toJSON()));
 
             }
         } else if (message.getType().equals("XTABLES-DATA-PUT")) {

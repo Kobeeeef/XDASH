@@ -2,6 +2,7 @@ package org.kobe.xbot.xdashbackend;
 
 
 import org.kobe.xbot.Client.XTablesClient;
+import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.entities.TransientServiceInfo;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
@@ -24,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class XdashbackendApplication {
     private static final XDashLogger logger = XDashLogger.getLogger();
     public static AtomicReference<XTablesClient> clientRef = new AtomicReference<>(null);
+    public static AtomicReference<XTablesViewer> xTablesViewerRef = new AtomicReference<>(null);
     private static final AtomicBoolean lock = new AtomicBoolean(false);
     private static final Map<String, SSHHostAddress> resolvedXCASTERServices = new ConcurrentHashMap<>();
     private static final Map<String, TransientServiceInfo> services = new ConcurrentHashMap<>();
@@ -152,8 +154,9 @@ public class XdashbackendApplication {
 
             if (clientRef.get() == null && !lock.get()) {
                 lock.set(true);
-                XTablesClient client = new XTablesClient();
+                XTablesClient client = new XTablesClient(null, 5, false);
                 clientRef.set(client);
+                xTablesViewerRef.set(new XTablesViewer(client));
             }
 
         });

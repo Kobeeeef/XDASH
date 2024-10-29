@@ -1,14 +1,13 @@
 package org.kobe.xbot.Utilities.Entities;
 
-import org.kobe.xbot.Client.SocketClient;
 
 import java.util.function.Consumer;
 
 public class UpdateConsumer<T> {
     private Class<T> type;
-    private Consumer<? super SocketClient.KeyValuePair<T>> consumer;
+    private Consumer<? super KeyValuePair<T>> consumer;
 
-    public UpdateConsumer(Class<T> type, Consumer<? super SocketClient.KeyValuePair<T>> consumer) {
+    public UpdateConsumer(Class<T> type, Consumer<? super KeyValuePair<T>> consumer) {
         this.type = type;
         this.consumer = consumer;
     }
@@ -21,11 +20,11 @@ public class UpdateConsumer<T> {
         this.type = type;
     }
 
-    public Consumer<? super SocketClient.KeyValuePair<T>> getConsumer() {
+    public Consumer<? super KeyValuePair<T>> getConsumer() {
         return consumer;
     }
 
-    public void setConsumer(Consumer<? super SocketClient.KeyValuePair<T>> consumer) {
+    public void setConsumer(Consumer<? super KeyValuePair<T>> consumer) {
         this.consumer = consumer;
     }
 
