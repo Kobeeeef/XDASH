@@ -14,7 +14,7 @@ import { WebsocketContext } from '../../../layout/context/websocketcontext';
 import TimeAgo from '../../../components/TimeAgo';
 import validateKey from '../../../utilities/KeyValidator';
 import Loader from '../../../components/XBOTLoader';
-import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
+import { ToggleButton } from 'primereact/togglebutton';
 
 const helpMessage = `Available Commands: - clear: Clear the terminal screen. - put {key} {value}: Update a specific key value. - get {key}: Retrieve a value from the server. - reboot: Reboots the XTABLES server. - delete {key}: Deletes a key and all data below. - help: Show available commands and their descriptions.`;
 
@@ -25,6 +25,7 @@ const Dashboard = () => {
     const [lastDataSizeUpdate, setLastDataSizeUpdate] = useState(new Date());
     const dt = useRef(null);
     const [data, setData] = useState([]);
+    const [viewerLoading, setViewerLoading] = useState(false)
     const [rawJSON, setRawJSON] = useState({});
     const [expandedRows, setExpandedRows] = useState(null);
     const commandHandler = useCallback(
@@ -191,7 +192,9 @@ const Dashboard = () => {
                         });
                         setRawJSON(JSON.parse(message.message.json) || {});
                     })
-                    .catch(() => {});
+                    .catch((e) => {
+                        console.log(e)
+                    });
             }
         }, 500);
 
@@ -268,6 +271,20 @@ const Dashboard = () => {
                             response: 'text-primary-300'
                         }}
                     />
+                </div>
+            </div>
+            <div className="col-12">
+                <div className="card mb-0">
+                    <ToggleButton className={"w-full"} disabled={viewerLoading} checked={statusData?.isViewerOpen} onClick={() => {
+                        setViewerLoading(true)
+                        sendMessageAndWaitForCondition({ type: 'XTABLES-VIEWER-TOGGLE' }, (m) => m.type === 'XTABLES-DATA')
+                            .then((message) => {
+                                console.log(message)
+                                setViewerLoading(false)
+                            }).catch((e) => {
+                                setViewerLoading(false)
+                        })
+                    }} onLabel={"Disable Realtime Viewer"} offLabel={"Enable Realtime Viewer"}/>
                 </div>
             </div>
             <div className="col-12">

@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 
 export const WebsocketContext = createContext({});
 
@@ -72,7 +72,7 @@ export const WebSocketProvider = ({ children, url }) => {
         socket.current.send(JSON.stringify(message));
     };
 
-    const sendMessageAndWaitForCondition = (message, conditionFunc, timeout = 1500) => {
+    const sendMessageAndWaitForCondition = useCallback((message, conditionFunc, timeout = 1500) => {
         if (!isConnected) {
             return Promise.reject(new Error('WebSocket is not connected'));
         }
@@ -97,7 +97,8 @@ export const WebSocketProvider = ({ children, url }) => {
 
             socket.current.addEventListener('message', listener);
         });
-    };
+    }, [isConnected, socket.current]);
+
     useEffect(() => {
         const listener = (event) => {
             const data = JSON.parse(event.data);

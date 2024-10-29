@@ -5,6 +5,7 @@ import { WebsocketContext, WebSocketProvider } from '@/layout/context/websocketc
 import { useContext, useEffect, useRef } from 'react';
 import { Toast } from 'primereact/toast';
 import {truncateString} from '@/utilities/utilities'
+import { playErrorNotificationSound } from '@/utilities/notification';
 interface AppLayoutProps {
     children: React.ReactNode;
 }
@@ -25,6 +26,7 @@ function AppLayout({ children }: AppLayoutProps) {
                 life: 6000,
                 closable: false,
             });
+            playErrorNotificationSound();
         }
     }, [latestLog]);
 
