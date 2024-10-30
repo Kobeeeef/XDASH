@@ -3,6 +3,9 @@ package org.kobe.xbot.Client;
 import org.kobe.xbot.Utilities.Entities.KeyValuePair;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.Utilities.*;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,8 +53,10 @@ public class SocketClient {
     private Consumer<KeyValuePair<String>> updateConsumer;
     private Consumer<String> deleteConsumer;
     private final XTablesClient xTablesClient;
-
-    public SocketClient(String SERVER_ADDRESS, int SERVER_PORT, long RECONNECT_DELAY_MS, int MAX_THREADS_ARG, XTablesClient xTablesClient) {
+    private ZContext ctx;
+    private ZMQ.Socket ZMQ_PUSH_SOCKET;
+    private ZMQ.Socket ZMQ_SUB_SOCKET;
+    public SocketClient(String SERVER_ADDRESS, int SERVER_PORT, boolean ENABLE_ZMQ, long RECONNECT_DELAY_MS, int MAX_THREADS_ARG, XTablesClient xTablesClient) {
         this.socket = null;
         this.MAX_THREADS = Math.max(MAX_THREADS_ARG, 1);
         this.SERVER_ADDRESS = SERVER_ADDRESS;
@@ -59,6 +64,17 @@ public class SocketClient {
         this.RECONNECT_DELAY_MS = RECONNECT_DELAY_MS;
         this.executor = getWorkerExecutor(MAX_THREADS);
         this.xTablesClient = xTablesClient;
+        this.ctx = new ZContext();
+        if(ENABLE_ZMQ) {
+            this.ZMQ_PUSH_SOCKET = ctx.createSocket(SocketType.PUSH);
+            this.ZMQ_PUSH_SOCKET.setImmediate(true);
+            this.ZMQ_PUSH_SOCKET.setTCPKeepAlive(1);
+            this.ZMQ_PUSH_SOCKET.setHWM(100);
+            this.ZMQ_SUB_SOCKET = ctx.createSocket(SocketType.SUB);
+            this.ZMQ_SUB_SOCKET.setImmediate(true);
+            this.ZMQ_SUB_SOCKET.setTCPKeepAlive(1);
+            this.ZMQ_SUB_SOCKET.setHWM(100);
+        }
     }
 
     public String getSERVER_ADDRESS() {
@@ -145,6 +161,16 @@ public class SocketClient {
                     logger.info("Subscribing to previously submitted delete event.");
                     new RequestAction<>(this, new ResponseInfo(null, MethodType.SUBSCRIBE_DELETE).parsed(), ResponseStatus.class).queue();
                     logger.info("Queued delete event subscription successfully!");
+                }
+                if(this.ZMQ_PUSH_SOCKET != null) {
+                    try {
+                        this.ZMQ_PUSH_SOCKET.connect("tcp://" + SERVER_ADDRESS + ":" + 1736);
+                    } catch (Exception ignored) {}
+                }
+                if(this.ZMQ_SUB_SOCKET != null) {
+                    try {
+                        this.ZMQ_SUB_SOCKET.connect("tcp://" + SERVER_ADDRESS + ":" + 1737);
+                    } catch (Exception ignored) {}
                 }
                 isConnected = true;
                 break;
@@ -234,7 +260,7 @@ public class SocketClient {
                         String value = String.join(" ", Arrays.copyOfRange(requestInfo.getTokens(), 2, requestInfo.getTokens().length));
                         if (updateConsumer != null) {
                             KeyValuePair<String> keyValuePair = new KeyValuePair<>(key, value);
-                            executor.execute(() -> updateConsumer.accept(keyValuePair)); // maybe implement a cachedThread instead of using the same executor as socket client
+                            updateConsumer.accept(keyValuePair); // maybe implement a cachedThread instead of using the same executor as socket client
                             if (CLEAR_UPDATE_MESSAGES) MESSAGES.remove(requestInfo);
                         }
                     } else if (requestInfo.getTokens().length >= 2 && requestInfo.getMethod().equals(MethodType.DELETE_EVENT)) {
@@ -252,7 +278,6 @@ public class SocketClient {
                 if (!socket.isClosed()) {
                     logger.warning("Disconnected from the server. Reconnecting...");
                     try {
-                        // Wait before attempting reconnection
                         TimeUnit.MILLISECONDS.sleep(RECONNECT_DELAY_MS);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
@@ -265,7 +290,6 @@ public class SocketClient {
                     System.err.println("Error reading message from server: " + e.getMessage());
                     logger.warning("Disconnected from the server. Reconnecting...");
                     try {
-                        // Wait before attempting reconnection
                         TimeUnit.MILLISECONDS.sleep(RECONNECT_DELAY_MS);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
@@ -277,22 +301,22 @@ public class SocketClient {
         }
     }
 
-        public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
-            long startTime = System.currentTimeMillis();
-            long timeoutMillis = unit.toMillis(timeout);
+    public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
+        long startTime = System.currentTimeMillis();
+        long timeoutMillis = unit.toMillis(timeout);
 
-            while (System.currentTimeMillis() - startTime < timeoutMillis) {
-                try {
-                    for (RequestInfo message : new ArrayList<>(MESSAGES)) {
-                        if (message != null && message.getID().equals(ID)) {
-                            MESSAGES.remove(message);
-                            return message;
-                        }
+        while (System.currentTimeMillis() - startTime < timeoutMillis) {
+            try {
+                for (RequestInfo message : new ArrayList<>(MESSAGES)) {
+                    if (message != null && message.getID().equals(ID)) {
+                        MESSAGES.remove(message);
+                        return message;
                     }
-                } catch (Exception ignored) {}
-            }
-            return null;
+                }
+            } catch (Exception ignored) {}
         }
+        return null;
+    }
 
 
     public RequestInfo sendMessageAndWaitForReply(ResponseInfo responseInfo, long timeout, TimeUnit unit) throws InterruptedException {
@@ -301,13 +325,17 @@ public class SocketClient {
     }
 
     public void sendMessage(ResponseInfo responseInfo) {
-        out.println(responseInfo.parsed());
-        out.flush();
+        if(out != null) {
+            out.println(responseInfo.parsed());
+            out.flush();
+        }
     }
 
     public void sendMessageRaw(String raw) {
-        out.println(raw);
-        out.flush();
+        if(out != null) {
+            out.println(raw);
+            out.flush();
+        }
     }
 
     public void stopAll() {
@@ -336,6 +364,9 @@ public class SocketClient {
             }
         } catch (IOException e) {
             logger.severe("Failed to close socket or streams: " + e.getMessage());
+        }
+        if(this.ctx != null) {
+            this.ctx.destroy();
         }
         double elapsedTimeMS = (System.nanoTime() - startTime) / 1e6;
         logger.severe("SocketClient is now closed. (" + elapsedTimeMS + "ms)");
@@ -371,12 +402,29 @@ public class SocketClient {
         this.connect();
     }
 
+    public boolean isReady() {
+        return isConnected && !socket.isClosed() && out != null && in != null;
+    }
+
+
 
     public Socket getSocket() {
         return socket;
     }
 
+    public ZMQ.Socket getZMQ_PUSH_SOCKET() {
+        return ZMQ_PUSH_SOCKET;
+    }
+    public ZMQ.Socket getZMQ_SUB_SOCKET() {
+        return ZMQ_SUB_SOCKET;
+    }
 
+    public boolean pushZMQ(String message) {
+        return this.ZMQ_PUSH_SOCKET.send(message, ZMQ.DONTWAIT);
+    }
+    public String[] receive_nextZMQ() {
+        return Utilities.tokenize(this.ZMQ_SUB_SOCKET.recvStr(), ' ', 2);
+    }
     public CompletableFuture<String> sendAsync(String message, long timeoutMS) throws IOException {
         if (executor == null || executor.isShutdown())
             throw new IOException("The worker thread executor is shutdown and no new requests can be made.");
@@ -405,6 +453,7 @@ public class SocketClient {
     public String sendComplete(String message, long msTimeout) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         return sendAsync(message, msTimeout).get(msTimeout, TimeUnit.MILLISECONDS);
     }
+
 
 
 }

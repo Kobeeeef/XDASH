@@ -198,7 +198,7 @@ public class XTablesClient {
     public final List<Consumer<String>> delete_consumers = new ArrayList<>();
 
     private void initializeClient(String SERVER_ADDRESS, int SERVER_PORT, int MAX_THREADS, boolean useCache) {
-        this.client = new SocketClient(SERVER_ADDRESS, SERVER_PORT, 1000, MAX_THREADS, this);
+        this.client = new SocketClient(SERVER_ADDRESS, SERVER_PORT, true, 1000, MAX_THREADS, this);
         Thread thread = new Thread(() -> {
             client.connect();
             client.setUpdateConsumer(this::on_update);
@@ -232,7 +232,15 @@ public class XTablesClient {
         this.cacheFetchCooldown = cacheFetchCooldown;
         return this;
     }
-
+    public boolean pushZMQStringUpdate(String key, String value) {
+        return client.pushZMQ(key + " \"" + value + "\"");
+    }
+    public boolean pushZMQRawUpdate(String key, String value) {
+        return client.pushZMQ(key + " " + value);
+    }
+    public String[] receiveNextZMQ() {
+        return client.receive_nextZMQ();
+    }
     private void enableCache() {
         try {
             initializeCache();

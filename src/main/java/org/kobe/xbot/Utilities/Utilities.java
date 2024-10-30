@@ -76,7 +76,38 @@ public class Utilities {
         }
         return false;
     }
+    public static String[] tokenize(String input, char delimiter, int maxTokens) {
+        int count = 1;
+        int length = input.length();
 
+        // First pass: Calculate the number of delimiters up to maxTokens
+        for (int i = 0; i < length && (maxTokens == 0 || count < maxTokens); i++) {
+            if (input.charAt(i) == delimiter) {
+                count++;
+            }
+        }
+
+        // Allocate array for results, with either full count or maxTokens
+        String[] result = new String[count];
+        int index = 0;
+        int tokenStart = 0;
+
+        // Second pass: Extract tokens up to maxTokens
+        for (int i = 0; i < length; i++) {
+            if (input.charAt(i) == delimiter) {
+                result[index++] = input.substring(tokenStart, i);
+                tokenStart = i + 1;
+                if (maxTokens > 0 && index == maxTokens - 1) {
+                    break;
+                }
+            }
+        }
+
+        // Add last token or the remainder if maxTokens was reached
+        result[index] = input.substring(tokenStart);
+
+        return result;
+    }
     public static boolean isValidValue(String jsonString) {
         try {
             // Attempt to parse the JSON string

@@ -20,12 +20,15 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SuppressWarnings("ExtractMethodRecommender")
 public class XTablesViewer extends JFrame {
     private final JTree treeView;
     private final DefaultMutableTreeNode rootNode;
     public XTablesData cache;
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
     private final long cacheFetchCooldown = 5000;
     private boolean isCacheReady = false;
     private final Thread cacheThread;
@@ -204,6 +207,7 @@ public class XTablesViewer extends JFrame {
         try {
             initializeCache();
             if (subscribeToCacheUpdates()) {
+                subscribeToZMQUpdates();
                 System.out.println("Cache is now setup and ready to use.");
             } else {
                 System.out.println("Failed to subscribe to ANY update, NON OK status returned from server.");
@@ -222,7 +226,21 @@ public class XTablesViewer extends JFrame {
         isCacheReady = responseStatus.equals(ResponseStatus.OK);
         return isCacheReady;
     }
+    private void subscribeToZMQUpdates() {
+        client.getSocketClient().getZMQ_SUB_SOCKET().subscribe("");
+        threadPool.execute(() -> {
+            while(!Thread.currentThread().isInterrupted()) {
+                try {
+                    String[] key_value = client.receiveNextZMQ();
+                    if(key_value.length == 2) {
+                        cache.put(key_value[0], key_value[1]);
+                        updateSpecificNode(key_value[0], key_value[1]);
+                    }
+                } catch (Exception ignored) {}
+            }
+        });
 
+    }
     private void initializeCache() {
         String rawJSON = client.getRawJSON().complete();
         cache = new XTablesData();
