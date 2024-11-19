@@ -7,6 +7,7 @@ import oshi.hardware.HardwareAbstractionLayer;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -26,8 +27,15 @@ public class SystemStatistics {
     private XTableStatus status;
     private int totalMessages;
     private String ip;
+    private final String processId;
+    private final String javaVersion;
+    private final String javaVendor;
+    private final String jvmName;
+    private String hostname;
     private int framesForwarded;
     private List<ClientData> clientDataList;
+    private String version;
+    private final String type = "JAVA";
 
     private static final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
     private static final OperatingSystemMXBean osMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
@@ -36,7 +44,7 @@ public class SystemStatistics {
     private static final SystemInfo systemInfo = new SystemInfo();
     private static final HardwareAbstractionLayer hal = systemInfo.getHardware();
     private static final CentralProcessor processor = hal.getProcessor();
-
+    private static final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
     private static final AtomicReference<long[]> prevTicks = new AtomicReference<>();
     private static final AtomicLong lastUpdateTime = new AtomicLong();
     private static final AtomicReference<Double> lastPowerUsageWatts = new AtomicReference<>(0.0);
@@ -52,14 +60,18 @@ public class SystemStatistics {
         this.availableProcessors = osMXBean.getAvailableProcessors();
         this.powerUsageWatts = getEstimatedPowerConsumption();
         this.totalThreads = threadMXBean.getThreadCount();
+        this.processId = runtimeMXBean.getName().split("@")[0];
+        this.javaVersion = System.getProperty("java.version");
+        this.javaVendor = System.getProperty("java.vendor");
+        this.jvmName = System.getProperty("java.vm.name");
         this.ip = Utilities.getLocalIPAddress();
-        if (usedMemoryMB <= maxMemoryMB * 0.5 && processCpuLoadPercentage < 50 && totalThreads <= availableProcessors * 4) {
+        if (usedMemoryMB <= maxMemoryMB * 0.5 && processCpuLoadPercentage < 50) {
             this.health = HealthStatus.GOOD.name();
-        } else if (usedMemoryMB <= maxMemoryMB * 0.6 && processCpuLoadPercentage < 70 && totalThreads <= availableProcessors * 6) {
+        } else if (usedMemoryMB <= maxMemoryMB * 0.6 && processCpuLoadPercentage < 70) {
             this.health = HealthStatus.OKAY.name();
-        } else if (usedMemoryMB <= maxMemoryMB * 0.7 && processCpuLoadPercentage < 85 && totalThreads <= availableProcessors * 8) {
+        } else if (usedMemoryMB <= maxMemoryMB * 0.7 && processCpuLoadPercentage < 85) {
             this.health = HealthStatus.STRESSED.name();
-        } else if (usedMemoryMB <= maxMemoryMB * 0.85 && processCpuLoadPercentage < 95 && totalThreads <= availableProcessors * 10) {
+        } else if (usedMemoryMB <= maxMemoryMB * 0.85 && processCpuLoadPercentage < 95) {
             this.health = HealthStatus.OVERLOAD.name();
         } else {
             this.health = HealthStatus.CRITICAL.name();
@@ -77,8 +89,18 @@ public class SystemStatistics {
         return this;
     }
 
+    public SystemStatistics setHostname(String hostname) {
+        this.hostname = hostname;
+        return this;
+    }
+
     public String getIp() {
         return ip;
+    }
+
+    public SystemStatistics setVersion(String version) {
+        this.version = version;
+        return this;
     }
 
     public int getTotalMessages() {

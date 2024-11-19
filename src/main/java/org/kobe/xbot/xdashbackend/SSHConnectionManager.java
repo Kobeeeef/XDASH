@@ -5,6 +5,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -15,10 +17,25 @@ public class SSHConnectionManager {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final XDashLogger logger = XDashLogger.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(SSHConnectionManager.class);
 
     public static void startConnectionManager(ConfigLoader config) {
         String user = config.getProperty("servers.user");
         String password = config.getProperty("servers.password");
+        try {
+           String rioHostname = config.getProperty("roboRIO.hostname");
+            String rioUsername = config.getProperty("roboRIO.username");
+            String rioServer = config.getProperty("roboRIO.server");
+            String rioAddress = config.getProperty("roboRIO.address");
+            if (rioServer == null || rioHostname == null || rioUsername == null || rioAddress == null) {
+                logger.severe("The RIO is not defined inside of the config. Please update it.");
+            } else {
+                SSHHostAddress SSHHostAddress = new SSHHostAddress(rioHostname, rioUsername, null, rioAddress, rioServer);
+                XdashbackendApplication.getResolvedXCASTERServices().put(rioServer, SSHHostAddress);
+            }
+        } catch (Exception e) {
+            logger.fatal("There was an error while adding RIO to SSH manager: " + e.getMessage());
+        }
         executor.submit(() -> {
             while (running.get()) {
                 try {
@@ -40,9 +57,7 @@ public class SSHConnectionManager {
                             }
                         }
                     }
-
-                    // Sleep for a bit before checking again
-                    Thread.sleep(5000);
+                    Thread.sleep(4000);
                 } catch (Exception e) {
                     logger.severe("Error in SSH Connection Manager:\n" + e);
                 }

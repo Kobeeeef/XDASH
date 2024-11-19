@@ -5,21 +5,16 @@ import com.google.gson.JsonSyntaxException;
 import org.kobe.xbot.Utilities.*;
 import org.kobe.xbot.Utilities.Entities.KeyValuePair;
 import org.kobe.xbot.Utilities.Entities.UpdateConsumer;
-import org.kobe.xbot.Utilities.Exceptions.BackupException;
-import org.kobe.xbot.Utilities.Exceptions.ServerFlaggedValueException;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,7 +28,7 @@ import java.util.function.Consumer;
  * direct connection with specified address and port, or service discovery via mDNS with optional settings.
  * <p>
  * The XTablesClient class supports operations like caching, subscribing to updates and delete events,
- * running scripts, managing key-value pairs, and handling video streams.
+ * running scripts and managing key-value pairs.
  * It uses Gson for JSON parsing and integrates with a custom SocketClient for network communication.
  * <p>
  *
@@ -43,66 +38,85 @@ import java.util.function.Consumer;
 
 public class XTablesClient {
 
+
+    public static final String XTABLES_CLIENT_VERSION =
+            "XTABLES Client v4.0.0 | Build Date: 11/14/2024";
+
+
+
+    public XTablesClient() {
+        this(1735, true, 10, false);
+    }
     /**
-     * Connects to the XTablesServer instance using the specified server address and port with direct connection settings.
+     * Connects to the XTablesServer instance using the system-level DNS resolver and port with direct connection settings.
      *
-     * @param SERVER_ADDRESS the address of the server to connect to.
-     * @param SERVER_PORT    the port of the server to connect to.
-     * @param MAX_THREADS    the maximum number of threads to use for client operations.
-     * @param useCache       flag indicating whether to use caching.
+     * @param SERVER_PORT the port of the server to connect to.
+     * @param MAX_THREADS the maximum number of threads to use for client operations.
      * @throws IllegalArgumentException if the server port is 5353, which is reserved for mDNS services.
      */
-    public XTablesClient(String SERVER_ADDRESS, int SERVER_PORT, int MAX_THREADS, boolean useCache) {
+    public XTablesClient(int SERVER_PORT, boolean enableZMQ, int MAX_THREADS, boolean async) {
         if (SERVER_PORT == 5353)
             throw new IllegalArgumentException("The port 5353 is reserved for mDNS services.");
-        initializeClient(SERVER_ADDRESS, SERVER_PORT, MAX_THREADS, useCache);
+
+        if (async) {
+            this.client = new SocketClient(null, SERVER_PORT, enableZMQ, 10, MAX_THREADS, this);
+            Thread thread = new Thread(() -> {
+                InetAddress address = resolveHostByName();
+                if (address == null) {
+                    logger.fatal("Failed to find address...");
+                    return;
+                }
+                client.setSERVER_ADDRESS(address.getHostAddress());
+                client.connect();
+                client.setUpdateConsumer(this::on_update);
+                client.setDeleteConsumer(this::on_delete);
+            });
+            thread.setDaemon(true);
+            thread.start();
+        } else {
+            InetAddress address = resolveHostByName();
+            if (address == null) {
+                logger.fatal("Failed to find address...");
+                return;
+            }
+            initializeClient(address.getHostAddress(), SERVER_PORT, enableZMQ, MAX_THREADS, false);
+
+        }
     }
 
-    /**
-     * Connects to the first instance of XTablesServer found with default settings (mDNS).
-     * This constructor uses mDNS (Multicast DNS) to discover the first available XTablesServer instance on the network.
-     * The default settings include using a maximum of five threads for client operations and disabling caching.
-     * It is designed for quick and simple client initialization without needing to specify server details manually.
-     */
-    public XTablesClient() {
-        this(null, 5, false);
+
+    private InetAddress resolveHostByName() {
+        InetAddress address = null;
+        while (address == null) {
+            try {
+                logger.info("Attempting to resolve host 'XTABLES.local'...");
+                address = Inet4Address.getByName("XTABLES.local");
+                logger.info("Host resolution successful: IP address found at " + address.getHostAddress());
+                logger.info("Proceeding with socket client initialization.");
+            } catch (UnknownHostException e) {
+                logger.severe("Failed to resolve 'XTABLES.local'. Host not found. Retrying in 2 seconds...");
+                logger.severe("Exception details: " + e);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    logger.warning("Retry wait interrupted. Exiting...");
+                    return null;
+                }
+            }
+        }
+        return address;
     }
 
-
-    /**
-     * Connects to the first instance of XTablesServer found with the specified settings (mDNS).
-     * This constructor uses mDNS (Multicast DNS) to discover the first available XTablesServer instance on the network.
-     * It allows for customized client configuration by specifying the maximum number of threads for client operations
-     * and whether to enable caching. This is useful for scenarios where you want to use custom settings but do not
-     * want to manually specify the server details.
-     *
-     * @param MAX_THREADS the maximum number of threads to use for client operations, ensuring efficient handling of multiple requests.
-     * @param useCache    flag indicating whether to use client-side caching for faster data retrieval and reduced server load.
-     */
-    public XTablesClient(int MAX_THREADS, boolean useCache) {
-        this(null, MAX_THREADS, useCache);
-    }
-
-
-    /**
-     * Connects to the XTablesServer instance with the specified mDNS service name and settings.
-     * This constructor uses mDNS (Multicast DNS) to discover the XTablesServer instance on the network
-     * that matches the provided service name. It allows for customized client configuration
-     * by specifying the maximum number of threads for client operations and whether to enable caching.
-     *
-     * @param name        the mDNS service name of the XTablesServer instance to connect to. If null, connect to the first found instance.
-     * @param MAX_THREADS the maximum number of threads to use for client operations, ensuring efficient handling of multiple requests.
-     * @param useCache    flag indicating whether to use client-side caching for faster data retrieval and reduced server load.
-     */
     public XTablesClient(String name, int MAX_THREADS, boolean useCache) {
         try {
             InetAddress addr = null;
             while (addr == null) {
-                    addr = Utilities.getLocalInetAddress();
-                    if(addr == null) {
-                        logger.severe("No non-loopback IPv4 address found. Trying again in 1 second...");
-                        Thread.sleep(1000);
-                    }
+                addr = Utilities.getLocalInetAddress();
+                if (addr == null) {
+                    logger.severe("No non-loopback IPv4 address found. Trying again in 1 second...");
+                    Thread.sleep(1000);
+                }
             }
             try (JmDNS jmdns = JmDNS.create(addr)) {
                 CountDownLatch serviceLatch = new CountDownLatch(1);
@@ -159,10 +173,11 @@ public class XTablesClient {
                 });
                 if (name == null) logger.info("Listening for first instance of XTABLES service on port 5353...");
                 else logger.info("Listening for '" + name + "' XTABLES services on port 5353...");
-                while(serviceLatch.getCount() > 0 && !serviceFound[0] && !Thread.currentThread().isInterrupted()) {
+                while (serviceLatch.getCount() > 0 && !serviceFound[0] && !Thread.currentThread().isInterrupted()) {
                     try {
                         jmdns.requestServiceInfo("_xtables._tcp.local.", "XTablesService", true, 1000);
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                 }
                 serviceLatch.await();
                 logger.info("Service latch released, proceeding to close mDNS services...");
@@ -172,7 +187,7 @@ public class XTablesClient {
                 if (serviceAddressIP[0] == null || socketServiceServerPort[0] == null) {
                     throw new RuntimeException("The service address or port could not be found.");
                 } else {
-                    initializeClient(serviceAddressIP[0], socketServiceServerPort[0], MAX_THREADS, useCache);
+                    initializeClient(serviceAddressIP[0], socketServiceServerPort[0], true, MAX_THREADS, useCache);
                 }
             }
         } catch (IOException | InterruptedException e) {
@@ -180,11 +195,13 @@ public class XTablesClient {
             throw new RuntimeException(e);
         }
     }
+    public XTablesClient(String ip, int port) {
+        initializeClient(ip, port, true, 10, false);
 
-
-    // ---------------------------------------------------------------
-    // ---------------- Methods and Fields ---------------------------
-    // ---------------------------------------------------------------
+    }
+// ---------------------------------------------------------------
+// ---------------- Methods and Fields ---------------------------
+// ---------------------------------------------------------------
 
     private final XTablesLogger logger = XTablesLogger.getLogger();
     private SocketClient client;
@@ -197,8 +214,8 @@ public class XTablesClient {
     public final HashMap<String, List<UpdateConsumer<?>>> update_consumers = new HashMap<>();
     public final List<Consumer<String>> delete_consumers = new ArrayList<>();
 
-    private void initializeClient(String SERVER_ADDRESS, int SERVER_PORT, int MAX_THREADS, boolean useCache) {
-        this.client = new SocketClient(SERVER_ADDRESS, SERVER_PORT, true, 1000, MAX_THREADS, this);
+    private void initializeClient(String SERVER_ADDRESS, int SERVER_PORT, boolean enableZMQ, int MAX_THREADS, boolean useCache) {
+        this.client = new SocketClient(SERVER_ADDRESS, SERVER_PORT, enableZMQ, 10, MAX_THREADS, this);
         Thread thread = new Thread(() -> {
             client.connect();
             client.setUpdateConsumer(this::on_update);
@@ -232,15 +249,7 @@ public class XTablesClient {
         this.cacheFetchCooldown = cacheFetchCooldown;
         return this;
     }
-    public boolean pushZMQStringUpdate(String key, String value) {
-        return client.pushZMQ(key + " \"" + value + "\"");
-    }
-    public boolean pushZMQRawUpdate(String key, String value) {
-        return client.pushZMQ(key + " " + value);
-    }
-    public String[] receiveNextZMQ() {
-        return client.receive_nextZMQ();
-    }
+
     private void enableCache() {
         try {
             initializeCache();
@@ -445,9 +454,6 @@ public class XTablesClient {
         };
     }
 
-
-
-
     private <T> void on_update(KeyValuePair<String> keyValuePair) {
         processUpdate(keyValuePair, keyValuePair.getKey());
         if (update_consumers.containsKey(" ")) {
@@ -468,7 +474,7 @@ public class XTablesClient {
     }
 
     private <T> void processUpdate(KeyValuePair<String> keyValuePair, String key) {
-        if(update_consumers.containsKey(key)) {
+        if (update_consumers.containsKey(key)) {
             List<UpdateConsumer<?>> consumers = update_consumers.computeIfAbsent(key, k -> new ArrayList<>());
             for (UpdateConsumer<?> updateConsumer : consumers) {
                 UpdateConsumer<T> typedUpdateConsumer = (UpdateConsumer<T>) updateConsumer;
@@ -515,6 +521,12 @@ public class XTablesClient {
         };
     }
 
+    public RequestAction<ResponseStatus> putString(String key, String value) {
+        Utilities.validateKey(key, true);
+        String parsedValue = gson.toJson(value);
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.PUT, key + " " + parsedValue).parsed(), ResponseStatus.class);
+    }
+
     public RequestAction<ResponseStatus> putRaw(String key, String value) {
         Utilities.validateKey(key, true);
         if (!Utilities.isValidValue(value)) throw new JsonSyntaxException("The value is not a valid JSON.");
@@ -541,194 +553,89 @@ public class XTablesClient {
         };
     }
 
-    public RequestAction<ByteFrame> getByteFrame(String key) {
-        Utilities.validateKey(key, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), ByteFrame.class) {
-            @Override
-            public String formatResult(String result) {
-                String[] parts = result.split(" ");
-                return String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
-            }
-
-            @Override
-            public ByteFrame parseResponse(long startTime, String result) {
-                checkFlaggedValue(result);
-                return null;
-            }
-        };
-    }
-
-    public RequestAction<File> saveBackup(String directory, String inputFilename) {
-        Utilities.validateName(inputFilename, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET_RAW_JSON).parsed(), null) {
-
-            /**
-             * Parses the response received from the server.
-             * Meant to be overridden in subclasses to parse the response based on specific needs.
-             * <p>
-             * Order of execution: 3 (Called when a response is received)
-             *
-             * @param startTime The start time of the request, used for calculating latency.
-             * @param result    The raw result from the server.
-             * @return The parsed response as type T.
-             */
-            @Override
-            public File parseResponse(long startTime, String result) {
-                String response = DataCompression.decompressAndConvertBase64(result);
-                Path path = Paths.get(directory);
-                if (!Files.exists(path)) {
-                    try {
-                        Files.createDirectories(path);
-                    } catch (IOException e) {
-                        logger.severe("There was a exception while creating the directory: " + e.getMessage());
-                    }
-                }
-                String filename = inputFilename.contains(".")
-                        ? inputFilename.substring(0, inputFilename.lastIndexOf('.')) + ".json"
-                        : inputFilename + ".json";
-                String filePath = directory + "/" + filename;
-
-                try (FileWriter file = new FileWriter(filePath)) {
-                    file.write(response);
-                    logger.info("Successfully saved JSON content to " + filePath);
-                    return new File(filePath);
-                } catch (IOException e) {
-                    throw new BackupException(e);
-                }
-
-            }
-
-
-        };
-    }
-
-    public RequestAction<ResponseStatus> putString(String key, String value) {
-        Utilities.validateKey(key, true);
-        String parsedValue = gson.toJson(value);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.PUT, key + " " + parsedValue).parsed(), ResponseStatus.class);
-    }
-
+    /**
+     * Sends a raw string value to the server with the specified key.
+     *
+     * @param key   the key associated with the value.
+     * @param value the string value to send.
+     */
     public void executePutString(String key, String value) {
-        Utilities.validateKey(key, true);
         client.sendMessageRaw("IGNORED:PUT " + key + " \"" + value + "\"");
     }
 
+    /**
+     * Sends an integer value to the server with the specified key.
+     *
+     * @param key   the key associated with the value.
+     * @param value the integer value to send.
+     */
     public void executePutInteger(String key, int value) {
-        Utilities.validateKey(key, true);
         client.sendMessageRaw("IGNORED:PUT " + key + " " + value);
     }
 
+    /**
+     * Sends a double value to the server with the specified key.
+     *
+     * @param key   the key associated with the value.
+     * @param value the double value to send.
+     */
     public void executePutDouble(String key, double value) {
-        Utilities.validateKey(key, true);
         client.sendMessageRaw("IGNORED:PUT " + key + " " + value);
     }
 
+    /**
+     * Sends a long value to the server with the specified key.
+     *
+     * @param key   the key associated with the value.
+     * @param value the long value to send.
+     */
     public void executePutLong(String key, long value) {
-        Utilities.validateKey(key, true);
         client.sendMessageRaw("IGNORED:PUT " + key + " " + value);
     }
 
+    /**
+     * Sends a boolean value to the server with the specified key.
+     *
+     * @param key   the key associated with the value.
+     * @param value the boolean value to send.
+     */
     public void executePutBoolean(String key, boolean value) {
-        Utilities.validateKey(key, true);
         client.sendMessageRaw("IGNORED:PUT " + key + " " + value);
     }
 
+    /**
+     * Sends an array to the server with the specified key.
+     *
+     * @param key   the key associated with the array.
+     * @param value the list of values to send, which is converted to JSON format.
+     * @param <T>   the type of the array elements.
+     */
     public <T> void executePutArray(String key, List<T> value) {
-        Utilities.validateKey(key, true);
         String parsedValue = gson.toJson(value);
         client.sendMessageRaw("IGNORED:PUT " + key + " " + parsedValue);
     }
 
+    /**
+     * Sends an object to the server with the specified key.
+     *
+     * @param key   the key associated with the object.
+     * @param value the object to send, which is converted to JSON format.
+     */
     public void executePutObject(String key, Object value) {
-        Utilities.validateKey(key, true);
         String parsedValue = gson.toJson(value);
         client.sendMessageRaw("IGNORED:PUT " + key + " " + parsedValue);
     }
 
-//    public RequestAction<VideoStreamResponse> registerImageStreamServer(String name) {
-//        Utilities.validateName(name, true);
-//        return new RequestAction<>(client, new ResponseInfo(null, MethodType.REGISTER_VIDEO_STREAM, name).parsed(), VideoStreamResponse.class) {
-//            /**
-//             * Called when a response is received.
-//             * Meant to be overridden in subclasses to handle specific actions on response.
-//             * <p>
-//             * Order of execution: 5 (Called after parsing and formatting the response)
-//             *
-//             * @param result The result of the response.
-//             * @return true if the response was handled successfully, false otherwise.
-//             */
-//            @Override
-//            public boolean onResponse(VideoStreamResponse result) {
-//                if (result.getStatus().equals(ImageStreamStatus.OKAY)) {
-//                    ImageStreamServer streamServer = new ImageStreamServer(name);
-//                    try {
-//                        streamServer.start();
-//                        result.setStreamServer(streamServer);
-//                    } catch (IOException e) {
-//                        logger.severe("There was an exception while starting video stream: " + e.getMessage());
-//                        result.setStatus(ImageStreamStatus.FAIL_START_SERVER);
-//                    }
-//                }
-//                return true;
-//            }
-//
-//            /**
-//             * Parses the response received from the server.
-//             * Meant to be overridden in subclasses to parse the response based on specific needs.
-//             * <p>
-//             * Order of execution: 3 (Called when a response is received)
-//             *
-//             * @param startTime The start time of the request, used for calculating latency.
-//             * @param result    The raw result from the server.
-//             * @return The parsed response as type T.
-//             */
-//            @Override
-//            public VideoStreamResponse parseResponse(long startTime, String result) {
-//                return new VideoStreamResponse(ImageStreamStatus.valueOf(result));
-//            }
-//        };
-//    }
+    public boolean pushZMQStringUpdate(String key, String value) {
+        return client.pushZMQ(key + " \"" + value + "\"");
+    }
+    public boolean pushZMQRawUpdate(String key, String value) {
+        return client.pushZMQ(key + " " + value);
+    }
+    public String[] receiveNextZMQ() {
+       return client.receive_nextZMQ();
+    }
 
-//    public RequestAction<VideoStreamResponse> registerImageStreamClient(String name, Consumer<Mat> consumer) {
-//        Utilities.validateName(name, true);
-//        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET_VIDEO_STREAM, name).parsed(), VideoStreamResponse.class) {
-//            /**
-//             * Called when a response is received.
-//             * Meant to be overridden in subclasses to handle specific actions on response.
-//             * <p>
-//             * Order of execution: 5 (Called after parsing and formatting the response)
-//             *
-//             * @param result The result of the response.
-//             * @return true if the response was handled successfully, false otherwise.
-//             */
-//            @Override
-//            public boolean onResponse(VideoStreamResponse result) {
-//                if (result.getStatus().equals(ImageStreamStatus.OKAY)) {
-//                    ImageStreamClient streamClient = new ImageStreamClient(result.getAddress(), consumer);
-//                    streamClient.start(client.getExecutor());
-//                    result.setStreamClient(streamClient);
-//                }
-//                return true;
-//            }
-//
-//            /**
-//             * Parses the response received from the server.
-//             * Meant to be overridden in subclasses to parse the response based on specific needs.
-//             * <p>
-//             * Order of execution: 3 (Called when a response is received)
-//             *
-//             * @param startTime The start time of the request, used for calculating latency.
-//             * @param result    The raw result from the server.
-//             * @return The parsed response as type T.
-//             */
-//            @Override
-//            public VideoStreamResponse parseResponse(long startTime, String result) {
-//                if (Utilities.contains(ImageStreamStatus.class, result))
-//                    return new VideoStreamResponse(ImageStreamStatus.valueOf(result));
-//                return new VideoStreamResponse(ImageStreamStatus.OKAY).setAddress(gson.fromJson(result, String.class));
-//            }
-//        };
-//    }
 
     public RequestAction<ResponseStatus> renameKey(String key, String newName) {
         Utilities.validateKey(key, true);
@@ -774,10 +681,6 @@ public class XTablesClient {
         return delete("");
     }
 
-    public RequestAction<String> getRaw(String key) {
-        return getString(key);
-    }
-
     public RequestAction<String> getRawJSON() {
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET_RAW_JSON).parsed(), null) {
             /**
@@ -794,44 +697,33 @@ public class XTablesClient {
         };
     }
 
-    public RequestAction<String> getString(String key) {
+    public RequestAction<ByteFrame> getByteFrame(String key) {
         Utilities.validateKey(key, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), String.class) {
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), ByteFrame.class) {
             @Override
             public String formatResult(String result) {
                 String[] parts = result.split(" ");
                 return String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
             }
-        };
-    }
 
-    public RequestAction<String> getImageStreamAddress(String name) {
-        Utilities.validateName(name, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET_VIDEO_STREAM, name).parsed(), String.class);
-    }
-
-    public RequestAction<Boolean> getBoolean(String key) {
-        Utilities.validateKey(key, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), Boolean.class) {
-            /**
-             * Parses the response received from the server. Meant to be overridden in subclasses to parse the response based on specific needs.
-             *
-             * @param startTime The start time of the request, used for calculating latency.
-             * @param result    The raw result from the server.
-             * @return The parsed response as type T.
-             */
             @Override
-            public Boolean parseResponse(long startTime, String result) {
-                checkFlaggedValue(result);
+            public ByteFrame parseResponse(long startTime, String result) {
                 return null;
             }
-
-            @Override
-            public String formatResult(String result) {
-                String[] parts = result.split(" ");
-                return String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
-            }
         };
+    }
+
+    public RequestAction<String> getString(String key) {
+        Utilities.validateKey(key, true);
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), String.class);
+    }
+    public RequestAction<String> getRaw(String key) {
+        Utilities.validateKey(key, true);
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), null);
+    }
+    public RequestAction<Boolean> getBoolean(String key) {
+        Utilities.validateKey(key, true);
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), Boolean.class);
     }
 
     public RequestAction<ScriptResponse> runScript(String name, String customData) {
@@ -867,61 +759,14 @@ public class XTablesClient {
 
     public <T> RequestAction<T> getObject(String key, Class<T> type) {
         Utilities.validateKey(key, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), type) {
-            @Override
-            public String formatResult(String result) {
-                String[] parts = result.split(" ");
-                return String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
-            }
-
-            @Override
-            public T parseResponse(long startTime, String result) {
-                checkFlaggedValue(result);
-                return null;
-            }
-        };
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), type);
     }
 
     public RequestAction<Integer> getInteger(String key) {
         Utilities.validateKey(key, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), Integer.class) {
-            @Override
-            public String formatResult(String result) {
-                String[] parts = result.split(" ");
-                return String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
-            }
-
-            @Override
-            public Integer parseResponse(long startTime, String result) {
-
-                checkFlaggedValue(result);
-                return null;
-            }
-        };
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), Integer.class);
     }
 
-    public <T> RequestAction<ArrayList<T>> getArray(String key, Class<T> type) {
-        Utilities.validateKey(key, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), type) {
-            @Override
-            public String formatResult(String result) {
-                String[] parts = result.split(" ");
-                return String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
-            }
-
-            @Override
-            public ArrayList<T> parseResponse(long startTime, String result) {
-                checkFlaggedValue(result);
-                return null;
-            }
-        };
-    }
-
-    private static void checkFlaggedValue(String result) {
-        if (result.split(" ")[0].equals("FLAGGED")) {
-            throw new ServerFlaggedValueException("This key is flagged as invalid JSON therefore cannot be parsed. Use XTablesClient#getRaw instead.");
-        }
-    }
 
     public RequestAction<ArrayList<String>> getTables(String key) {
         Utilities.validateKey(key, true);
@@ -935,15 +780,6 @@ public class XTablesClient {
     public RequestAction<ResponseStatus> rebootServer() {
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.REBOOT_SERVER).parsed(), ResponseStatus.class);
     }
-
-    public <T> RequestAction<T> sendCustomMessage(MethodType method, String message, Class<T> type) {
-        return new RequestAction<>(client, new ResponseInfo(null, method, message).parsed(), type);
-    }
-
-    public SocketClient getSocketClient() {
-        return client;
-    }
-
     public RequestAction<LatencyInfo> ping_latency() {
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.PING).parsed()) {
             @Override
@@ -955,7 +791,7 @@ public class XTablesClient {
                     long currentTime = System.nanoTime();
                     long networkLatency = Math.abs(currentTime - serverTime);
                     long roundTripLatency = Math.abs(currentTime - startTime);
-                    return new LatencyInfo(networkLatency / 1e6, roundTripLatency / 1e6, stats);
+                    return new LatencyInfo(((double) roundTripLatency / 2) / 1e6, roundTripLatency / 1e6, stats);
                 } else {
                     return null;
                 }
@@ -964,42 +800,13 @@ public class XTablesClient {
         };
 
     }
-
-
-    public static class LatencyInfo {
-        private double networkLatencyMS;
-        private double roundTripLatencyMS;
-        private SystemStatistics systemStatistics;
-
-        public LatencyInfo(double networkLatencyMS, double roundTripLatencyMS, SystemStatistics systemStatistics) {
-            this.networkLatencyMS = networkLatencyMS;
-            this.roundTripLatencyMS = roundTripLatencyMS;
-            this.systemStatistics = systemStatistics;
-        }
-
-        public double getNetworkLatencyMS() {
-            return networkLatencyMS;
-        }
-
-        public void setNetworkLatencyMS(double networkLatencyMS) {
-            this.networkLatencyMS = networkLatencyMS;
-        }
-
-        public double getRoundTripLatencyMS() {
-            return roundTripLatencyMS;
-        }
-
-        public void setRoundTripLatencyMS(double roundTripLatencyMS) {
-            this.roundTripLatencyMS = roundTripLatencyMS;
-        }
-
-        public SystemStatistics getSystemStatistics() {
-            return systemStatistics;
-        }
-
-        public void setSystemStatistics(SystemStatistics systemStatistics) {
-            this.systemStatistics = systemStatistics;
-        }
+    public <T> RequestAction<T> sendCustomMessage(MethodType method, String message, Class<T> type) {
+        return new RequestAction<>(client, new ResponseInfo(null, method, message).parsed(), type);
     }
+
+    public SocketClient getSocketClient() {
+        return client;
+    }
+
 
 }

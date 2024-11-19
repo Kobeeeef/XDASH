@@ -32,7 +32,6 @@ public class XdashbackendApplication {
 
     private static XJmDNS xJmDNS;
     private static final ConfigLoader configLoader = new ConfigLoader();
-    ;
 
     public static XJmDNS getxJmDNS() {
         return xJmDNS;
@@ -40,6 +39,7 @@ public class XdashbackendApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(XdashbackendApplication.class, args);
+
         xJmDNS = new XJmDNS();
         xJmDNS.addServiceTypeListener(new ServiceTypeListener() {
             @Override

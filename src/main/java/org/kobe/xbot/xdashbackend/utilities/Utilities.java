@@ -15,6 +15,19 @@ public class Utilities {
 
     }
 
+    /**
+     * Estimates the memory size of a String in bytes using mathematical constants.
+     *
+     * @param str The string to estimate memory size for.
+     * @return Estimated memory size in bytes.
+     */
+    public static int estimateStringSize(String str) {
+        if (str == null) {
+            return 0;
+        }
+        return 16 + str.length() * 2 + 4 + (8 - ((16 + str.length() * 2 + 4) % 8)) % 8;
+    }
+
     private static InetAddress findNonLoopbackAddress() throws SocketException {
         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (networkInterfaces.hasMoreElements()) {

@@ -1,6 +1,7 @@
 package org.kobe.xbot.xdashbackend;
 
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
+import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 
 import java.io.*;
 import java.util.Properties;
@@ -49,6 +50,10 @@ public class ConfigLoader {
         properties.setProperty("servers.password", "I<3Robots!");
         properties.setProperty("servers.user", "xbot");
         properties.setProperty("server.password", "I<3Robotics!");
+        properties.setProperty("roboRIO.hostname", "roboRIO-488-FRC");
+        properties.setProperty("roboRIO.username", "admin");
+        properties.setProperty("roboRIO.server", "roboRIO-488-FRC.local");
+        properties.setProperty("roboRIO.address", "10.4.88.2");
         logger.info("Default properties set.");
     }
 

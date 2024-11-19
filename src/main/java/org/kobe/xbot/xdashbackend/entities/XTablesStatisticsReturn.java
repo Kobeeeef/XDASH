@@ -1,7 +1,7 @@
 package org.kobe.xbot.xdashbackend.entities;
 
 import com.google.gson.Gson;
-import org.kobe.xbot.Client.XTablesClient;
+import org.kobe.xbot.Utilities.LatencyInfo;
 
 public class XTablesStatisticsReturn extends DataReturn {
     private static final Gson gson = new Gson();
@@ -10,7 +10,7 @@ public class XTablesStatisticsReturn extends DataReturn {
     private final Double networkLatencyMS;
     private final Double roundTripLatencyMS;
 
-    public XTablesStatisticsReturn(boolean connected, XTablesClient.LatencyInfo info) {
+    public XTablesStatisticsReturn(boolean connected, LatencyInfo info) {
         this.connected = connected;
         this.info = info == null ? null : gson.toJson(info.getSystemStatistics());
         this.networkLatencyMS = info == null ? null : info.getNetworkLatencyMS();

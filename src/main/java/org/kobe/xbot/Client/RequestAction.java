@@ -1,6 +1,7 @@
 package org.kobe.xbot.Client;
 
 import com.google.gson.Gson;
+import org.kobe.xbot.Utilities.Exceptions.JsonParseException;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 
 import java.io.IOException;
@@ -165,7 +166,11 @@ public class RequestAction<T> {
                 if (type == null) {
                     res = (T) result;
                 } else {
-                    res = new Gson().fromJson(result, type);
+                    try {
+                        res = new Gson().fromJson(result, type);
+                    } catch (Exception e) {
+                        throw new JsonParseException(e.getMessage());
+                    }
                 }
             }
             boolean response = onResponse(parsed == null ? res : parsed);

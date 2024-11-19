@@ -18,5 +18,6 @@ public enum MethodType {
     UNSUBSCRIBE_DELETE,
     REGISTER_VIDEO_STREAM,
     GET_VIDEO_STREAM,
+    INFORMATION,
     UNKNOWN
 }

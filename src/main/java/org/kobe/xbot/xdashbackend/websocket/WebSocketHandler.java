@@ -2,6 +2,7 @@ package org.kobe.xbot.xdashbackend.websocket;
 
 import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
+import org.kobe.xbot.Utilities.LatencyInfo;
 import org.kobe.xbot.Utilities.ResponseStatus;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
@@ -9,6 +10,7 @@ import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
+import org.kobe.xbot.xdashbackend.utilities.Utilities;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -45,7 +47,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
         Message message = gson.fromJson(payload, Message.class);
         if (message.getType().equals("XTABLES-STATUS")) {
             if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
-                XTablesClient.LatencyInfo info = xTablesClient == null ? null : xTablesClient.ping_latency().complete();
+                LatencyInfo info = xTablesClient == null ? null : xTablesClient.ping_latency().complete();
 
                 int totalClients = xTablesClient == null ? 0 : info == null ? 0 : info.getSystemStatistics().getTotalClients();
                 session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(xTablesClient != null && xTablesClient.getSocketClient().isConnected, totalClients), "XTABLES-STATUS").toJSON()));
@@ -54,7 +56,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             }
         } else if (message.getType().equals("XTABLES-STATISTICS")) {
             if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
-                XTablesClient.LatencyInfo info = xTablesClient.ping_latency().complete();
+                LatencyInfo info = xTablesClient.ping_latency().complete();
                 session.sendMessage(new TextMessage(new Message(new XTablesStatisticsReturn(true, info), "XTABLES-STATISTICS").toJSON()));
             } else {
                 session.sendMessage(new TextMessage(new Message(new XTablesStatisticsReturn(false, null), "XTABLES-STATISTICS").toJSON()));
@@ -81,6 +83,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(true,XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json), "XTABLES-DATA").toJSON()));
             } else {
                 session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(false,XdashbackendApplication.xTablesViewerRef.get() != null &&XdashbackendApplication.xTablesViewerRef.get().isVisible(), null), "XTABLES-DATA").toJSON()));
+
+            }
+        }else if (message.getType().equals("XTABLES-DATA-VIEW")) {
+            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
+                String json = xTablesClient.getRawJSON().complete();
+                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(true,XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json.equals("null") || json.equals("{}") ? 0 : Utilities.estimateStringSize(json)), "XTABLES-DATA-VIEW").toJSON()));
+            } else {
+                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(false,XdashbackendApplication.xTablesViewerRef.get() != null &&XdashbackendApplication.xTablesViewerRef.get().isVisible(), 0), "XTABLES-DATA-VIEW").toJSON()));
 
             }
         } else if (message.getType().equals("XTABLES-DATA-PUT")) {

@@ -1,5 +1,6 @@
 package org.kobe.xbot.Client;
 
+import com.google.gson.Gson;
 import org.kobe.xbot.Utilities.Entities.KeyValuePair;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.Utilities.*;
@@ -25,6 +26,7 @@ public class SocketClient {
     private ExecutorService executor;
     private ThreadPoolExecutor socketExecutor;
     private String SERVER_ADDRESS;
+    private static final Gson gson = new Gson();
     private int SERVER_PORT;
     private long RECONNECT_DELAY_MS;
     private boolean CLEAR_UPDATE_MESSAGES = true;
@@ -270,6 +272,11 @@ public class SocketClient {
                                 executor.execute(() -> deleteConsumer.accept(key));
                             }
                         }
+                    }else if (requestInfo.getMethod().equals(MethodType.INFORMATION)) {
+                        ClientStatistics clientStatistics = new ClientStatistics("JAVA");
+                        clientStatistics.setVersion(XTablesClient.XTABLES_CLIENT_VERSION);
+                        String json = gson.toJson(clientStatistics);
+                        sendMessage(new ResponseInfo(null, MethodType.INFORMATION, json));
                     } else {
                         MESSAGES.add(requestInfo);
                     }
@@ -301,22 +308,22 @@ public class SocketClient {
         }
     }
 
-    public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
-        long startTime = System.currentTimeMillis();
-        long timeoutMillis = unit.toMillis(timeout);
+        public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
+            long startTime = System.currentTimeMillis();
+            long timeoutMillis = unit.toMillis(timeout);
 
-        while (System.currentTimeMillis() - startTime < timeoutMillis) {
-            try {
-                for (RequestInfo message : new ArrayList<>(MESSAGES)) {
-                    if (message != null && message.getID().equals(ID)) {
-                        MESSAGES.remove(message);
-                        return message;
+            while (System.currentTimeMillis() - startTime < timeoutMillis) {
+                try {
+                    for (RequestInfo message : new ArrayList<>(MESSAGES)) {
+                        if (message != null && message.getID().equals(ID)) {
+                            MESSAGES.remove(message);
+                            return message;
+                        }
                     }
-                }
-            } catch (Exception ignored) {}
+                } catch (Exception ignored) {}
+            }
+            return null;
         }
-        return null;
-    }
 
 
     public RequestInfo sendMessageAndWaitForReply(ResponseInfo responseInfo, long timeout, TimeUnit unit) throws InterruptedException {
@@ -420,7 +427,7 @@ public class SocketClient {
     }
 
     public boolean pushZMQ(String message) {
-        return this.ZMQ_PUSH_SOCKET.send(message, ZMQ.DONTWAIT);
+       return this.ZMQ_PUSH_SOCKET.send(message, ZMQ.DONTWAIT);
     }
     public String[] receive_nextZMQ() {
         return Utilities.tokenize(this.ZMQ_SUB_SOCKET.recvStr(), ' ', 2);
