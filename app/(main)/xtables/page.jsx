@@ -25,7 +25,7 @@ const Dashboard = () => {
     const [lastDataSizeUpdate, setLastDataSizeUpdate] = useState(new Date());
     const dt = useRef(null);
     const [data, setData] = useState([]);
-    const [viewerLoading, setViewerLoading] = useState(false)
+    const [viewerLoading, setViewerLoading] = useState(false);
     const [rawJSON, setRawJSON] = useState({});
     const [expandedRows, setExpandedRows] = useState(null);
     const commandHandler = useCallback(
@@ -158,15 +158,9 @@ const Dashboard = () => {
         [isConnected, statusData]
     );
 
-    function getStringSize(str) {
-        if (typeof str !== 'string') {
-            throw new TypeError('Input must be a string');
-        }
+    function getStringSize(byteSize) {
 
-        // Calculate the byte size of the string
-        const byteSize = new Blob([str]).size;
 
-        // Determine the appropriate unit and format the size
         if (byteSize < 1024) {
             return `${byteSize} bytes`;
         } else if (byteSize < 1024 * 1024) {
@@ -179,28 +173,37 @@ const Dashboard = () => {
     }
 
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (isConnected) {
-                sendMessageAndWaitForCondition({ type: 'XTABLES-DATA' }, (m) => m.type === 'XTABLES-DATA')
-                    .then((message) => {
-                        setStatusData((a) => {
-                            if (message.message.connected !== a?.connected) {
-                                setLastStatusUpdate(new Date());
-                            }
-                            if (message.message.json !== a?.json) setLastDataSizeUpdate(new Date());
-                            return message.message;
-                        });
-                        setRawJSON(JSON.parse(message.message.json) || {});
-                    })
-                    .catch((e) => {
-                        console.log(e)
-                    });
-            }
-        }, 500);
+        let isActive = true;
 
-        // Cleanup interval on component unmount
-        return () => clearInterval(intervalId);
+        const fetchData = async () => {
+            while (isActive && isConnected) {
+                try {
+                    const message = await sendMessageAndWaitForCondition(
+                        { type: 'XTABLES-DATA-VIEW' },
+                        (m) => m.type === 'XTABLES-DATA-VIEW'
+                    );
+
+                    setStatusData((a) => {
+                        if (message.message.connected !== a?.connected) {
+                            setLastStatusUpdate(new Date());
+                        }
+                        if(message.message.size !== a?.size) {
+                            setLastDataSizeUpdate(new Date());
+                        }
+                        return message.message;
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+                await new Promise((resolve) => setTimeout(resolve, 500));
+            }
+        };
+        fetchData();
+        return () => {
+            isActive = false;
+        };
     }, [isConnected, sendMessageAndWaitForCondition]);
+
     useEffect(() => {
         TerminalService.on('command', commandHandler);
         return () => {
@@ -221,9 +224,11 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div
+                                className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -235,9 +240,11 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
+                            <div
+                                className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -250,9 +257,11 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Data Size</span>
-                            <div className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? getStringSize(statusData?.json) || 'Unknown' : 'Disconnected') : 'Disconnected'}</div>
+                            <div
+                                className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? getStringSize(statusData?.size) || 'Unknown' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-android text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -275,16 +284,17 @@ const Dashboard = () => {
             </div>
             <div className="col-12">
                 <div className="card mb-0">
-                    <ToggleButton className={"w-full"} disabled={viewerLoading} checked={statusData?.isViewerOpen} onClick={() => {
-                        setViewerLoading(true)
-                        sendMessageAndWaitForCondition({ type: 'XTABLES-VIEWER-TOGGLE' }, (m) => m.type === 'XTABLES-DATA')
-                            .then((message) => {
-                                console.log(message)
-                                setViewerLoading(false)
-                            }).catch((e) => {
-                                setViewerLoading(false)
-                        })
-                    }} onLabel={"Disable Realtime Viewer"} offLabel={"Enable Realtime Viewer"}/>
+                    <ToggleButton className={'w-full'} disabled={viewerLoading} checked={statusData?.isViewerOpen}
+                                  onClick={() => {
+                                      setViewerLoading(true);
+                                      sendMessageAndWaitForCondition({ type: 'XTABLES-VIEWER-TOGGLE' }, (m) => m.type === 'XTABLES-DATA')
+                                          .then((message) => {
+                                              console.log(message);
+                                              setViewerLoading(false);
+                                          }).catch((e) => {
+                                          setViewerLoading(false);
+                                      });
+                                  }} onLabel={'Disable Realtime Viewer'} offLabel={'Enable Realtime Viewer'} />
                 </div>
             </div>
             <div className="col-12">
@@ -297,7 +307,7 @@ const Dashboard = () => {
                         removableSort
                         filterDisplay="row"
 
-                        emptyMessage={Loader({ message: isConnected ? statusData?.connected ? "No data found" : "Connecting to XTABLES" : "Connecting to backend"})}
+                        emptyMessage={Loader({ message: isConnected ? statusData?.connected ? 'No data found' : 'Connecting to XTABLES' : 'Connecting to backend' })}
                         dataKey="key"
                         scrollable
                         scrollHeight={'50vh'}
@@ -305,8 +315,10 @@ const Dashboard = () => {
                     >
                         <Column expander={true} style={{ width: '5rem' }} />
                         <Column field="name" header="Name" sortable f />
-                        <Column field="value" header="Value" className="font-bold max-w-1 overflow-hidden whitespace-nowrap" sortable />
-                        <Column field="type" header="Type" className="capitalize max-w-1 overflow-hidden whitespace-nowrap" sortable />
+                        <Column field="value" header="Value"
+                                className="font-bold max-w-1 overflow-hidden whitespace-nowrap" sortable />
+                        <Column field="type" header="Type"
+                                className="capitalize max-w-1 overflow-hidden whitespace-nowrap" sortable />
                     </TreeTable>
                 </div>
             </div>
@@ -322,6 +334,7 @@ function isValidJSON(jsonString) {
         return false; // The JSON is not valid
     }
 }
+
 function convertJSONForTreeTable(json) {
     const transformRecursively = (obj, parentKey = '') => {
         return Object.entries(obj).map(([key, value]) => {
@@ -337,7 +350,7 @@ function convertJSONForTreeTable(json) {
                     try {
                         transformed.data.type = (typeof JSON.parse(value.value)).toString();
                     } catch (e) {
-                        transformed.data.type = "string"
+                        transformed.data.type = 'string';
                     }
                 }
                 // Recurse if there's nested data
@@ -349,7 +362,7 @@ function convertJSONForTreeTable(json) {
                 try {
                     transformed.data.type = (typeof JSON.parse(value)).toString();
                 } catch (e) {
-                    transformed.data.type = "string"
+                    transformed.data.type = 'string';
                 }
             }
 

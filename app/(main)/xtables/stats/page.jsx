@@ -15,31 +15,46 @@ const Dashboard = () => {
     const [lastClientsUpdate, setLastClientsUpdate] = useState(new Date());
     const [lastTotalMessagesUpdate, setLastTotalMessagesUpdate] = useState(new Date());
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (isConnected) {
-                sendMessageAndWaitForCondition({ type: 'XTABLES-STATISTICS' }, (m) => m.type === 'XTABLES-STATISTICS')
-                    .then((message) => {
-                        setInfoData((a) => {
-                            if (message.message.connected !== a?.connected) {
-                                setLastStatusUpdate(new Date());
-                            }
-                            if (message.message.connected) {
-                                message.message.info = JSON.parse(message.message.info);
-                                if (message.message.info.totalClients !== a?.info?.totalClients) setLastClientsUpdate(new Date());
-                                if (message.message.info.totalMessages !== a?.info?.totalMessages) setLastTotalMessagesUpdate(new Date());
-                            }
-                            console.log(message.message);
-                            return message.message;
-                        });
-                    })
-                    .catch(() => {
-                    });
-            }
-        }, 100);
+        let isActive = true;
 
-        // Cleanup interval on component unmount
-        return () => clearInterval(intervalId);
+        const fetchData = async () => {
+            while (isActive && isConnected) {
+                try {
+                    const message = await sendMessageAndWaitForCondition(
+                        { type: 'XTABLES-STATISTICS' },
+                        (m) => m.type === 'XTABLES-STATISTICS'
+                    );
+
+                    setInfoData((a) => {
+                        if (message.message.connected !== a?.connected) {
+                            setLastStatusUpdate(new Date());
+                        }
+                        if (message.message.connected) {
+                            message.message.info = JSON.parse(message.message.info);
+                            if (message.message.info.totalClients !== a?.info?.totalClients) {
+                                setLastClientsUpdate(new Date());
+                            }
+                            if (message.message.info.totalMessages !== a?.info?.totalMessages) {
+                                setLastTotalMessagesUpdate(new Date());
+                            }
+                        }
+                        return message.message;
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+
+                await new Promise((resolve) => setTimeout(resolve, 400));
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            isActive = false; // Stops the loop when the component unmounts or dependencies change
+        };
     }, [isConnected, sendMessageAndWaitForCondition]);
+
 
     // @ts-ignore
     return (
