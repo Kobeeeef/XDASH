@@ -63,34 +63,34 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
             }
         } else if (message.getType().equals("XTABLES-VIEWER-TOGGLE")) {
-           XTablesViewer viewer = XdashbackendApplication.xTablesViewerRef.get();
-           if(viewer != null) {
-               if(viewer.isVisible()) {
-                   viewer.setVisible(false);
-               } else {
-                   viewer.setVisible(true);
-                   viewer.toFront();
-                   viewer.setAlwaysOnTop(true);
-                   viewer.setAlwaysOnTop(false);
-               }
-               session.sendMessage(new TextMessage(new Message(new StatusCode(true), "XTABLES-VIEWER-TOGGLE").toJSON()));
-           } else {
-               session.sendMessage(new TextMessage(new Message(new StatusCode(false), "XTABLES-VIEWER-TOGGLE").toJSON()));
-           }
+            XTablesViewer viewer = XdashbackendApplication.xTablesViewerRef.get();
+            if (viewer != null) {
+                if (viewer.isVisible()) {
+                    viewer.setVisible(false);
+                } else {
+                    viewer.setVisible(true);
+                    viewer.toFront();
+                    viewer.setAlwaysOnTop(true);
+                    viewer.setAlwaysOnTop(false);
+                }
+                session.sendMessage(new TextMessage(new Message(new StatusCode(true), "XTABLES-VIEWER-TOGGLE").toJSON()));
+            } else {
+                session.sendMessage(new TextMessage(new Message(new StatusCode(false), "XTABLES-VIEWER-TOGGLE").toJSON()));
+            }
         } else if (message.getType().equals("XTABLES-DATA")) {
             if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
                 String json = xTablesClient.getRawJSON().complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(true,XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json), "XTABLES-DATA").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(true, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json), "XTABLES-DATA").toJSON()));
             } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(false,XdashbackendApplication.xTablesViewerRef.get() != null &&XdashbackendApplication.xTablesViewerRef.get().isVisible(), null), "XTABLES-DATA").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(false, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), null), "XTABLES-DATA").toJSON()));
 
             }
-        }else if (message.getType().equals("XTABLES-DATA-VIEW")) {
+        } else if (message.getType().equals("XTABLES-DATA-VIEW")) {
             if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
                 String json = xTablesClient.getRawJSON().complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(true,XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json.equals("null") || json.equals("{}") ? 0 : Utilities.estimateStringSize(json)), "XTABLES-DATA-VIEW").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(true, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json.equals("null") || json.equals("{}") ? 0 : Utilities.estimateStringSize(json)), "XTABLES-DATA-VIEW").toJSON()));
             } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(false,XdashbackendApplication.xTablesViewerRef.get() != null &&XdashbackendApplication.xTablesViewerRef.get().isVisible(), 0), "XTABLES-DATA-VIEW").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(false, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), 0), "XTABLES-DATA-VIEW").toJSON()));
 
             }
         } else if (message.getType().equals("XTABLES-DATA-PUT")) {
@@ -179,6 +179,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
+        } else if (message.getType().equals("DEVICES-DATA-LIMITED")) {
+
+            List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
+            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, null), "DEVICES-DATA-LIMITED").toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
             String server = message.getMessage();
             SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
@@ -203,7 +207,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     int start = deviceLogRange.getStart();
                     int end = deviceLogRange.getEnd();
 
-                    if(start == 0 && end == 0) end = 100;
+                    if (start == 0 && end == 0) end = 100;
                     try {
                         entries = sshHostAddress.getLogs(start, end);
                     } catch (Exception ignored) {
@@ -298,6 +302,31 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             } else {
                 session.sendMessage(new TextMessage(new Message(new CommandReturn(null, "DISCONNECTED", false, true), "DEVICE-REBOOT").toJSON()));
+            }
+        } else if (message.getType().equals("DEVICES-REBOOT")) {
+            String serversMsg = message.getMessage();
+            try {
+                String[] servers = gson.fromJson(serversMsg, String[].class);
+                int failures = 0;
+                for (int i = 0; i < servers.length; i++) {
+                    String server = servers[i];
+                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
+                    if (sshHostAddress != null) {
+                        if (sshHostAddress.forceIsConnected()) {
+                            String response = sshHostAddress.sendExecCommandWithSudoPermissions("reboot");
+                            session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(response, server, i, true, false), "DEVICES-REBOOT").toJSON()));
+                        } else {
+                            failures++;
+                            session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("The machine server is not connected.", server, i, false, false), "DEVICES-REBOOT").toJSON()));
+                        }
+                    } else {
+                        failures++;
+                        session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("The machine server was not found.", server, i,  false, false), "DEVICES-REBOOT").toJSON()));
+                    }
+                }
+                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("%1$s/%2$s machines were rebooted successfully.", servers.length - failures, servers.length), null, servers.length,  failures == 0, true), "DEVICES-REBOOT").toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(e.getMessage(), null, 0, false, true), "DEVICES-REBOOT").toJSON()));
             }
         } else if (message.getType().startsWith("DEVICE-COMMAND-NEW-SESSION")) {
             String msg = message.getMessage();

@@ -77,7 +77,7 @@ public class SSHConnectionManager {
 
             // Avoid asking for key confirmation
             session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
+            session.connect(5000);
             return session;
         } catch (JSchException e) {
             sshHostAddress.setStatus("DISCONNECTED");

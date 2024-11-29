@@ -3,7 +3,6 @@ package org.kobe.xbot.xdashbackend.entities;
 import com.google.gson.Gson;
 import com.jcraft.jsch.*;
 import jakarta.servlet.http.HttpServletResponse;
-import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.websocket.WebSocketHandler;
 import org.springframework.http.HttpHeaders;
@@ -97,7 +96,6 @@ public class SSHHostAddress {
                 if (lineConsumer != null)
                     lineConsumer.accept("\u001B[33mXDASH: Previous channel disconnected successfully.");
             }
-
             channel = (ChannelShell) session.openChannel("shell");
             outputStream = channel.getOutputStream();
             InputStream inputStream = channel.getInputStream();
@@ -193,6 +191,8 @@ public class SSHHostAddress {
         }
 
         StringBuilder response = new StringBuilder();
+        int exitStatus;  // Default value for error
+
         try {
             ChannelExec execChannel = (ChannelExec) session.openChannel("exec");
             execChannel.setCommand(command);
@@ -218,14 +218,19 @@ public class SSHHostAddress {
                 }
             }
 
+            exitStatus = execChannel.getExitStatus();  // Get the exit status of the command
             execChannel.disconnect();
         } catch (JSchException | IOException e) {
             logger.severe("Failed to execute command: " + command + "\n" + e);
             return "Error: " + e.getMessage();
         }
 
+        // Append exit status to the response string
+        response.append("\nExit Status: ").append(exitStatus);
+
         return response.toString();
     }
+
 
     public List<FileInfo> listFilesAndDirectories(String remoteDir) {
         List<FileInfo> filesList = new ArrayList<>();
@@ -465,6 +470,42 @@ public class SSHHostAddress {
         @Override
         public String toString() {
             return String.format("%s/%s: %s %s %s %s", directory, name, permissions, size, date, name);
+        }
+    }
+
+    public boolean transferAndExtract(String localDir, String remoteTargetDir) {
+        String tarFilePath = localDir + ".tar.gz";
+        if (!createTar(localDir, tarFilePath)) {
+            return false;
+        }
+
+        boolean uploaded = this.uploadFile(tarFilePath, remoteTargetDir + "/" + new File(tarFilePath).getName(), null);
+        if (!uploaded) {
+            return false;
+        }
+
+        String untarCommand = String.format("tar -xzf %s -C %s", remoteTargetDir + "/" + new File(tarFilePath).getName(), remoteTargetDir);
+        String response = this.sendExecCommandWithSudoPermissions(untarCommand);
+        if (response.contains("Exit Status: -1")) {
+            return false;
+        }
+        try {
+            new File(tarFilePath).delete();
+        } catch (Exception e) {
+            logger.severe("Failed to delete tar file '" + tarFilePath +"': " + e.getMessage());
+        }
+        return true;
+    }
+
+    private static boolean createTar(String sourceDir, String outputTarFile) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("tar", "-czf", outputTarFile, "-C", sourceDir, ".");
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+            return exitCode == 0;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return false;
         }
     }
     public boolean uploadFile(String localFilePath, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
