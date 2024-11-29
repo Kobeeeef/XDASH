@@ -18,8 +18,11 @@ const Dashboard = () => {
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (isConnected) {
+        let isRequestInProgress = false;
+
+        const sendRequest = () => {
+            if (isConnected && !isRequestInProgress) {
+                isRequestInProgress = true;
                 sendMessageAndWaitForCondition({ type: 'NETWORK-SCAN' }, (m) => m.type === 'NETWORK-SCAN')
                     .then((message) => {
                         setData(d => {
@@ -27,18 +30,25 @@ const Dashboard = () => {
                             if (d?.toString() !== json?.toString()) setLastUpdate(new Date());
                             return json;
                         });
+                        isRequestInProgress = false;
+                        setTimeout(sendRequest, 300); // Trigger next request after 300ms
                     })
                     .catch(() => {
                         setData([]);
+                        isRequestInProgress = false;
+                        setTimeout(sendRequest, 300); // Retry after 300ms
                     });
-            } else {
-                setData([]);
             }
-        }, 300);
+        };
 
-        // Cleanup interval on component unmount
-        return () => clearInterval(intervalId);
+        sendRequest();
+
+        // Cleanup on component unmount
+        return () => {
+            isRequestInProgress = false;
+        };
     }, [isConnected, sendMessageAndWaitForCondition]);
+
 
 
     // @ts-ignore

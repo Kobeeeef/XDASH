@@ -19,8 +19,11 @@ const Dashboard = () => {
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (isConnected) {
+        let isRequestInProgress = false;
+
+        const sendRequest = () => {
+            if (isConnected && !isRequestInProgress) {
+                isRequestInProgress = true;
                 sendMessageAndWaitForCondition({ type: 'NETWORK-STATS' }, (m) => m.type === 'NETWORK-STATS')
                     .then((message) => {
                         setData(d => {
@@ -29,15 +32,26 @@ const Dashboard = () => {
                             if (JSON.stringify(d) !== JSON.stringify(json)) setLastUpdate(new Date());
                             return json;
                         });
+                        isRequestInProgress = false;
+                        // Call the function again immediately after the previous request starts
+                        setTimeout(sendRequest, 0);
                     })
                     .catch(() => {
+                        isRequestInProgress = false;
+                        // Retry immediately on failure
+                        setTimeout(sendRequest, 0);
                     });
             }
-        }, 800);
+        };
 
-        // Cleanup interval on component unmount
-        return () => clearInterval(intervalId);
+        sendRequest();
+
+        // Cleanup on component unmount
+        return () => {
+            isRequestInProgress = false;
+        };
     }, [isConnected, sendMessageAndWaitForCondition]);
+
 
 
     // @ts-ignore

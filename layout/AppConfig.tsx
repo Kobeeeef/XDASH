@@ -101,7 +101,7 @@ const AppConfig = (props: AppConfigProps) => {
                 <h5>Design</h5>
                 <div className="grid">
                     <div className="col-2">
-                        <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('lara-light-indigo', 'light')}>
+                        <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('/light/indigo', 'light')}>
                             <i
                                 style={{ fontSize: '1.2rem' }}
                                 className={
@@ -113,7 +113,7 @@ const AppConfig = (props: AppConfigProps) => {
                     </div>
 
                     <div className="col-2">
-                        <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('lara-dark-indigo', 'dark')}>
+                        <button className="p-link w-2rem h-2rem" onClick={() => _changeTheme('/dark/indigo', 'dark')}>
                             <i
                                 style={{ fontSize: '1.2rem' }}
                                 className={

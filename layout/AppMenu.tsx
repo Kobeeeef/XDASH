@@ -13,7 +13,8 @@ const AppMenu = () => {
     const model: AppMenuItem[] = [
         {
             label: 'Home',
-            items: [{ label: 'Dashboard', icon: 'pi pi-home', to: '/' }, {
+            items: [{ label: 'Dashboard', icon: 'pi pi-home', to: '/' },
+                {
                 label: 'Network',
                 icon: 'pi pi-sitemap',
                 items: [{ label: 'Statistics', icon: 'pi pi-wifi', to: '/network/stats' }, {
@@ -21,7 +22,9 @@ const AppMenu = () => {
                     icon: 'pi pi-globe',
                     to: '/network/mDNS'
                 }, { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' }]
-            },{ label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' }]
+            },
+                { label: 'Machine Scripts', icon: 'pi pi-code', to: '/scripts' },
+                { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' }]
         },
 
         {

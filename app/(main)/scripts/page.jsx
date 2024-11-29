@@ -1,0 +1,318 @@
+/* eslint-disable @next/next/no-img-element */
+'use client';
+
+
+import React, { useContext, useEffect, useRef, useState } from 'react';
+
+import { WebsocketContext } from '../../../layout/context/websocketcontext';
+import TimeAgo from '../../../components/TimeAgo';
+import { Stepper } from 'primereact/stepper';
+import { StepperPanel } from 'primereact/stepperpanel';
+import { MultiSelect } from 'primereact/multiselect';
+import { Toast } from 'primereact/toast';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+
+
+const Dashboard = () => {
+    const toast = useRef(null);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
+    const [lastUpdate, setLastUpdate] = useState(new Date());
+    const [devices, setDevices] = useState([]);
+    const [selectedDevices, setSelectedDevices] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [rebootDialogVisible, setRebootDialogVisible] = useState(false);
+    const [finalResponse, setFinalResponse] = useState(null);
+    const [finalResponseStatus, setFinalResponseStatus] = useState(null);
+    const stepperRef = useRef(null);
+    useEffect(() => {
+        let isRequestInProgress = false;
+
+        const sendRequest = () => {
+            if (isConnected && !isRequestInProgress) {
+                isRequestInProgress = true;
+                sendMessageAndWaitForCondition({ type: 'DEVICES-DATA-LIMITED' }, (m) => m.type === 'DEVICES-DATA-LIMITED')
+                    .then((message) => {
+                        setDevices(d => {
+                            try {
+                                const json = JSON.parse(message?.message?.devices);
+                                if (d.length !== json?.length) setLastUpdate(new Date());
+                                return json;
+                            } catch (e) {
+                                return [];
+                            }
+                        });
+                        isRequestInProgress = false;
+                        // Call the function again immediately after the previous request starts
+                        setTimeout(sendRequest, 200);
+                    })
+                    .catch(() => {
+                        isRequestInProgress = false;
+                        // Retry immediately on failure
+                        setTimeout(sendRequest, 400);
+                    });
+            }
+        };
+
+        sendRequest();
+
+        // Cleanup on component unmount
+        return () => {
+            isRequestInProgress = false;
+        };
+    }, [isConnected, sendMessageAndWaitForCondition]);
+
+    function reboot() {
+        setLoading(true);
+        setRebootDialogVisible(true);
+        setFinalResponse(null);
+        setFinalResponseStatus(null);
+        sendMessageAndWaitForCondition({
+            type: 'DEVICES-REBOOT',
+            message: JSON.stringify(selectedDevices.map(m => m.server))
+        }, (m) => {
+            if (m.type === 'DEVICES-REBOOT') {
+                const msg = JSON.parse(m.message);
+                if (msg.finished) {
+                    if (stepperRef.current) stepperRef.current.setActiveStep(selectedDevices.length);
+                    setFinalResponse(msg?.response ?? 'There was no response back from server.');
+                    setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
+                    return true;
+                }
+                if (stepperRef.current)
+                    stepperRef.current.setActiveStep(msg.step);
+                if (msg.server) {
+                    let server = selectedDevices.find(s => s.server === msg.server);
+                    if (server) {
+                        if (msg.response) {
+                            server.response = msg.response;
+                        }
+                        if (msg.success) {
+                            server.success = msg.success;
+                        } else {
+                            server.success = false;
+                        }
+                    }
+                }
+                return false;
+            }
+
+        }, 5000)
+            .then(() => {
+                setLoading(false);
+            })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || 'Unknown Exception...'
+                });
+                setLoading(false);
+            });
+    }
+
+    // @ts-ignore
+    return (
+        <div className="grid fadeIn">
+            <Toast ref={toast} />
+            <Dialog draggable={false} visible={rebootDialogVisible} style={{ width: '50vw' }} onHide={() => {
+                if (!rebootDialogVisible) return;
+                setRebootDialogVisible(false);
+            }}>
+                <Stepper ref={stepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
+
+                    {selectedDevices.map((m, key) => {
+                        return (
+                            <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
+                                <div className="flex flex-column h-12rem items-center justify-center">
+                                    <div
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                        {m?.success === true ? 'Command Sent Successfully' : m?.success === false ? 'System Failed Reboot' : 'System Awaiting Reboot'}
+                                    </div>
+                                    <div
+                                        className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                        {m?.response}
+                                    </div>
+                                </div>
+
+
+                            </StepperPanel>
+                        );
+                    })}
+
+                    <StepperPanel header={'Finish'}>
+                        <div className="flex flex-column h-12rem items-center justify-center">
+                            <div
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500' : 'text-yellow-500')}>
+                                {finalResponseStatus === true ? 'All Systems Rebooted' : finalResponseStatus === false ? 'Systems Failed Reboot' : 'Awaiting Final Response'}
+                            </div>
+                            <div
+                                className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                {finalResponse}
+                            </div>
+                        </div>
+
+                    </StepperPanel>
+                </Stepper>
+            </Dialog>
+            <div className="col-12 lg:col-6">
+                <div className="card mb-0">
+                    <div className="flex justify-content-between mb-3">
+                        <div>
+                            <span className="block text-500 font-medium mb-3">Backend Status</span>
+                            <div
+                                className="text-900 font-medium text-xl font-bold"> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                        </div>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                            <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
+                        </div>
+                    </div>
+                    <TimeAgo date={lastConnectionUpdate} />
+                </div>
+            </div>
+
+            <div className="col-12 lg:col-6">
+                <div className="card mb-0">
+                    <div className="flex justify-content-between mb-3">
+                        <div>
+                            <span className="block text-500 font-medium mb-3">Total Machines</span>
+                            <div
+                                className="text-900 font-medium text-xl font-bold">{isConnected ? devices?.length ?? 0 : 'Disconnected'}</div>
+                        </div>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                            <i className="pi pi-android text-cyan-500 text-xl" />
+                        </div>
+                    </div>
+                    <TimeAgo date={lastUpdate} />
+                </div>
+            </div>
+            <div className="col-12">
+                <div className="card mb-0">
+                    <MultiSelect disabled={!isConnected} onChange={(e) => {
+                        const filtered = e.value.filter(e => e?.status !== 'CONNECTED');
+                        if (filtered.length > 0) {
+                            filtered.forEach(e => {
+                                toast.current.show({
+                                    severity: 'error',
+                                    summary: 'Server Not Connected!',
+                                    detail: `${e.server} is not connected.`
+                                });
+                            });
+                        }
+                        setSelectedDevices(e.value.filter(e => e?.status === 'CONNECTED'));
+                    }} value={selectedDevices} options={devices} optionLabel="server" display="chip"
+                                 placeholder="Select Machines" itemTemplate={template} className="w-full" />
+                </div>
+            </div>
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-unlock" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Unlock & Mount Filesystem</div>
+                            <span className="text-sm text-gray-500 block">Unlock the filesystem and mount the disk for immediate access.</span>
+                        </div>
+                    </div>
+                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-folder" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Transfer and Synchronize Folder</div>
+                            <span className="text-sm text-gray-500 block">Compress, transfer, and extract the folder on the remote system.</span>
+                        </div>
+                    </div>
+                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
+
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-wifi" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Restart Networking</div>
+                            <span className="text-sm text-gray-500 block">Restart network services to re-establish connections.</span>
+                        </div>
+                    </div>
+                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-sitemap" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Flush DNS Cache</div>
+                            <span className="text-sm text-gray-500 block">Clear DNS cache to resolve domain resolution issues.</span>
+                        </div>
+                    </div>
+                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-inbox" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Update Software Packages</div>
+                            <span className="text-sm text-gray-500 block">Update installed software packages to their latest versions.</span>
+                        </div>
+                    </div>
+                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
+
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-sync" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Reboot Machine</div>
+                            <span className="text-sm text-gray-500 block">Restart the system for a clean state.</span>
+                        </div>
+                    </div>
+                    <Button onClick={reboot} icon={'pi pi-play'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
+
+        </div>
+    )
+        ;
+};
+
+const template = (option) => {
+    return (
+        <div className="ml-4 flex items-center justify-between w-full border border-gray-300 rounded-lg shadow-md">
+            <span className="text-lg font-medium">{option.server}&nbsp;|&nbsp;{option.address}&nbsp;|&nbsp;</span>
+            <span
+                className={('text-lg font-bold ') + (option?.status === 'CONNECTED' ? 'text-green-500' : option?.status === 'CONNECTING' ? 'text-yellow-500' : 'text-red-500')}>{option.status}</span>
+        </div>
+    );
+};
+
+
+export default Dashboard;
