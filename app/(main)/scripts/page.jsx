@@ -12,6 +12,9 @@ import { MultiSelect } from 'primereact/multiselect';
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { Divider } from 'primereact/divider';
+import { Badge } from 'primereact/badge';
 
 
 const Dashboard = () => {
@@ -22,35 +25,45 @@ const Dashboard = () => {
     const [selectedDevices, setSelectedDevices] = useState([]);
     const [loading, setLoading] = useState(false);
     const [rebootDialogVisible, setRebootDialogVisible] = useState(false);
-    const [finalResponse, setFinalResponse] = useState(null);
+    const [transferFilesInputDialogVisible, setTransferFilesInputDialogVisible] = useState(false);
+    const [transferFilesDialogVisible, setTransferFilesDialogVisible] = useState(false);
+    const [finalResponseData, setFinalResponseData] = useState(null);
     const [finalResponseStatus, setFinalResponseStatus] = useState(null);
-    const stepperRef = useRef(null);
+    const rebootStepperRef = useRef(null);
+    const transferFilesStepperRef = useRef(null);
+
+    const [localDirectoryInput, setLocalDirectoryInput] = useState(null);
+    const [targetDirectoryInput, setTargetDirectoryInput] = useState(null);
     useEffect(() => {
         let isRequestInProgress = false;
 
         const sendRequest = () => {
             if (isConnected && !isRequestInProgress) {
                 isRequestInProgress = true;
-                sendMessageAndWaitForCondition({ type: 'DEVICES-DATA-LIMITED' }, (m) => m.type === 'DEVICES-DATA-LIMITED')
-                    .then((message) => {
-                        setDevices(d => {
-                            try {
-                                const json = JSON.parse(message?.message?.devices);
-                                if (d.length !== json?.length) setLastUpdate(new Date());
-                                return json;
-                            } catch (e) {
-                                return [];
-                            }
+                try {
+                    sendMessageAndWaitForCondition({ type: 'DEVICES-DATA-LIMITED' }, (m) => m.type === 'DEVICES-DATA-LIMITED')
+                        .then((message) => {
+                            setDevices(d => {
+                                try {
+                                    const json = JSON.parse(message?.message?.devices);
+                                    if (d.length !== json?.length) setLastUpdate(new Date());
+                                    return json;
+                                } catch (e) {
+                                    return [];
+                                }
+                            });
+                            isRequestInProgress = false;
+                            // Call the function again immediately after the previous request starts
+                            setTimeout(sendRequest, 200);
+                        })
+                        .catch(() => {
+                            isRequestInProgress = false;
+                            // Retry immediately on failure
+                            setTimeout(sendRequest, 400);
                         });
-                        isRequestInProgress = false;
-                        // Call the function again immediately after the previous request starts
-                        setTimeout(sendRequest, 200);
-                    })
-                    .catch(() => {
-                        isRequestInProgress = false;
-                        // Retry immediately on failure
-                        setTimeout(sendRequest, 400);
-                    });
+                } catch (e) {
+                    console.log(e)
+                }
             }
         };
 
@@ -61,12 +74,102 @@ const Dashboard = () => {
             isRequestInProgress = false;
         };
     }, [isConnected, sendMessageAndWaitForCondition]);
+    function transferFiles() {
+        setLoading(true);
+        setTransferFilesDialogVisible(true);
+        setTransferFilesInputDialogVisible(false)
+        setFinalResponseData(null);
+        setFinalResponseStatus(null);
+        setSelectedDevices(devices => {
+            return devices.map(m => {
+                m.success = null
+                m.response = null
+                return m
+            });
+        })
+        sendMessageAndWaitForCondition({
+            type: 'DEVICES-TRANSFER-FILES',
+            message: JSON.stringify({
+                servers: selectedDevices.map(m => m.server),
+                localDirectory: localDirectoryInput,
+                remoteDirectory: targetDirectoryInput
+            })
+        }, (m) => {
+            if (m.type === 'DEVICES-TRANSFER-FILES') {
+                const msg = JSON.parse(m.message);
+                if (msg.finished) {
+                    if (transferFilesStepperRef.current) transferFilesStepperRef.current.setActiveStep(selectedDevices.length + 2);
+                    setFinalResponseData(prevState => ({
+                        ...prevState,
+                        response: msg?.response ?? 'There was no response back from server.',
+                    }));
+                    setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
+                    return true;
+                }
+                if (transferFilesStepperRef.current)
+                    transferFilesStepperRef.current.setActiveStep(msg.step);
+                console.log(msg)
+                if(msg.step === 0) {
 
+                    setFinalResponseData(prevState => ({
+                        ...prevState,
+                        tar_response: msg.response,
+                        tar_success: msg.success
+                    }));
+                }
+                if(msg.step === selectedDevices.length + 1) {
+                    setFinalResponseData(prevState => ({
+                        ...prevState,
+                        cleanup_response: msg.response,
+                        cleanup_success: msg.success
+                    }));
+                }
+                if (msg.server) {
+                    setSelectedDevices(prevState =>
+                        prevState.map(s =>
+                            s.server === msg.server
+                                ? {
+                                    ...s,
+                                    response: msg.response || s.response,
+                                    success: msg.success !== undefined ? msg.success : false
+                                }
+                                : s
+                        )
+                    );
+
+                }
+                return false;
+            }
+
+        }, 60000)
+            .then(() => {
+                setLoading(false);
+            })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || 'Unknown Exception...'
+                });
+                if (transferFilesStepperRef.current)
+                    transferFilesStepperRef.current.setActiveStep(selectedDevices.length + 1);
+                setFinalResponseStatus(false)
+                setFinalResponseData({ response: e?.message || 'Unknown Exception...'})
+                setLoading(false);
+            });
+    }
     function reboot() {
         setLoading(true);
         setRebootDialogVisible(true);
-        setFinalResponse(null);
+        setFinalResponseData(null);
         setFinalResponseStatus(null);
+        setSelectedDevices(devices => {
+            return devices.map(m => {
+                m.success = null
+                m.response = null
+                return m
+            });
+        })
         sendMessageAndWaitForCondition({
             type: 'DEVICES-REBOOT',
             message: JSON.stringify(selectedDevices.map(m => m.server))
@@ -74,13 +177,13 @@ const Dashboard = () => {
             if (m.type === 'DEVICES-REBOOT') {
                 const msg = JSON.parse(m.message);
                 if (msg.finished) {
-                    if (stepperRef.current) stepperRef.current.setActiveStep(selectedDevices.length);
-                    setFinalResponse(msg?.response ?? 'There was no response back from server.');
+                    if (rebootStepperRef.current) rebootStepperRef.current.setActiveStep(selectedDevices.length);
+                    setFinalResponseData({ response: msg?.response ?? 'There was no response back from server.'});
                     setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
                     return true;
                 }
-                if (stepperRef.current)
-                    stepperRef.current.setActiveStep(msg.step);
+                if (rebootStepperRef.current)
+                    rebootStepperRef.current.setActiveStep(msg.step);
                 if (msg.server) {
                     let server = selectedDevices.find(s => s.server === msg.server);
                     if (server) {
@@ -115,11 +218,95 @@ const Dashboard = () => {
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
+            <Dialog header={'Select Host & Target Destination'} draggable={false} visible={transferFilesInputDialogVisible}
+                    style={{ width: '50vw' }} onHide={() => {
+                if (!transferFilesInputDialogVisible) return;
+                setTransferFilesInputDialogVisible(false);
+            }} footer={() => (
+                <Button loading={loading} onClick={transferFiles} disabled={!isConnected || !localDirectoryInput || !targetDirectoryInput} label={'Execute'}
+                        severity={'danger'} className={'w-full'}></Button>
+            )}>
+                <Divider align="center">
+                    <Badge value="Local Directory"></Badge>
+                </Divider>
+
+                <InputText placeholder={'Local Directory Path'} className={'w-full'} value={localDirectoryInput}
+                           onChange={(e) => setLocalDirectoryInput(e.target.value)} />
+
+
+                <Divider align="center">
+                    <Badge value="Target Directory"></Badge>
+                </Divider>
+
+                <InputText placeholder={'Target Directory Path'} className={'w-full'} value={targetDirectoryInput}
+                           onChange={(e) => setTargetDirectoryInput(e.target.value)} />
+            </Dialog>
+            <Dialog draggable={false} visible={transferFilesDialogVisible} style={{ width: '50vw' }} onHide={() => {
+                if (!transferFilesDialogVisible) return;
+                setTransferFilesDialogVisible(false);
+            }}>
+                <Stepper ref={transferFilesStepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
+                    <StepperPanel header={'Tar Files'}>
+                        <div className="flex flex-column h-12rem items-center justify-center">
+                            <div
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.tar_success === true ? 'text-green-500' : finalResponseData?.tar_success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                {finalResponseData?.tar_success === true ? 'All Files Compressed' : finalResponseData?.tar_success === false ? 'Systems Failed Compression' : 'Awaiting Final Response'}
+                            </div>
+                            <div
+                                className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                {finalResponseData?.tar_response || finalResponseData?.response}
+                            </div>
+                        </div>
+                    </StepperPanel>
+                    {selectedDevices.map((m, key) => {
+                        return (
+                            <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
+                                <div className="flex flex-column h-12rem items-center justify-center">
+                                    <div
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                        {m?.success === true ? 'Files Transferred Successfully' : m?.success === false ? 'System Failed Transfer' : 'System Awaiting Transfer'}
+                                    </div>
+                                    <div
+                                        className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                        {m?.response}
+                                    </div>
+                                </div>
+
+
+                            </StepperPanel>
+                        );
+                    })}
+                    <StepperPanel header={'Cleanup'}>
+                        <div className="flex flex-column h-12rem items-center justify-center">
+                            <div
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.cleanup_success === true ? 'text-green-500' : finalResponseData?.cleanup_success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                {finalResponseData?.cleanup_success === true ? 'All Files Compressed' : finalResponseData?.cleanup_success === false ? 'Systems Failed Compression' : 'Awaiting Final Response'}
+                            </div>
+                            <div
+                                className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                {finalResponseData?.cleanup_response || finalResponseData?.response}
+                            </div>
+                        </div>
+                    </StepperPanel>
+                    <StepperPanel header={'Final Status'}>
+                        <div className="flex flex-column h-12rem items-center justify-center">
+                            <div
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500' : 'text-yellow-500')}>
+                                {finalResponseStatus === true ? 'All Files Transfered' : finalResponseStatus === false ? 'Systems Failed Transfer' : 'Awaiting Final Response'}
+                            </div>
+                            <div
+                                className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                {finalResponseData?.response}
+                            </div>
+                        </div>
+                    </StepperPanel>
+                </Stepper>
+            </Dialog>
             <Dialog draggable={false} visible={rebootDialogVisible} style={{ width: '50vw' }} onHide={() => {
                 if (!rebootDialogVisible) return;
                 setRebootDialogVisible(false);
             }}>
-                <Stepper ref={stepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
+                <Stepper ref={rebootStepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
 
                     {selectedDevices.map((m, key) => {
                         return (
@@ -148,7 +335,7 @@ const Dashboard = () => {
                             </div>
                             <div
                                 className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
-                                {finalResponse}
+                                {finalResponseData?.response}
                             </div>
                         </div>
 
@@ -216,7 +403,7 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Unlock the filesystem and mount the disk for immediate access.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -231,7 +418,8 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Compress, transfer, and extract the folder on the remote system.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                    <Button onClick={() => setTransferFilesInputDialogVisible(true)} icon={'pi pi-play-circle'}
+                            severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -247,7 +435,7 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Restart network services to re-establish connections.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -262,7 +450,7 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Clear DNS cache to resolve domain resolution issues.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -277,7 +465,7 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Update installed software packages to their latest versions.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play'} severity={'danger'} loading={loading}
+                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -293,15 +481,32 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Restart the system for a clean state.</span>
                         </div>
                     </div>
-                    <Button onClick={reboot} icon={'pi pi-play'} severity={'danger'} loading={loading}
+                    <Button onClick={reboot} icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
             </div>
-
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-book" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Custom Script</div>
+                            <span className="text-sm text-gray-500 block">Run a custom script on the machines.</span>
+                        </div>
+                    </div>
+                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
         </div>
-    )
-        ;
+    );
+
+
+
+
 };
 
 const template = (option) => {

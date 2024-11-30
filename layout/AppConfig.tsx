@@ -52,7 +52,6 @@ const AppConfig = (props: AppConfigProps) => {
         applyScale();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [layoutConfig.scale]);
-
     return (
         <>
             <button className="layout-config-button config-link" type="button" onClick={onConfigButtonClick}>
@@ -85,17 +84,7 @@ const AppConfig = (props: AppConfigProps) => {
                             </div>
                         </div>
 
-                        <h5>Input Style</h5>
-                        <div className="flex">
-                            <div className="field-radiobutton flex-1">
-                                <RadioButton name="inputStyle" value={'outlined'} checked={layoutConfig.inputStyle === 'outlined'} onChange={(e) => changeInputStyle(e)} inputId="outlined_input"></RadioButton>
-                                <label htmlFor="outlined_input">Outlined</label>
-                            </div>
-                            <div className="field-radiobutton flex-1">
-                                <RadioButton name="inputStyle" value={'filled'} checked={layoutConfig.inputStyle === 'filled'} onChange={(e) => changeInputStyle(e)} inputId="filled_input"></RadioButton>
-                                <label htmlFor="filled_input">Filled</label>
-                            </div>
-                        </div>
+
                     </>
                 )}
                 <h5>Design</h5>
@@ -106,7 +95,7 @@ const AppConfig = (props: AppConfigProps) => {
                                 style={{ fontSize: '1.2rem' }}
                                 className={
                                     'pi pi-sun p-1 transition-colors duration-300 transform border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 ' +
-                                    (layoutConfig.theme == 'lara-light-indigo' ? 'bg-blue-500 border-blue-500' : 'border-gray-400')
+                                    (layoutConfig.theme == '/light/indigo' ? 'bg-blue-500 border-blue-500' : 'border-gray-400')
                                 }
                             ></i>
                         </button>
@@ -118,7 +107,7 @@ const AppConfig = (props: AppConfigProps) => {
                                 style={{ fontSize: '1.2rem' }}
                                 className={
                                     'pi pi-moon p-1 transition-colors duration-300 transform  border-round border-solid hover:bg-blue-500 hover:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80 ' +
-                                    (layoutConfig.theme == 'lara-dark-indigo' ? 'bg-blue-500 border-blue-500' : 'border-gray-400')
+                                    (layoutConfig.theme == '/dark/indigo' ? 'bg-blue-500 border-blue-500' : 'border-gray-400')
                                 }
                             ></i>
                         </button>
