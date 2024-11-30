@@ -17,6 +17,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.jmdns.ServiceInfo;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -321,12 +323,77 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         }
                     } else {
                         failures++;
-                        session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("The machine server was not found.", server, i,  false, false), "DEVICES-REBOOT").toJSON()));
+                        session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("The machine server was not found.", server, i, false, false), "DEVICES-REBOOT").toJSON()));
                     }
                 }
-                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("%1$s/%2$s machines were rebooted successfully.", servers.length - failures, servers.length), null, servers.length,  failures == 0, true), "DEVICES-REBOOT").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("%1$s/%2$s machines were rebooted successfully.", servers.length - failures, servers.length), null, servers.length, failures == 0, true), "DEVICES-REBOOT").toJSON()));
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(e.getMessage(), null, 0, false, true), "DEVICES-REBOOT").toJSON()));
+            }
+        } else if (message.getType().equals("DEVICES-TRANSFER-FILES")) {
+            String msg = message.getMessage();
+            try {
+                DevicesTransferFiles devicesTransferFiles = gson.fromJson(msg, DevicesTransferFiles.class);
+                if (!Utilities.isValidDirectory(devicesTransferFiles.getLocalDirectory())) {
+                    session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("The local directory does not exist.", null, 0, false, true), "DEVICES-TRANSFER-FILES").toJSON()));
+                    return;
+                }
+
+                int failures = 0;
+                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("Creating TAR file now...", null, 0, true, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                String tarFilePath = Utilities.formatDirectoryPath(devicesTransferFiles.getLocalDirectory()) + "xdash.tar.gz";
+                if (!Utilities.createTar(devicesTransferFiles.getLocalDirectory(), tarFilePath)) {
+                    session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("Failed to create TAR file.", null, 0, false, true), "DEVICES-TRANSFER-FILES").toJSON()));
+                    return;
+                }
+                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("TAR file successfully created at: " + tarFilePath, null, 0, true, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                logger.info(String.format("TAR File created at: '%1$s'", tarFilePath));
+                String[] servers = devicesTransferFiles.getServers();
+                for (int i = 0; i < servers.length; i++) {
+                    String server = servers[i];
+                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
+                    if (sshHostAddress != null) {
+                        if (sshHostAddress.forceIsConnected()) {
+                            int finalI = i;
+                            boolean response = sshHostAddress.transferAndExtract(tarFilePath, devicesTransferFiles.getRemoteDirectory(), (a) -> {
+                                try {
+                                    session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("%1$s | %2$s | %3$s/%4$s bytes", a.getMessage(), Utilities.formatNumber(a.getPercentage(), 3), a.getCurrentBytes(), a.getTotalBytes()), server, finalI + 1, true, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                                } catch (Exception ignored) {}
+                            });
+                            if (response)
+                                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("All files were sent successfully.", server, i + 1, true, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                            else {
+                                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(null, server, finalI + 1, false, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                                failures++;
+                            }
+
+                        } else {
+                            failures++;
+                            session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("The machine server is not connected.", server, i + 1, false, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                        }
+                    } else {
+                        failures++;
+                        session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn("The machine server was not found.", server, i + 1, false, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                    }
+                }
+                try {
+                    session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("Deleting TAR file at: '%1$s'...", tarFilePath), null, servers.length + 1, false, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                    boolean success = new File(tarFilePath).delete();
+                    if(success) {
+                        session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("Deleted TAR file at: '%1$s'...", tarFilePath), null, servers.length + 1, true, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                        logger.info(String.format("Deleted file at: '%1$s'", tarFilePath));
+                    }
+                    else {
+                        session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("Failed to deleted TAR file at: '%1$s'...", tarFilePath), null, servers.length + 1, false, false), "DEVICES-TRANSFER-FILES").toJSON()));
+                        logger.info(String.format("Failed to delete file at: '%1$s'", tarFilePath));
+                    }
+
+                } catch (Exception e) {
+                    logger.severe("Failed to delete tar file '" + tarFilePath + "': " + e.getMessage());
+                }
+                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(String.format("%1$s/%2$s machines were updated successfully.", servers.length - failures, servers.length), null, servers.length + 2, failures == 0, true), "DEVICES-TRANSFER-FILES").toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new DevicesRebootReturn(e.getMessage(), null, 0, false, true), "DEVICES-TRANSFER-FILES").toJSON()));
             }
         } else if (message.getType().startsWith("DEVICE-COMMAND-NEW-SESSION")) {
             String msg = message.getMessage();

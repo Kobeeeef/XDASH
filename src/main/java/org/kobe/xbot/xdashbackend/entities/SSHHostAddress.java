@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 public class SSHHostAddress {
     private static final Gson gson = new Gson();
@@ -28,6 +27,7 @@ public class SSHHostAddress {
     private transient OutputStream outputStream;
     private final String username;
     private final String password;
+
     public SSHHostAddress(String hostname, String username, String password, String address, String server) {
         this.username = username;
         this.password = password;
@@ -338,7 +338,8 @@ public class SSHHostAddress {
                                 JournalEntry entry = gson.fromJson(line, JournalEntry.class);
                                 entry.setServer(server);
                                 journalEntries.add(entry);
-                            } catch (Exception ignored) {}
+                            } catch (Exception ignored) {
+                            }
                         }
 
                         linesRead++;
@@ -395,10 +396,11 @@ public class SSHHostAddress {
                         try {
                             JournalEntry entry = gson.fromJson(trimmed, JournalEntry.class);
                             entry.setServer(server);
-                            if(entry.getPRIORITY() < 5 && !entry.get_COMM().equals("update-notifier") ) {
+                            if (entry.getPRIORITY() < 5 && !entry.get_COMM().equals("update-notifier")) {
                                 WebSocketHandler.broadcast(entry, "DEVICE-ERROR-LOG");
                             }
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
                     }
 
                 } catch (IOException e) {
@@ -418,7 +420,6 @@ public class SSHHostAddress {
 
         return true;
     }
-
 
 
     public static class FileInfo {
@@ -455,6 +456,7 @@ public class SSHHostAddress {
         public String getName() {
             return name;
         }
+
         public boolean isDirectory() {
             return permissions.startsWith("d");
         }
@@ -473,43 +475,29 @@ public class SSHHostAddress {
         }
     }
 
-    public boolean transferAndExtract(String localDir, String remoteTargetDir) {
-        String tarFilePath = localDir + ".tar.gz";
-        if (!createTar(localDir, tarFilePath)) {
-            return false;
-        }
-
-        boolean uploaded = this.uploadFile(tarFilePath, remoteTargetDir + "/" + new File(tarFilePath).getName(), null);
+    public boolean transferAndExtract(String tarFilePath, String remoteTargetDir, Consumer<TransferProgress> progressConsumer) {
+        TransferProgress progress = new TransferProgress("Uploading file now...", 0, 0, 0);
+        progressConsumer.accept(progress);
+        boolean uploaded = this.uploadFile(tarFilePath, remoteTargetDir + "/" + new File(tarFilePath).getName(), progressConsumer);
         if (!uploaded) {
             return false;
         }
-
+        progress.setMessage("Extracting files onto target machine...");
+        progressConsumer.accept(progress);
         String untarCommand = String.format("tar -xzf %s -C %s", remoteTargetDir + "/" + new File(tarFilePath).getName(), remoteTargetDir);
         String response = this.sendExecCommandWithSudoPermissions(untarCommand);
         if (response.contains("Exit Status: -1")) {
             return false;
         }
-        try {
-            new File(tarFilePath).delete();
-        } catch (Exception e) {
-            logger.severe("Failed to delete tar file '" + tarFilePath +"': " + e.getMessage());
-        }
+        progress.setMessage("Successfully extracted all files onto machine.");
+        progressConsumer.accept(progress);
+
         return true;
     }
 
-    private static boolean createTar(String sourceDir, String outputTarFile) {
-        try {
-            ProcessBuilder pb = new ProcessBuilder("tar", "-czf", outputTarFile, "-C", sourceDir, ".");
-            Process process = pb.start();
-            int exitCode = process.waitFor();
-            return exitCode == 0;
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
     public boolean uploadFile(String localFilePath, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
         if (session == null || !forceIsConnected()) {
+            logger.severe("SSH session is not connected.");
             throw new IllegalStateException("SSH session is not connected.");
         }
 
@@ -524,9 +512,12 @@ public class SSHHostAddress {
             InputStream in = execChannel.getInputStream();
 
             execChannel.connect();
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
+            logger.info("Connected to remote server for file upload.");
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
 
             if (checkAck(in, progressConsumer) != 0) {
+                logger.severe("Failed during SCP initialization acknowledgment.");
                 return false;
             }
 
@@ -535,12 +526,16 @@ public class SSHHostAddress {
             String command = "C0644 " + fileSize + " " + localFile.getName() + "\n";
             out.write(command.getBytes());
             out.flush();
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Sent file information for " + localFile.getName(), 0, 0, fileSize));
+            logger.info("Sent file information for " + localFile.getName());
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Sent file information for " + localFile.getName(), 0, 0, fileSize));
 
             if (checkAck(in, progressConsumer) != 0) {
+                logger.severe("Failed during file information acknowledgment.");
                 return false;
             }
 
+            // Read file into memory and send in chunks
             try (FileInputStream fis = new FileInputStream(localFile)) {
                 byte[] buffer = new byte[1024];
                 int length;
@@ -550,7 +545,7 @@ public class SSHHostAddress {
                     totalRead += length;
                     if (progressConsumer != null) {
                         double percentage = ((double) totalRead / fileSize) * 100;
-                        progressConsumer.accept(new TransferProgress("Uploading...", percentage, totalRead, fileSize));
+                        progressConsumer.accept(new TransferProgress("Writing data to server...", percentage, totalRead, fileSize));
                     }
                 }
             }
@@ -560,14 +555,18 @@ public class SSHHostAddress {
             out.flush();
 
             if (checkAck(in, progressConsumer) != 0) {
+                logger.severe("Failed during end-of-file acknowledgment.");
                 return false;
             }
 
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+            logger.info("File upload completed successfully.");
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
             return true;
         } catch (JSchException | IOException e) {
-            logger.severe("File upload failed: " + e.getMessage());
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
+            e.printStackTrace();
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
             return false;
         } finally {
             if (channel != null) {
@@ -575,6 +574,98 @@ public class SSHHostAddress {
             }
         }
     }
+
+//    public boolean uploadFile(String localFilePath, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
+//        if (session == null || !forceIsConnected()) {
+//            throw new IllegalStateException("SSH session is not connected.");
+//        }
+//        System.out.println(localFilePath);
+//        System.out.println(remoteFilePath);
+//        Channel channel = null;
+//        try {
+//            channel = session.openChannel("exec");
+//            ChannelExec execChannel = (ChannelExec) channel;
+//
+//            // Extract the directory part of the remote path
+//            String remoteDir = remoteFilePath.substring(0, remoteFilePath.lastIndexOf('/'));
+//
+//            // Separate mkdir and scp commands
+//            execChannel.setCommand("mkdir -p " + remoteDir); // Create the remote directory
+//            execChannel.connect();
+//            if (checkAck(execChannel.getInputStream(), progressConsumer) != 0) {
+//                if (progressConsumer != null)
+//                    progressConsumer.accept(new TransferProgress("The server did not acknowledge the directory creation.", 0, 0, 0));
+//            }
+//            channel = session.openChannel("exec");
+//            execChannel = (ChannelExec) channel;
+//            String cmd = "echo \"" + password + "\" | sudo -S scp -t " + remoteFilePath;
+//
+//            execChannel.setCommand(cmd);
+//
+//            OutputStream out = execChannel.getOutputStream();
+//            InputStream in = execChannel.getInputStream();
+//
+//            execChannel.connect();
+//            if (progressConsumer != null)
+//                progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
+//
+//            if (checkAck(in, progressConsumer) != 0) {
+//                if (progressConsumer != null)
+//                    progressConsumer.accept(new TransferProgress("The server did not acknowledge the request.", 0, 0, 0));
+//                return false;
+//            }
+//
+//            File localFile = new File(localFilePath);
+//            long fileSize = localFile.length();
+//
+//            String command = "C0644 " + fileSize + " " + localFile.getName() + "\n";
+//            System.out.println(command);
+//            out.write(command.getBytes());
+//            out.flush();
+//            if (progressConsumer != null)
+//                progressConsumer.accept(new TransferProgress("Sent file information for " + localFile.getName(), 0, 0, fileSize));
+//            System.out.println(447213);
+//            if (checkAck(in, progressConsumer) != 0) {
+//                return false;
+//            }
+//            System.out.println(447);
+//            try (FileInputStream fis = new FileInputStream(localFile)) {
+//                byte[] buffer = new byte[1024];
+//                int length;
+//                long totalRead = 0;
+//                System.out.println(448);
+//                while ((length = fis.read(buffer)) > 0) {
+//                    out.write(buffer, 0, length);
+//                    totalRead += length;
+//                    if (progressConsumer != null) {
+//                        double percentage = ((double) totalRead / fileSize) * 100;
+//                        progressConsumer.accept(new TransferProgress("Uploading...", percentage, totalRead, fileSize));
+//                    }
+//                }
+//            }
+//
+//            // Send '\0' to indicate end of file transfer
+//            out.write(0);
+//            out.flush();
+//
+//            if (checkAck(in, progressConsumer) != 0) {
+//                return false;
+//            }
+//
+//            if (progressConsumer != null)
+//                progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+//            return true;
+//        } catch (JSchException | IOException e) {
+//            logger.severe("File upload failed: " + e.getMessage());
+//            if (progressConsumer != null)
+//                progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
+//            return false;
+//        } finally {
+//            if (channel != null) {
+//                channel.disconnect();
+//            }
+//        }
+//    }
 
     public boolean uploadFile(MultipartFile multipartFile, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
         if (session == null || !forceIsConnected()) {
@@ -594,7 +685,8 @@ public class SSHHostAddress {
 
             execChannel.connect();
             logger.info("Connected to remote server for file upload.");
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
 
             if (checkAck(in, progressConsumer) != 0) {
                 logger.severe("Failed during SCP initialization acknowledgment.");
@@ -606,7 +698,8 @@ public class SSHHostAddress {
             out.write(command.getBytes());
             out.flush();
             logger.info("Sent file information for " + multipartFile.getOriginalFilename());
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Sent file information for " + multipartFile.getOriginalFilename(), 0, 0, fileSize));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Sent file information for " + multipartFile.getOriginalFilename(), 0, 0, fileSize));
 
             if (checkAck(in, progressConsumer) != 0) {
                 logger.severe("Failed during file information acknowledgment.");
@@ -639,11 +732,13 @@ public class SSHHostAddress {
             }
 
             logger.info("File upload completed successfully.");
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
             return true;
         } catch (JSchException | IOException e) {
             e.printStackTrace();
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
             return false;
         } finally {
             if (channel != null) {
@@ -651,6 +746,7 @@ public class SSHHostAddress {
             }
         }
     }
+
     public boolean streamFile(String remoteFilePath, HttpServletResponse response, String id) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
@@ -739,6 +835,7 @@ public class SSHHostAddress {
             }
         }
     }
+
     public boolean downloadFile(String remoteFilePath, String localFilePath, Consumer<TransferProgress> progressConsumer) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
@@ -755,7 +852,8 @@ public class SSHHostAddress {
             InputStream in = execChannel.getInputStream();
 
             execChannel.connect();
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Connected to remote server for file download.", 0, 0, 0));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Connected to remote server for file download.", 0, 0, 0));
 
             // Send '\0' to start file transfer
             out.write(0);
@@ -786,7 +884,8 @@ public class SSHHostAddress {
             out.write(0);
             out.flush();
 
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Downloading file: " + fileName, 0, 0, fileSize));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Downloading file: " + fileName, 0, 0, fileSize));
 
             try (FileOutputStream fos = new FileOutputStream(localFilePath)) {
                 byte[] buffer = new byte[1024];
@@ -811,11 +910,13 @@ public class SSHHostAddress {
             out.write(0);
             out.flush();
 
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("File download completed successfully.", 100, fileSize, fileSize));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("File download completed successfully.", 100, fileSize, fileSize));
             return true;
         } catch (JSchException | IOException e) {
             logger.severe("File download failed: " + e.getMessage());
-            if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error during file download: " + e.getMessage(), 0, 0, 0));
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Error during file download: " + e.getMessage(), 0, 0, 0));
             return false;
         } finally {
             if (channel != null) {
@@ -823,9 +924,11 @@ public class SSHHostAddress {
             }
         }
     }
+
     private String prefixWithSudoPassword(String command) {
         return String.format("echo \"%1$s\" | sudo -S %2$s", password, command);
     }
+
     private int checkAck(InputStream in, Consumer<TransferProgress> progressConsumer) throws IOException {
         int b = in.read();
         if (b == 0) return b;
@@ -839,11 +942,12 @@ public class SSHHostAddress {
                 sb.append((char) c);
             } while (c != '\n');
             String errorMsg = sb.toString();
-            logger.warning(errorMsg);
+            logger.warning("Error message from server: " + errorMsg); // Log the full error message
             if (progressConsumer != null) progressConsumer.accept(new TransferProgress("Error: " + errorMsg, 0, 0, 0));
         }
 
         return b;
     }
+
 
 }
