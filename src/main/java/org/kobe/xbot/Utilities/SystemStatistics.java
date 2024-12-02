@@ -10,8 +10,6 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class SystemStatistics {
     private final long freeMemoryMB;
@@ -45,10 +43,9 @@ public class SystemStatistics {
     private static final HardwareAbstractionLayer hal = systemInfo.getHardware();
     private static final CentralProcessor processor = hal.getProcessor();
     private static final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-    private static final AtomicReference<long[]> prevTicks = new AtomicReference<>();
-    private static final AtomicLong lastUpdateTime = new AtomicLong();
-    private static final AtomicReference<Double> lastPowerUsageWatts = new AtomicReference<>(0.0);
-
+//    private static final AtomicReference<long[]> prevTicks = new AtomicReference<>();
+//    private static final AtomicLong lastUpdateTime = new AtomicLong();
+//    private static final AtomicReference<Double> lastPowerUsageWatts = new AtomicReference<>(0.0);
 
     public SystemStatistics(int totalClients) {
         this.nanoTime = System.nanoTime();
@@ -58,7 +55,7 @@ public class SystemStatistics {
         this.usedMemoryMB = maxMemoryMB - freeMemoryMB;
         this.processCpuLoadPercentage = osMXBean.getSystemCpuLoad() * 100;
         this.availableProcessors = osMXBean.getAvailableProcessors();
-        this.powerUsageWatts = getEstimatedPowerConsumption();
+        this.powerUsageWatts = 0;
         this.totalThreads = threadMXBean.getThreadCount();
         this.processId = runtimeMXBean.getName().split("@")[0];
         this.javaVersion = System.getProperty("java.version");
@@ -158,37 +155,39 @@ public class SystemStatistics {
         return totalThreads;
     }
 
-    public double getEstimatedPowerConsumption() {
-        long currentTime = System.currentTimeMillis();
+//    public double getEstimatedPowerConsumption() {
+//        long currentTime = System.currentTimeMillis();
+//
+//        // If this is the first call, initialize prevTicks and lastUpdateTime
+//        if (prevTicks.get() == null) {
+//            prevTicks.set(processor.getSystemCpuLoadTicks());
+//            lastUpdateTime.set(currentTime);
+//            lastPowerUsageWatts.set(0.0); // Initial value since we don't have enough data yet
+//            return lastPowerUsageWatts.get();
+//        }
+//
+//        // Check if at least 1 second has passed since the last update
+//        if (currentTime - lastUpdateTime.get() < 100000) {
+//            return lastPowerUsageWatts.get(); // Return the last known value
+//        }
+//
+//        // Get CPU load between ticks for estimation
+//        long[] currentTicks = processor.getSystemCpuLoadTicks();
+//        double cpuLoadBetweenTicks = processor.getSystemCpuLoadBetweenTicks(prevTicks.get());
+//
+//        // Update prevTicks and lastUpdateTime
+//        prevTicks.set(currentTicks);
+//        lastUpdateTime.set(currentTime);
+//
+//        // Estimation of power consumption
+//        double maxFreqGHz = processor.getMaxFreq() / 1_000_000_000.0;
+//        int logicalProcessorCount = processor.getLogicalProcessorCount();
+//        // CPU Load Between Ticks x Max Frequency in GHz x Logical Processor Count x 10
+//        double estimatedPower = cpuLoadBetweenTicks * maxFreqGHz * logicalProcessorCount * 10;
+//        lastPowerUsageWatts.set(estimatedPower);
+//
+//        return estimatedPower;
+//    }
 
-        // If this is the first call, initialize prevTicks and lastUpdateTime
-        if (prevTicks.get() == null) {
-            prevTicks.set(processor.getSystemCpuLoadTicks());
-            lastUpdateTime.set(currentTime);
-            lastPowerUsageWatts.set(0.0); // Initial value since we don't have enough data yet
-            return lastPowerUsageWatts.get();
-        }
 
-        // Check if at least 1 second has passed since the last update
-        if (currentTime - lastUpdateTime.get() < 1000) {
-            return lastPowerUsageWatts.get(); // Return the last known value
-        }
-
-        // Get CPU load between ticks for estimation
-        long[] currentTicks = processor.getSystemCpuLoadTicks();
-        double cpuLoadBetweenTicks = processor.getSystemCpuLoadBetweenTicks(prevTicks.get());
-
-        // Update prevTicks and lastUpdateTime
-        prevTicks.set(currentTicks);
-        lastUpdateTime.set(currentTime);
-
-        // Estimation of power consumption
-        double maxFreqGHz = processor.getMaxFreq() / 1_000_000_000.0;
-        int logicalProcessorCount = processor.getLogicalProcessorCount();
-        // CPU Load Between Ticks x Max Frequency in GHz x Logical Processor Count x 10
-        double estimatedPower = cpuLoadBetweenTicks * maxFreqGHz * logicalProcessorCount * 10;
-        lastPowerUsageWatts.set(estimatedPower);
-
-        return estimatedPower;
-    }
 }

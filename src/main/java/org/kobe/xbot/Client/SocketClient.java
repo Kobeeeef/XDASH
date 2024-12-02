@@ -1,9 +1,9 @@
 package org.kobe.xbot.Client;
 
 import com.google.gson.Gson;
+import org.kobe.xbot.Utilities.*;
 import org.kobe.xbot.Utilities.Entities.KeyValuePair;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
-import org.kobe.xbot.Utilities.*;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -52,12 +52,14 @@ public class SocketClient {
     private PrintWriter out = null;
     private BufferedReader in = null;
     private Socket socket;
+    private final CircularBuffer<KeyValuePair<String>> updates;
     private Consumer<KeyValuePair<String>> updateConsumer;
     private Consumer<String> deleteConsumer;
     private final XTablesClient xTablesClient;
     private ZContext ctx;
     private ZMQ.Socket ZMQ_PUSH_SOCKET;
     private ZMQ.Socket ZMQ_SUB_SOCKET;
+
     public SocketClient(String SERVER_ADDRESS, int SERVER_PORT, boolean ENABLE_ZMQ, long RECONNECT_DELAY_MS, int MAX_THREADS_ARG, XTablesClient xTablesClient) {
         this.socket = null;
         this.MAX_THREADS = Math.max(MAX_THREADS_ARG, 1);
@@ -66,8 +68,10 @@ public class SocketClient {
         this.RECONNECT_DELAY_MS = RECONNECT_DELAY_MS;
         this.executor = getWorkerExecutor(MAX_THREADS);
         this.xTablesClient = xTablesClient;
+        this.updates = new CircularBuffer<>(100);
         this.ctx = new ZContext();
-        if(ENABLE_ZMQ) {
+
+        if (ENABLE_ZMQ) {
             this.ZMQ_PUSH_SOCKET = ctx.createSocket(SocketType.PUSH);
             this.ZMQ_PUSH_SOCKET.setImmediate(true);
             this.ZMQ_PUSH_SOCKET.setTCPKeepAlive(1);
@@ -153,6 +157,7 @@ public class SocketClient {
                 }
                 this.socketExecutor = getSocketExecutor();
                 socketExecutor.execute(new ClientMessageListener(socket));
+                socketExecutor.execute(new ClientSubscriberListener());
                 List<RequestAction<ResponseStatus>> requestActions = xTablesClient.resubscribeToAllUpdateEvents();
                 if (!requestActions.isEmpty()) {
                     logger.info("Resubscribing to all previously submitted update events.");
@@ -164,15 +169,17 @@ public class SocketClient {
                     new RequestAction<>(this, new ResponseInfo(null, MethodType.SUBSCRIBE_DELETE).parsed(), ResponseStatus.class).queue();
                     logger.info("Queued delete event subscription successfully!");
                 }
-                if(this.ZMQ_PUSH_SOCKET != null) {
+                if (this.ZMQ_PUSH_SOCKET != null) {
                     try {
                         this.ZMQ_PUSH_SOCKET.connect("tcp://" + SERVER_ADDRESS + ":" + 1736);
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                 }
-                if(this.ZMQ_SUB_SOCKET != null) {
+                if (this.ZMQ_SUB_SOCKET != null) {
                     try {
                         this.ZMQ_SUB_SOCKET.connect("tcp://" + SERVER_ADDRESS + ":" + 1737);
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                 }
                 isConnected = true;
                 break;
@@ -190,11 +197,11 @@ public class SocketClient {
 
     private ThreadPoolExecutor getSocketExecutor() {
         return new ThreadPoolExecutor(
-                0,
+                2,
                 3,
                 60L,
                 TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(10),
+                new ArrayBlockingQueue<>(5),
                 new ThreadFactory() {
                     private final AtomicInteger counter = new AtomicInteger(1);
 
@@ -242,6 +249,18 @@ public class SocketClient {
         return executor;
     }
 
+    public class ClientSubscriberListener implements Runnable {
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()) {
+
+                KeyValuePair<String> message = updates.readLatestAndClear();
+                if (message != null) {
+                    updateConsumer.accept(message);
+                }
+            }
+        }
+    }
 
     public class ClientMessageListener implements Runnable {
         private final Socket socket;
@@ -260,11 +279,7 @@ public class SocketClient {
                     if (requestInfo.getTokens().length >= 3 && requestInfo.getMethod().equals(MethodType.UPDATE_EVENT)) {
                         String key = requestInfo.getTokens()[1];
                         String value = String.join(" ", Arrays.copyOfRange(requestInfo.getTokens(), 2, requestInfo.getTokens().length));
-                        if (updateConsumer != null) {
-                            KeyValuePair<String> keyValuePair = new KeyValuePair<>(key, value);
-                            updateConsumer.accept(keyValuePair); // maybe implement a cachedThread instead of using the same executor as socket client
-                            if (CLEAR_UPDATE_MESSAGES) MESSAGES.remove(requestInfo);
-                        }
+                        updates.write(new KeyValuePair<>(key, value));
                     } else if (requestInfo.getTokens().length >= 2 && requestInfo.getMethod().equals(MethodType.DELETE_EVENT)) {
                         String key = requestInfo.getTokens()[1];
                         if (Utilities.validateKey(key, true)) {
@@ -272,9 +287,9 @@ public class SocketClient {
                                 executor.execute(() -> deleteConsumer.accept(key));
                             }
                         }
-                    }else if (requestInfo.getMethod().equals(MethodType.INFORMATION)) {
+                    } else if (requestInfo.getMethod().equals(MethodType.INFORMATION)) {
                         ClientStatistics clientStatistics = new ClientStatistics("JAVA");
-                        clientStatistics.setVersion(XTablesClient.XTABLES_CLIENT_VERSION);
+                        clientStatistics.setVersion(xTablesClient.getVersion());
                         String json = gson.toJson(clientStatistics);
                         sendMessage(new ResponseInfo(null, MethodType.INFORMATION, json));
                     } else {
@@ -308,22 +323,23 @@ public class SocketClient {
         }
     }
 
-        public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
-            long startTime = System.currentTimeMillis();
-            long timeoutMillis = unit.toMillis(timeout);
+    public RequestInfo waitForMessage(String ID, long timeout, TimeUnit unit) {
+        long startTime = System.currentTimeMillis();
+        long timeoutMillis = unit.toMillis(timeout);
 
-            while (System.currentTimeMillis() - startTime < timeoutMillis) {
-                try {
-                    for (RequestInfo message : new ArrayList<>(MESSAGES)) {
-                        if (message != null && message.getID().equals(ID)) {
-                            MESSAGES.remove(message);
-                            return message;
-                        }
+        while (System.currentTimeMillis() - startTime < timeoutMillis) {
+            try {
+                for (RequestInfo message : new ArrayList<>(MESSAGES)) {
+                    if (message != null && message.getID().equals(ID)) {
+                        MESSAGES.remove(message);
+                        return message;
                     }
-                } catch (Exception ignored) {}
+                }
+            } catch (Exception ignored) {
             }
-            return null;
         }
+        return null;
+    }
 
 
     public RequestInfo sendMessageAndWaitForReply(ResponseInfo responseInfo, long timeout, TimeUnit unit) throws InterruptedException {
@@ -332,19 +348,26 @@ public class SocketClient {
     }
 
     public void sendMessage(ResponseInfo responseInfo) {
-        if(out != null) {
+        if (out != null) {
             out.println(responseInfo.parsed());
             out.flush();
         }
     }
 
     public void sendMessageRaw(String raw) {
-        if(out != null) {
+        if (out != null) {
             out.println(raw);
             out.flush();
         }
     }
-
+    public void sendMessageNoDelimit(String raw) {
+        if (out != null) {
+            out.print(raw);
+        }
+    }
+    public void flush() {
+        out.flush();
+    }
     public void stopAll() {
         long startTime = System.nanoTime();
         logger.severe("Shutting down all threads and processes.");
@@ -372,7 +395,7 @@ public class SocketClient {
         } catch (IOException e) {
             logger.severe("Failed to close socket or streams: " + e.getMessage());
         }
-        if(this.ctx != null) {
+        if (this.ctx != null) {
             this.ctx.destroy();
         }
         double elapsedTimeMS = (System.nanoTime() - startTime) / 1e6;
@@ -414,7 +437,6 @@ public class SocketClient {
     }
 
 
-
     public Socket getSocket() {
         return socket;
     }
@@ -422,16 +444,19 @@ public class SocketClient {
     public ZMQ.Socket getZMQ_PUSH_SOCKET() {
         return ZMQ_PUSH_SOCKET;
     }
+
     public ZMQ.Socket getZMQ_SUB_SOCKET() {
         return ZMQ_SUB_SOCKET;
     }
 
     public boolean pushZMQ(String message) {
-       return this.ZMQ_PUSH_SOCKET.send(message, ZMQ.DONTWAIT);
+        return this.ZMQ_PUSH_SOCKET.send(message, ZMQ.DONTWAIT);
     }
+
     public String[] receive_nextZMQ() {
         return Utilities.tokenize(this.ZMQ_SUB_SOCKET.recvStr(), ' ', 2);
     }
+
     public CompletableFuture<String> sendAsync(String message, long timeoutMS) throws IOException {
         if (executor == null || executor.isShutdown())
             throw new IOException("The worker thread executor is shutdown and no new requests can be made.");
@@ -439,7 +464,8 @@ public class SocketClient {
         executor.execute(() -> {
             try {
                 RequestInfo requestInfo = sendMessageAndWaitForReply(ResponseInfo.from(message), timeoutMS, TimeUnit.MILLISECONDS);
-                if (requestInfo == null) throw new RuntimeException("Nothing received back from server when sending: " + message);
+                if (requestInfo == null)
+                    throw new RuntimeException("Nothing received back from server when sending: " + message);
                 String[] tokens = requestInfo.getTokens();
                 future.complete(String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length)));
             } catch (InterruptedException e) {
@@ -460,7 +486,6 @@ public class SocketClient {
     public String sendComplete(String message, long msTimeout) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         return sendAsync(message, msTimeout).get(msTimeout, TimeUnit.MILLISECONDS);
     }
-
 
 
 }

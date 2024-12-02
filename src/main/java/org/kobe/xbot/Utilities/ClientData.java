@@ -6,11 +6,13 @@ public class ClientData {
     private final int messages;
     private final String identifier;
     private String stats;
-    public ClientData(String clientIP, String hostname, int messages, String identifier) {
+    private final int bufferSize;
+    public ClientData(String clientIP, String hostname, int messages, String identifier, int bufferSize) {
         this.clientIP = clientIP;
         this.hostname = hostname;
         this.messages = messages;
         this.identifier = identifier;
+        this.bufferSize = bufferSize;
     }
 
     public String getIdentifier() {
@@ -21,6 +23,12 @@ public class ClientData {
         this.stats = stats;
         return this;
     }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+
 
     public int getMessages() {
         return messages;

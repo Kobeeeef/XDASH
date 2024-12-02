@@ -154,7 +154,8 @@ public class XdashbackendApplication {
 
             if (clientRef.get() == null && !lock.get()) {
                 lock.set(true);
-                XTablesClient client = new XTablesClient(null, 5, false);
+                XTablesClient client = new XTablesClient();
+                client.addVersionProperty("XDASH");
                 clientRef.set(client);
                 xTablesViewerRef.set(new XTablesViewer(client));
             }

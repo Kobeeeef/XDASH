@@ -39,10 +39,16 @@ import java.util.function.Consumer;
 public class XTablesClient {
 
 
-    public static final String XTABLES_CLIENT_VERSION =
+    private String XTABLES_CLIENT_VERSION =
             "XTABLES Client v4.0.0 | Build Date: 11/14/2024";
 
-
+    public String getVersion() {
+        return XTABLES_CLIENT_VERSION;
+    }
+    public String addVersionProperty(String prop) {
+        XTABLES_CLIENT_VERSION = XTABLES_CLIENT_VERSION + " | " + prop;
+        return XTABLES_CLIENT_VERSION;
+    }
 
     public XTablesClient() {
         this(1735, true, 10, false);
@@ -215,7 +221,7 @@ public class XTablesClient {
     public final List<Consumer<String>> delete_consumers = new ArrayList<>();
 
     private void initializeClient(String SERVER_ADDRESS, int SERVER_PORT, boolean enableZMQ, int MAX_THREADS, boolean useCache) {
-        this.client = new SocketClient(SERVER_ADDRESS, SERVER_PORT, enableZMQ, 10, MAX_THREADS, this);
+        this.client = new SocketClient(SERVER_ADDRESS, SERVER_PORT, enableZMQ, 500, MAX_THREADS, this);
         Thread thread = new Thread(() -> {
             client.connect();
             client.setUpdateConsumer(this::on_update);
@@ -562,7 +568,6 @@ public class XTablesClient {
     public void executePutString(String key, String value) {
         client.sendMessageRaw("IGNORED:PUT " + key + " \"" + value + "\"");
     }
-
     /**
      * Sends an integer value to the server with the specified key.
      *
@@ -787,9 +792,7 @@ public class XTablesClient {
                 RequestInfo info = new RequestInfo(result);
                 if (info.getTokens().length == 2 && info.getTokens()[0].equals("OK")) {
                     SystemStatistics stats = gson.fromJson(info.getTokens()[1], SystemStatistics.class);
-                    long serverTime = stats.getNanoTime();
                     long currentTime = System.nanoTime();
-                    long networkLatency = Math.abs(currentTime - serverTime);
                     long roundTripLatency = Math.abs(currentTime - startTime);
                     return new LatencyInfo(((double) roundTripLatency / 2) / 1e6, roundTripLatency / 1e6, stats);
                 } else {
