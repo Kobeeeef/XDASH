@@ -108,7 +108,7 @@ const Dashboard = () => {
                 }
                 if (transferFilesStepperRef.current)
                     transferFilesStepperRef.current.setActiveStep(msg.step);
-                console.log(msg)
+
                 if(msg.step === 0) {
 
                     setFinalResponseData(prevState => ({
@@ -131,7 +131,7 @@ const Dashboard = () => {
                                 ? {
                                     ...s,
                                     response: msg.response || s.response,
-                                    success: msg.success !== undefined ? msg.success : false
+                                    success: msg?.success
                                 }
                                 : s
                         )
@@ -141,7 +141,7 @@ const Dashboard = () => {
                 return false;
             }
 
-        }, 60000)
+        }, 1200000)
             .then(() => {
                 setLoading(false);
             })
@@ -218,12 +218,14 @@ const Dashboard = () => {
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
-            <Dialog header={'Select Host & Target Destination'} draggable={false} visible={transferFilesInputDialogVisible}
+            <Dialog header={'Select Host & Target Destination'} draggable={false}
+                    visible={transferFilesInputDialogVisible}
                     style={{ width: '50vw' }} onHide={() => {
                 if (!transferFilesInputDialogVisible) return;
                 setTransferFilesInputDialogVisible(false);
             }} footer={() => (
-                <Button loading={loading} onClick={transferFiles} disabled={!isConnected || !localDirectoryInput || !targetDirectoryInput} label={'Execute'}
+                <Button loading={loading} onClick={transferFiles}
+                        disabled={!isConnected || !localDirectoryInput || !targetDirectoryInput} label={'Execute'}
                         severity={'danger'} className={'w-full'}></Button>
             )}>
                 <Divider align="center">
@@ -424,7 +426,22 @@ const Dashboard = () => {
                             className="ml-auto"></Button>
                 </div>
             </div>
-
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-save" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">Reload & Deploy</div>
+                            <span className="text-sm text-gray-500 block"> Reload service daemons and redeploy services.</span>
+                        </div>
+                    </div>
+                    <Button onClick={() => setTransferFilesInputDialogVisible(true)} icon={'pi pi-play-circle'}
+                            severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
             <div className="col-12">
                 <div
                     className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
@@ -503,8 +520,6 @@ const Dashboard = () => {
             </div>
         </div>
     );
-
-
 
 
 };

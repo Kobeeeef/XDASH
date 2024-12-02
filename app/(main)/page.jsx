@@ -21,6 +21,9 @@ import {
     playNotificationSound,
     playSuccessNotificationSound
 } from '../../utilities/notification';
+import { Divider } from 'primereact/divider';
+import { Badge } from 'primereact/badge';
+import { InputText } from 'primereact/inputtext';
 
 const lineData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -59,6 +62,7 @@ const Dashboard = () => {
     const router = useRouter();
     const [serviceNumber, setServiceNumber] = useState(1);
     const [dialogVisible, setDialogVisible] = useState(false);
+    const [addDeviceDialogVisible, setAddDeviceDialogVisible] = useState(false);
     const [serviceRequestChildren, setServiceRequestChildren] = useState(null);
     const [stopRequest, setStopRequest] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -66,6 +70,10 @@ const Dashboard = () => {
     const [, setLock] = useState(false);
     const [, setLock2] = useState(false);
 
+    const [addDeviceHostnameInput, setAddDeviceHostnameInput] = useState(null)
+    const [addDeviceUsernameInput, setAddDeviceUsernameInput] = useState(null)
+    const [addDevicePasswordInput, setAddDevicePasswordInput] = useState(null)
+    const [addDeviceAddressInput, setAddDeviceAddressInput] = useState(null)
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -109,6 +117,49 @@ const Dashboard = () => {
         // Cleanup interval on component unmount
         return () => clearInterval(intervalId);
     }, [isConnected, sendMessageAndWaitForCondition]);
+    function sendAddDeviceData() {
+        setLoading(true);
+
+        sendMessageAndWaitForCondition({
+            type: 'DEVICE-ADD',
+            message: JSON.stringify({
+                hostname: addDeviceHostnameInput,
+                username: addDeviceUsernameInput,
+                address: addDeviceAddressInput,
+                password: addDevicePasswordInput
+            })
+        }, (m) => m.type === "DEVICE-ADD", 2000)
+            .then((m) => {
+                if(m.message?.success) {
+                    toast.current.show({
+                        severity: 'success',
+                        summary: 'Machine Registered!',
+                        detail: m?.message?.response ?? "The machine has been registered!"
+                    });
+                    playSuccessNotificationSound()
+                    setAddDeviceDialogVisible(false)
+                } else {
+                    toast.current.show({
+                        severity: 'error',
+                        summary: 'Failed to register!',
+                        detail: m?.message?.response ?? "The machine failed to register!"
+                    });
+                    playErrorNotificationSound()
+                }
+
+                setLoading(false);
+            })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || 'Unknown Exception...'
+                });
+                playErrorNotificationSound()
+                setLoading(false);
+            });
+    }
+
     const applyLightTheme = () => {
         const lineOptions = {
             plugins: {
@@ -318,7 +369,36 @@ const Dashboard = () => {
                     footer={<Button className={'w-full'} label="Stop" onClick={handleStop} />}>
                 {serviceRequestChildren}
             </Dialog>
+            <Dialog draggable={false} style={{ 'width': '50%'}} maximizable={false} closable={true} maximized={false}
+                    visible={addDeviceDialogVisible} onHide={() => setAddDeviceDialogVisible(false)}
+                    footer={<Button className={'w-full'} label="Submit" disabled={!isConnected || !addDeviceUsernameInput || !addDevicePasswordInput || !addDeviceHostnameInput || !addDeviceAddressInput} loading={loading} onClick={sendAddDeviceData} />}>
+                <Divider align="center">
+                    <Badge value="Hostname"></Badge>
+                </Divider>
 
+                <InputText placeholder={'Machine Hostname'} className={'w-full'} value={addDeviceHostnameInput}
+                           onChange={(e) => setAddDeviceHostnameInput(e.target.value)} />
+
+
+                <Divider align="center">
+                    <Badge value="Address"></Badge>
+                </Divider>
+
+                <InputText placeholder={'Machine Address'} className={'w-full'} value={addDeviceAddressInput}
+                           onChange={(e) => setAddDeviceAddressInput(e.target.value)} />
+                <Divider align="center">
+                    <Badge value="Username"></Badge>
+                </Divider>
+
+                <InputText placeholder={'Machine Username'} className={'w-full'} value={addDeviceUsernameInput}
+                           onChange={(e) => setAddDeviceUsernameInput(e.target.value)} />
+                <Divider align="center">
+                    <Badge value="Password"></Badge>
+                </Divider>
+
+                <InputText placeholder={'Machine Password'} className={'w-full'} value={addDevicePasswordInput}
+                           onChange={(e) => setAddDevicePasswordInput(e.target.value)} />
+            </Dialog>
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
@@ -387,9 +467,15 @@ const Dashboard = () => {
                     <DataTable
                         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                         rowsPerPageOptions={[5, 10, 25, 50]} paginatorLeft={() => {
-                        return (<Button
+                        return (<><Button
                             icon="pi pi-refresh" text loading={loading} disabled={!isConnected}
-                            onClick={startScanning} />);
+                            onClick={startScanning} />
+                            <Button
+                                icon="pi pi-plus" text loading={loading} disabled={!isConnected}
+                                onClick={() => {
+                                    setAddDeviceDialogVisible(true)
+                                }} />
+                        </>);
                     }} removableSort value={isConnected ? devicesData : []}
                         emptyMessage={Loader({ message: isConnected ? 'Searching for machines running XCASTER' : 'Connecting to backend' })}
                         rows={5} paginator>
@@ -427,6 +513,7 @@ const Dashboard = () => {
                                                 summary: 'Server Not Found!',
                                                 detail: 'The server was not found.'
                                             });
+                                            playErrorNotificationSound()
                                             return;
                                         }
                                         setLoadingStates(prev => ({ ...prev, [server]: true }));
@@ -456,6 +543,7 @@ const Dashboard = () => {
                                                 summary: 'Server Not Found!',
                                                 detail: 'The server was not found.'
                                             });
+                                            playErrorNotificationSound()
                                             return;
                                         }
                                         setLoadingStates(prev => ({ ...prev, [server]: true }));
@@ -485,6 +573,7 @@ const Dashboard = () => {
                                                 summary: 'Server Not Found!',
                                                 detail: 'The server was not found.'
                                             });
+                                            playErrorNotificationSound()
                                             return;
                                         }
                                         setLoadingStates(prev => ({ ...prev, [server]: true }));
@@ -516,6 +605,7 @@ const Dashboard = () => {
                                                 summary: 'Server Not Found!',
                                                 detail: 'The server was not found.'
                                             });
+                                            playErrorNotificationSound()
                                             return;
                                         }
                                         setLoadingStates(prev => ({ ...prev, [server]: true }));
@@ -550,6 +640,7 @@ const Dashboard = () => {
                                                     summary: 'Server Not Found!',
                                                     detail: 'The server was not found.'
                                                 });
+                                                playErrorNotificationSound()
                                                 return;
                                             }
                                             setLoadingStates(prev => ({ ...prev, [server]: true }));
@@ -563,6 +654,7 @@ const Dashboard = () => {
                                                         summary: 'Server Rebooting!',
                                                         detail: 'The command was sent to the machine.'
                                                     });
+                                                    playSuccessNotificationSound()
                                                     setLoadingStates(prev => ({ ...prev, [server]: false }));
                                                 })
                                                 .catch(() => {
@@ -571,6 +663,7 @@ const Dashboard = () => {
                                                         summary: 'Server Unresponsive!',
                                                         detail: 'The server did not respond in time.'
                                                     });
+                                                    playErrorNotificationSound()
                                                     setLoadingStates(prev => ({ ...prev, [server]: false }));
                                                 });
                                         }
