@@ -185,6 +185,10 @@ public class SSHHostAddress {
         return sendExecCommand(String.format("echo \"%1$s\" | sudo -S %2$s", password, command));
     }
 
+    public void sendExecCommandWithSudoPermissions(String command, int step, Consumer<MessageLinePair> s) {
+        sendExecCommand(String.format("echo \"%1$s\" | sudo -S %2$s", password, command), step, s);
+    }
+
     public String sendExecCommand(String command) {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
@@ -231,6 +235,55 @@ public class SSHHostAddress {
         return response.toString();
     }
 
+    public void sendExecCommand(String command, int step, Consumer<MessageLinePair> consumer) {
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("SSH session is not connected.");
+        }
+
+
+        int exitStatus;  // Default value for error
+        MessageLinePair messageLinePair = new MessageLinePair("Reading stream...", 0);
+        try {
+            ChannelExec execChannel = (ChannelExec) session.openChannel("exec");
+            execChannel.setCommand(command);
+
+            InputStream inputStream = execChannel.getInputStream();
+            InputStream errStream = execChannel.getErrStream();
+
+            execChannel.connect();
+
+            // Read the input stream (standard output)
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                String line;
+                int i = 0;
+                while ((line = reader.readLine()) != null) {
+                    i++;
+                    messageLinePair.setLine(i);
+                    messageLinePair.setMessage(line);
+                    if (i == 1) consumer.accept(messageLinePair); else if (i % step == 0) consumer.accept(messageLinePair);
+                }
+            }
+
+            // Read the error stream (standard error)
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(errStream))) {
+                String line;
+                int i = 0;
+                while ((line = reader.readLine()) != null) {
+                    i++;
+                    messageLinePair.setLine(i);
+                    messageLinePair.setMessage(line);
+                    if (i == 1) consumer.accept(messageLinePair); else if (i % step == 0) consumer.accept(messageLinePair);
+                }
+            }
+
+            execChannel.disconnect();
+        } catch (JSchException | IOException e) {
+            logger.severe("Failed to execute command: " + command + "\n" + e);
+            messageLinePair.setMessage("Error: " + e.getMessage());
+            consumer.accept(messageLinePair);
+        }
+
+    }
 
     public List<FileInfo> listFilesAndDirectories(String remoteDir) {
         List<FileInfo> filesList = new ArrayList<>();
@@ -482,13 +535,18 @@ public class SSHHostAddress {
         if (!uploaded) {
             return false;
         }
+        String remoteTarPath = remoteTargetDir + "/" + new File(tarFilePath).getName();
         progress.setMessage("Extracting files onto target machine...");
         progressConsumer.accept(progress);
-        String untarCommand = String.format("tar -xzf %s -C %s", remoteTargetDir + "/" + new File(tarFilePath).getName(), remoteTargetDir);
-        String response = this.sendExecCommandWithSudoPermissions(untarCommand);
-        if (response.contains("Exit Status: -1")) {
-            return false;
-        }
+        String untarCommand = String.format("tar -xzvf %s -C %s", remoteTarPath, remoteTargetDir);
+        this.sendExecCommandWithSudoPermissions(untarCommand, 4, (s) -> {
+            progress.setMessage(s.getMessage() + " | " + s.getLine() + " files processed.");
+            progressConsumer.accept(progress);
+        });
+
+        String rmTarCommand = String.format("rm %1$s", remoteTarPath);
+        this.sendExecCommandWithSudoPermissions(rmTarCommand);
+
         progress.setMessage("Successfully extracted all files onto machine.");
         progressConsumer.accept(progress);
 
@@ -537,7 +595,7 @@ public class SSHHostAddress {
 
             // Read file into memory and send in chunks
             try (FileInputStream fis = new FileInputStream(localFile)) {
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[8192];
                 int length;
                 long totalRead = 0;
                 while ((length = fis.read(buffer)) > 0) {
@@ -575,97 +633,6 @@ public class SSHHostAddress {
         }
     }
 
-//    public boolean uploadFile(String localFilePath, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
-//        if (session == null || !forceIsConnected()) {
-//            throw new IllegalStateException("SSH session is not connected.");
-//        }
-//        System.out.println(localFilePath);
-//        System.out.println(remoteFilePath);
-//        Channel channel = null;
-//        try {
-//            channel = session.openChannel("exec");
-//            ChannelExec execChannel = (ChannelExec) channel;
-//
-//            // Extract the directory part of the remote path
-//            String remoteDir = remoteFilePath.substring(0, remoteFilePath.lastIndexOf('/'));
-//
-//            // Separate mkdir and scp commands
-//            execChannel.setCommand("mkdir -p " + remoteDir); // Create the remote directory
-//            execChannel.connect();
-//            if (checkAck(execChannel.getInputStream(), progressConsumer) != 0) {
-//                if (progressConsumer != null)
-//                    progressConsumer.accept(new TransferProgress("The server did not acknowledge the directory creation.", 0, 0, 0));
-//            }
-//            channel = session.openChannel("exec");
-//            execChannel = (ChannelExec) channel;
-//            String cmd = "echo \"" + password + "\" | sudo -S scp -t " + remoteFilePath;
-//
-//            execChannel.setCommand(cmd);
-//
-//            OutputStream out = execChannel.getOutputStream();
-//            InputStream in = execChannel.getInputStream();
-//
-//            execChannel.connect();
-//            if (progressConsumer != null)
-//                progressConsumer.accept(new TransferProgress("Connected to remote server for file upload.", 0, 0, 0));
-//
-//            if (checkAck(in, progressConsumer) != 0) {
-//                if (progressConsumer != null)
-//                    progressConsumer.accept(new TransferProgress("The server did not acknowledge the request.", 0, 0, 0));
-//                return false;
-//            }
-//
-//            File localFile = new File(localFilePath);
-//            long fileSize = localFile.length();
-//
-//            String command = "C0644 " + fileSize + " " + localFile.getName() + "\n";
-//            System.out.println(command);
-//            out.write(command.getBytes());
-//            out.flush();
-//            if (progressConsumer != null)
-//                progressConsumer.accept(new TransferProgress("Sent file information for " + localFile.getName(), 0, 0, fileSize));
-//            System.out.println(447213);
-//            if (checkAck(in, progressConsumer) != 0) {
-//                return false;
-//            }
-//            System.out.println(447);
-//            try (FileInputStream fis = new FileInputStream(localFile)) {
-//                byte[] buffer = new byte[1024];
-//                int length;
-//                long totalRead = 0;
-//                System.out.println(448);
-//                while ((length = fis.read(buffer)) > 0) {
-//                    out.write(buffer, 0, length);
-//                    totalRead += length;
-//                    if (progressConsumer != null) {
-//                        double percentage = ((double) totalRead / fileSize) * 100;
-//                        progressConsumer.accept(new TransferProgress("Uploading...", percentage, totalRead, fileSize));
-//                    }
-//                }
-//            }
-//
-//            // Send '\0' to indicate end of file transfer
-//            out.write(0);
-//            out.flush();
-//
-//            if (checkAck(in, progressConsumer) != 0) {
-//                return false;
-//            }
-//
-//            if (progressConsumer != null)
-//                progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
-//            return true;
-//        } catch (JSchException | IOException e) {
-//            logger.severe("File upload failed: " + e.getMessage());
-//            if (progressConsumer != null)
-//                progressConsumer.accept(new TransferProgress("Error during file upload: " + e.getMessage(), 0, 0, 0));
-//            return false;
-//        } finally {
-//            if (channel != null) {
-//                channel.disconnect();
-//            }
-//        }
-//    }
 
     public boolean uploadFile(MultipartFile multipartFile, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
         if (session == null || !forceIsConnected()) {
