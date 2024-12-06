@@ -10,7 +10,8 @@ public class ConfigLoader {
     private final Properties properties = new Properties();
     private final String fileName = "xdash.properties";
     private final XTablesLogger logger = XTablesLogger.getLogger(); // Your custom logger
-
+    public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
+    public static final long DEFAULT_RETRY_TIMEOUT = 4000;
     public ConfigLoader() {
         loadProperties();
     }
@@ -49,6 +50,8 @@ public class ConfigLoader {
     private void setDefaultProperties() {
         properties.setProperty("servers.password", "I<3Robots!");
         properties.setProperty("servers.user", "xbot");
+        properties.setProperty("servers.connectTimeout", String.valueOf(DEFAULT_CONNECT_TIMEOUT));
+        properties.setProperty("servers.retryTimeout", String.valueOf(DEFAULT_RETRY_TIMEOUT));
         properties.setProperty("server.password", "I<3Robotics!");
         properties.setProperty("roboRIO.hostname", "roboRIO-488-FRC");
         properties.setProperty("roboRIO.username", "admin");
@@ -69,7 +72,34 @@ public class ConfigLoader {
     public String getProperty(String key) {
         return properties.getProperty(key);
     }
+    public String getProperty(String key, String defaultValue) {
+        return properties.getProperty(key, defaultValue);
+    }
+    public Long getPropertyLong(String key, Long defaultValue) {
+        String value = this.getProperty(key);
+        if (value == null) return defaultValue;
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+    public Integer getPropertyInteger(String key, Integer defaultValue) {
+        String value = this.getProperty(key);
+        if (value == null) return defaultValue;
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+    public int getConnectTimeout() {
+        return getPropertyInteger("servers.connectTimeout", DEFAULT_CONNECT_TIMEOUT);
+    }
 
+    public long getRetryTimeout() {
+        return getPropertyLong("servers.retryTimeout", DEFAULT_RETRY_TIMEOUT);
+    }
     public static void main(String[] args) {
         ConfigLoader config = new ConfigLoader();
         String port = config.getProperty("server.port");

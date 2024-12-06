@@ -22,6 +22,8 @@ public class SSHConnectionManager {
     public static void startConnectionManager(ConfigLoader config) {
         String user = config.getProperty("servers.user");
         String password = config.getProperty("servers.password");
+        long retryTimeout = config.getRetryTimeout();
+        int connectTimeout = config.getConnectTimeout();
         try {
            String rioHostname = config.getProperty("roboRIO.hostname");
             String rioUsername = config.getProperty("roboRIO.username");
@@ -46,7 +48,7 @@ public class SSHConnectionManager {
                         if (sshHostAddress.getSession() == null || !sshHostAddress.getSession().isConnected()) {
                             logger.info(String.format("Connecting to %s with hostname %s...", sshHostAddress.getAddress(), sshHostAddress.getHostname()));
                             sshHostAddress.setStatus("CONNECTING");
-                            Session session = connectToHost(sshHostAddress, user, password);
+                            Session session = connectToHost(sshHostAddress, connectTimeout, user, password);
                             if (session != null && session.isConnected()) {
                                 sshHostAddress.setSession(session);
                                 sshHostAddress.setStatus("CONNECTED");
@@ -57,7 +59,7 @@ public class SSHConnectionManager {
                             }
                         }
                     }
-                    Thread.sleep(4000);
+                    Thread.sleep(retryTimeout);
                 } catch (Exception e) {
                     logger.severe("Error in SSH Connection Manager:\n" + e);
                 }
@@ -65,7 +67,7 @@ public class SSHConnectionManager {
         });
     }
 
-    private static Session connectToHost(SSHHostAddress sshHostAddress, String username, String password) {
+    private static Session connectToHost(SSHHostAddress sshHostAddress, int timeout, String username, String password) {
         try {
             JSch jsch = new JSch();
             if(sshHostAddress.getUsername() != null) username = sshHostAddress.getUsername();
@@ -77,7 +79,7 @@ public class SSHConnectionManager {
 
             // Avoid asking for key confirmation
             session.setConfig("StrictHostKeyChecking", "no");
-            session.connect(3000);
+            session.connect(timeout);
             return session;
         } catch (JSchException e) {
             sshHostAddress.setStatus("DISCONNECTED");
