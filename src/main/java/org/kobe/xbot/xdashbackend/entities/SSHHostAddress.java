@@ -240,7 +240,6 @@ public class SSHHostAddress {
             throw new IllegalStateException("SSH session is not connected.");
         }
 
-
         int exitStatus;  // Default value for error
         MessageLinePair messageLinePair = new MessageLinePair("Reading stream...", 0);
         try {
@@ -251,12 +250,12 @@ public class SSHHostAddress {
             InputStream errStream = execChannel.getErrStream();
 
             execChannel.connect();
-
             // Read the input stream (standard output)
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
                 String line;
                 int i = 0;
                 while ((line = reader.readLine()) != null) {
+
                     i++;
                     messageLinePair.setLine(i);
                     messageLinePair.setMessage(line);

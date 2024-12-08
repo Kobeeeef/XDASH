@@ -1,23 +1,41 @@
 package org.kobe.xbot.xdashbackend;
 
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
+import org.kobe.xbot.xdashbackend.entities.ConfigProperties;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 public class ConfigLoader {
     private final Properties properties = new Properties();
     private final String fileName = "xdash.properties";
-    private final XTablesLogger logger = XTablesLogger.getLogger(); // Your custom logger
+    private final XTablesLogger logger = XTablesLogger.getLogger();
+
+    //------------- DEFAULT VALUES -------------
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
     public static final long DEFAULT_RETRY_TIMEOUT = 4000;
+    public static final String DEFAULT_SERVERS_PASSWORD = "I<3Robots!";
+    public static final String DEFAULT_SERVERS_USER = "xbot";
+
+    public static final String DEFAULT_SERVER_PASSWORD = "I<3Robotics!";
+    public static final String DEFAULT_ROBORIO_HOSTNAME = "roboRIO-488-FRC";
+    public static final String DEFAULT_ROBORIO_USERNAME = "admin";
+    public static final String DEFAULT_ROBORIO_SERVER = "roboRIO-488-FRC.local";
+    public static final String DEFAULT_ROBORIO_ADDRESS = "10.4.88.2";
+    public static final String DEFAULT_SERVICES = "";
+    private LocalDateTime lastReloaded;
+    private LocalDateTime lastUpdated;
+
     public ConfigLoader() {
         loadProperties();
+        this.lastReloaded = LocalDateTime.now();
+        this.lastUpdated = LocalDateTime.now();
     }
+
     private void loadProperties() {
         File configFile = new File(fileName);
 
@@ -47,11 +65,14 @@ public class ConfigLoader {
                 logger.severe("Error loading properties file from classpath: " + e.getMessage());
             }
         }
+        this.lastReloaded = LocalDateTime.now();
     }
 
     public void save() {
         saveProperties(new File(fileName));
+        this.lastUpdated = LocalDateTime.now();
     }
+
     public List<String> getPropertyList(String key) {
         String value = this.getProperty(key);
         if (value == null || value.isEmpty()) return Collections.emptyList();
@@ -66,18 +87,27 @@ public class ConfigLoader {
             properties.setProperty(key, value);
         }
     }
+
     private void setDefaultProperties() {
-        properties.setProperty("servers.password", "I<3Robots!");
-        properties.setProperty("servers.user", "xbot");
+        properties.setProperty("servers.password", DEFAULT_SERVERS_PASSWORD);
+        properties.setProperty("servers.user", DEFAULT_SERVERS_USER);
         properties.setProperty("servers.connectTimeout", String.valueOf(DEFAULT_CONNECT_TIMEOUT));
         properties.setProperty("servers.retryTimeout", String.valueOf(DEFAULT_RETRY_TIMEOUT));
-        properties.setProperty("server.password", "I<3Robotics!");
-        properties.setProperty("roboRIO.hostname", "roboRIO-488-FRC");
-        properties.setProperty("roboRIO.username", "admin");
-        properties.setProperty("roboRIO.server", "roboRIO-488-FRC.local");
-        properties.setProperty("roboRIO.address", "10.4.88.2");
-        properties.setProperty("services", "");
+        properties.setProperty("server.password", DEFAULT_SERVER_PASSWORD);
+        properties.setProperty("roboRIO.hostname", DEFAULT_ROBORIO_HOSTNAME);
+        properties.setProperty("roboRIO.username", DEFAULT_ROBORIO_USERNAME);
+        properties.setProperty("roboRIO.server", DEFAULT_ROBORIO_SERVER);
+        properties.setProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
+        properties.setProperty("services", DEFAULT_SERVICES);
         logger.info("Default properties set.");
+    }
+
+    public LocalDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public LocalDateTime getLastReloaded() {
+        return lastReloaded;
     }
 
     private void saveProperties(File configFile) {
@@ -89,12 +119,20 @@ public class ConfigLoader {
         }
     }
 
+    public void reload() {
+        logger.info("Reloading configuration from file.");
+        loadProperties();
+        this.lastReloaded = LocalDateTime.now();
+    }
+
     public String getProperty(String key) {
         return properties.getProperty(key);
     }
+
     public String getProperty(String key, String defaultValue) {
         return properties.getProperty(key, defaultValue);
     }
+
     public Long getPropertyLong(String key, Long defaultValue) {
         String value = this.getProperty(key);
         if (value == null) return defaultValue;
@@ -104,6 +142,7 @@ public class ConfigLoader {
             return defaultValue;
         }
     }
+
     public Integer getPropertyInteger(String key, Integer defaultValue) {
         String value = this.getProperty(key);
         if (value == null) return defaultValue;
@@ -113,6 +152,93 @@ public class ConfigLoader {
             return defaultValue;
         }
     }
+
+    public String getServersPassword() {
+        return getProperty("servers.password", DEFAULT_SERVERS_PASSWORD);
+    }
+
+    public String getServersUser() {
+        return getProperty("servers.user", DEFAULT_SERVERS_USER);
+    }
+
+    public int getServersConnectTimeout() {
+        return getPropertyInteger("servers.connectTimeout", DEFAULT_CONNECT_TIMEOUT);
+    }
+
+    public long getServersRetryTimeout() {
+        return getPropertyLong("servers.retryTimeout", DEFAULT_RETRY_TIMEOUT);
+    }
+
+    public String getServerPassword() {
+        return getProperty("server.password", DEFAULT_SERVER_PASSWORD);
+    }
+
+    public String getRoboRIOHostname() {
+        return getProperty("roboRIO.hostname", DEFAULT_ROBORIO_HOSTNAME);
+    }
+
+    public String getRoboRIOUsername() {
+        return getProperty("roboRIO.username", DEFAULT_ROBORIO_USERNAME);
+    }
+
+    public String getRoboRIOServer() {
+        return getProperty("roboRIO.server", DEFAULT_ROBORIO_SERVER);
+    }
+
+    public String getRoboRIOAddress() {
+        return getProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
+    }
+
+    public ConfigProperties getConfigProperties() {
+        return new ConfigProperties(lastUpdated, lastReloaded)
+                .setSERVERS_PASSWORD(getServersPassword())
+                .setSERVERS_USERNAME(getServersUser())
+                .setSERVERS_CONNECT_TIMEOUT(String.valueOf(getServersConnectTimeout()))
+                .setSERVERS_RETRY_TIMEOUT(String.valueOf(getServersRetryTimeout()))
+                .setSERVER_PASSWORD(getServerPassword())
+                .setROBORIO_HOSTNAME(getRoboRIOHostname())
+                .setROBORIO_USERNAME(getRoboRIOUsername())
+                .setROBORIO_SERVER(getRoboRIOServer())
+                .setROBORIO_ADDRESS(getRoboRIOAddress())
+                .setSERVICES(getServices().toArray(new String[0]));
+    }
+
+    public void setConfigPropertiesAndSave(ConfigProperties configProperties) {
+        if (configProperties.getSERVERS_PASSWORD() != null) {
+            properties.setProperty("servers.password", configProperties.getSERVERS_PASSWORD());
+        }
+        if (configProperties.getSERVERS_USERNAME() != null) {
+            properties.setProperty("servers.user", configProperties.getSERVERS_USERNAME());
+        }
+        if (configProperties.getSERVERS_CONNECT_TIMEOUT() != null) {
+            properties.setProperty("servers.connectTimeout", configProperties.getSERVERS_CONNECT_TIMEOUT());
+        }
+        if (configProperties.getSERVERS_RETRY_TIMEOUT() != null) {
+            properties.setProperty("servers.retryTimeout", configProperties.getSERVERS_RETRY_TIMEOUT());
+        }
+        if (configProperties.getSERVER_PASSWORD() != null) {
+            properties.setProperty("server.password", configProperties.getSERVER_PASSWORD());
+        }
+        if (configProperties.getROBORIO_HOSTNAME() != null) {
+            properties.setProperty("roboRIO.hostname", configProperties.getROBORIO_HOSTNAME());
+        }
+        if (configProperties.getROBORIO_ADDRESS() != null) {
+            properties.setProperty("roboRIO.address", configProperties.getROBORIO_ADDRESS());
+        }
+        if (configProperties.getROBORIO_USERNAME() != null) {
+            properties.setProperty("roboRIO.username", configProperties.getROBORIO_USERNAME());
+        }
+        if (configProperties.getROBORIO_SERVER() != null) {
+            properties.setProperty("roboRIO.server", configProperties.getROBORIO_SERVER());
+        }
+        if (configProperties.getSERVICES() != null) {
+            properties.setProperty("services", String.join(",", configProperties.getSERVICES()));
+        }
+
+        save(); // Save updated properties to the file
+        logger.info("Configuration updated and saved successfully.");
+    }
+
     public int getConnectTimeout() {
         return getPropertyInteger("servers.connectTimeout", DEFAULT_CONNECT_TIMEOUT);
     }
@@ -120,6 +246,7 @@ public class ConfigLoader {
     public long getRetryTimeout() {
         return getPropertyLong("servers.retryTimeout", DEFAULT_RETRY_TIMEOUT);
     }
+
     public List<String> getServices() {
         return getPropertyList("services");
     }

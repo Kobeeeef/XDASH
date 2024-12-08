@@ -20,8 +20,8 @@ public class SSHConnectionManager {
     private static final Logger log = LoggerFactory.getLogger(SSHConnectionManager.class);
 
     public static void startConnectionManager(ConfigLoader config) {
-        String user = config.getProperty("servers.user");
-        String password = config.getProperty("servers.password");
+        String user = config.getServersUser();
+        String password = config.getServersPassword();
         long retryTimeout = config.getRetryTimeout();
         int connectTimeout = config.getConnectTimeout();
         try {

@@ -12,7 +12,6 @@ import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
 import org.kobe.xbot.xdashbackend.utilities.Utilities;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -131,6 +130,36 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } else {
                 session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-REBOOT").toJSON()));
 
+            }
+        } else if (message.getType().equals("CONFIG-RELOAD")) {
+            try {
+                XdashbackendApplication.getConfigLoader().reload();
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "The config has been reloaded."), "CONFIG-RELOAD").toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Error occurred while reloading: " + e.getMessage()), "CONFIG-RELOAD").toJSON()));
+            }
+        } else if (message.getType().equals("CONFIG-GET")) {
+            try {
+                ConfigProperties properties = XdashbackendApplication.getConfigLoader().getConfigProperties();
+                session.sendMessage(new TextMessage(new Message(properties, "CONFIG-GET").toJSON()));
+            } catch (Exception e) {
+                logger.severe("Error occurred while getting config: " + e.getMessage());
+            }
+        } else if (message.getType().equals("CONFIG-SAVE")) {
+            try {
+                XdashbackendApplication.getConfigLoader().save();
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "The config has been saved."), "CONFIG-SAVE").toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Error occurred while saving: " + e.getMessage()), "CONFIG-SAVE").toJSON()));
+            }
+        } else if (message.getType().equals("CONFIG-SET")) {
+            try {
+                String msg = message.getMessage();
+                ConfigProperties newProperties = gson.fromJson(msg, ConfigProperties.class);
+                XdashbackendApplication.getConfigLoader().setConfigPropertiesAndSave(newProperties);
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "The new config has been saved."), "CONFIG-SET").toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Error occurred while setting new config: " + e.getMessage()), "CONFIG-SET").toJSON()));
             }
         } else if (message.getType().equals("DEVICES-SEARCH")) {
             String msg = message.getMessage();
@@ -351,13 +380,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REBOOT").toJSON()));
             }
-        }else if (message.getType().equals("DEVICES-REDEPLOY")) {
+        } else if (message.getType().equals("DEVICES-REDEPLOY")) {
             List<String> services = XdashbackendApplication.getConfigLoader().getServices();
             if (services == null || services.isEmpty()) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn("Please add services into the config file.", null, 0, false, true), "DEVICES-REDEPLOY").toJSON()));
                 return;
             }
             String serversMsg = message.getMessage();
+
             try {
                 String[] servers = gson.fromJson(serversMsg, String[].class);
                 int failures = 0;
@@ -367,12 +397,22 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     if (sshHostAddress != null) {
                         if (sshHostAddress.forceIsConnected()) {
                             int finalI = i;
-                            sshHostAddress.sendExecCommandWithSudoPermissions("systemctl daemon-reload && sudo -S systemctl restart " + String.join(" ", services), 1, (a) -> {
+
+                            session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn("Reloading system daemons...", server, finalI, null, false), "DEVICES-REDEPLOY").toJSON()));
+                            sshHostAddress.sendExecCommandWithSudoPermissions("systemctl daemon-reload", 1, (a) -> {
+                                try {
+                                    session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(a.getMessage(), server, finalI, null, false), "DEVICES-REDEPLOY").toJSON()));
+                                } catch (Exception ignored) {
+                                }
+                            });
+                            session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn("Restarting services daemons...", server, finalI, null, false), "DEVICES-REDEPLOY").toJSON()));
+                            sshHostAddress.sendExecCommandWithSudoPermissions("systemctl restart " + String.join(" ", services), 1, (a) -> {
                                 try {
                                     session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(a.getMessage(), server, finalI, true, false), "DEVICES-REDEPLOY").toJSON()));
-                                } catch (Exception ignored) {}
+                                } catch (Exception ignored) {
+                                }
                             });
-                               } else {
+                        } else {
                             failures++;
                             session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn("The machine server is not connected.", server, i, false, false), "DEVICES-REDEPLOY").toJSON()));
                         }
