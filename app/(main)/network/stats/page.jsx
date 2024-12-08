@@ -3,7 +3,7 @@
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { WebsocketContext } from '../../../../layout/context/websocketcontext';
 import TimeAgo from '../../../../components/TimeAgo';
@@ -17,29 +17,34 @@ const Dashboard = () => {
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [data, setData] = useState([]);
+    const isMounted = useRef(true); // Declare useRef outside useEffect
+    const timeoutId = useRef(null); // To store the timeout ID
 
     useEffect(() => {
+        isMounted.current = true; // Set to true on mount
         let isRequestInProgress = false;
 
         const sendRequest = () => {
-            if (isConnected && !isRequestInProgress) {
+            if (isMounted.current && isConnected && !isRequestInProgress) {
                 isRequestInProgress = true;
                 sendMessageAndWaitForCondition({ type: 'NETWORK-STATS' }, (m) => m.type === 'NETWORK-STATS')
                     .then((message) => {
-                        setData(d => {
+                        setData((d) => {
                             const json = JSON.parse(message.message);
                             console.log(json);
                             if (JSON.stringify(d) !== JSON.stringify(json)) setLastUpdate(new Date());
                             return json;
                         });
                         isRequestInProgress = false;
-                        // Call the function again immediately after the previous request starts
-                        setTimeout(sendRequest, 0);
+                        if (isMounted.current) {
+                            timeoutId.current = setTimeout(sendRequest, 1000);
+                        }
                     })
                     .catch(() => {
                         isRequestInProgress = false;
-                        // Retry immediately on failure
-                        setTimeout(sendRequest, 0);
+                        if (isMounted.current) {
+                            timeoutId.current = setTimeout(sendRequest, 1000);
+                        }
                     });
             }
         };
@@ -48,12 +53,12 @@ const Dashboard = () => {
 
         // Cleanup on component unmount
         return () => {
-            isRequestInProgress = false;
+            isMounted.current = false; // Mark as unmounted
+            if (timeoutId.current) {
+                clearTimeout(timeoutId.current); // Clear any active timeouts
+            }
         };
     }, [isConnected, sendMessageAndWaitForCondition]);
-
-
-
     // @ts-ignore
     return (
         <div className="grid fadeIn">

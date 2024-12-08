@@ -3,7 +3,7 @@
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { WebsocketContext } from '../../../../layout/context/websocketcontext';
 import TimeAgo from '../../../../components/TimeAgo';
@@ -17,26 +17,34 @@ const Dashboard = () => {
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [data, setData] = useState([]);
 
+
+    const isMounted = useRef(true); // Tracks if the component is mounted
+    const timeoutId = useRef(null); // Stores the timeout ID persistently
+
     useEffect(() => {
+        isMounted.current = true; // Set the mounted flag
         let isRequestInProgress = false;
 
         const sendRequest = () => {
-            if (isConnected && !isRequestInProgress) {
+            if (isMounted.current && isConnected && !isRequestInProgress) {
                 isRequestInProgress = true;
                 sendMessageAndWaitForCondition({ type: 'NETWORK-SCAN' }, (m) => m.type === 'NETWORK-SCAN')
                     .then((message) => {
-                        setData(d => {
+                        setData((d) => {
                             const json = JSON.parse(message.message);
                             if (d?.toString() !== json?.toString()) setLastUpdate(new Date());
                             return json;
                         });
                         isRequestInProgress = false;
-                        setTimeout(sendRequest, 300); // Trigger next request after 300ms
+                        if (isMounted.current) {
+                            timeoutId.current = setTimeout(sendRequest, 1000);
+                        }
                     })
                     .catch(() => {
-                        setData([]);
                         isRequestInProgress = false;
-                        setTimeout(sendRequest, 300); // Retry after 300ms
+                        if (isMounted.current) {
+                            timeoutId.current = setTimeout(sendRequest, 1000);
+                        }
                     });
             }
         };
@@ -45,11 +53,12 @@ const Dashboard = () => {
 
         // Cleanup on component unmount
         return () => {
-            isRequestInProgress = false;
+            isMounted.current = false; // Mark the component as unmounted
+            if (timeoutId.current) {
+                clearTimeout(timeoutId.current); // Clear any active timeouts
+            }
         };
     }, [isConnected, sendMessageAndWaitForCondition]);
-
-
 
     // @ts-ignore
     return (

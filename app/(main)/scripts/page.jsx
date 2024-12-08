@@ -15,6 +15,8 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Divider } from 'primereact/divider';
 import { Badge } from 'primereact/badge';
+import { SelectButton } from 'primereact/selectbutton';
+import { isValidDirectoryPath, isValidPath } from '../../../utilities/utilities';
 
 
 const Dashboard = () => {
@@ -34,16 +36,21 @@ const Dashboard = () => {
 
     const [localDirectoryInput, setLocalDirectoryInput] = useState(null);
     const [targetDirectoryInput, setTargetDirectoryInput] = useState(null);
+    const [targetMethodInput, setTargetMethodInput] = useState(true);
+    const isMounted = useRef(true); // Tracks if the component is mounted
+    const timeoutId = useRef(null); // Stores the timeout ID persistently
+
     useEffect(() => {
+        isMounted.current = true; // Set the mounted flag
         let isRequestInProgress = false;
 
         const sendRequest = () => {
-            if (isConnected && !isRequestInProgress) {
+            if (isMounted.current && isConnected && !isRequestInProgress) {
                 isRequestInProgress = true;
                 try {
                     sendMessageAndWaitForCondition({ type: 'DEVICES-DATA-LIMITED' }, (m) => m.type === 'DEVICES-DATA-LIMITED')
                         .then((message) => {
-                            setDevices(d => {
+                            setDevices((d) => {
                                 try {
                                     const json = JSON.parse(message?.message?.devices);
                                     if (d.length !== json?.length) setLastUpdate(new Date());
@@ -53,16 +60,19 @@ const Dashboard = () => {
                                 }
                             });
                             isRequestInProgress = false;
-                            // Call the function again immediately after the previous request starts
-                            setTimeout(sendRequest, 200);
+                            if (isMounted.current) {
+                                timeoutId.current = setTimeout(sendRequest, 200); // Schedule next call
+                            }
                         })
                         .catch(() => {
                             isRequestInProgress = false;
-                            // Retry immediately on failure
-                            setTimeout(sendRequest, 400);
+                            if (isMounted.current) {
+                                timeoutId.current = setTimeout(sendRequest, 400); // Retry on failure
+                            }
                         });
                 } catch (e) {
-                    console.log(e)
+                    console.error(e);
+                    isRequestInProgress = false;
                 }
             }
         };
@@ -71,28 +81,33 @@ const Dashboard = () => {
 
         // Cleanup on component unmount
         return () => {
-            isRequestInProgress = false;
+            isMounted.current = false; // Mark as unmounted
+            if (timeoutId.current) {
+                clearTimeout(timeoutId.current); // Clear any active timeouts
+            }
         };
     }, [isConnected, sendMessageAndWaitForCondition]);
+
     function transferFiles() {
         setLoading(true);
         setTransferFilesDialogVisible(true);
-        setTransferFilesInputDialogVisible(false)
+        setTransferFilesInputDialogVisible(false);
         setFinalResponseData(null);
         setFinalResponseStatus(null);
         setSelectedDevices(devices => {
             return devices.map(m => {
-                m.success = null
-                m.response = null
-                return m
+                m.success = null;
+                m.response = null;
+                return m;
             });
-        })
+        });
         sendMessageAndWaitForCondition({
             type: 'DEVICES-TRANSFER-FILES',
             message: JSON.stringify({
                 servers: selectedDevices.map(m => m.server),
                 localDirectory: localDirectoryInput,
-                remoteDirectory: targetDirectoryInput
+                remoteDirectory: targetDirectoryInput,
+                useLocalSCP: targetMethodInput
             })
         }, (m) => {
             if (m.type === 'DEVICES-TRANSFER-FILES') {
@@ -101,7 +116,7 @@ const Dashboard = () => {
                     if (transferFilesStepperRef.current) transferFilesStepperRef.current.setActiveStep(selectedDevices.length + 2);
                     setFinalResponseData(prevState => ({
                         ...prevState,
-                        response: msg?.response ?? 'There was no response back from server.',
+                        response: msg?.response ?? 'There was no response back from server.'
                     }));
                     setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
                     return true;
@@ -109,7 +124,7 @@ const Dashboard = () => {
                 if (transferFilesStepperRef.current)
                     transferFilesStepperRef.current.setActiveStep(msg.step);
 
-                if(msg.step === 0) {
+                if (msg.step === 0) {
 
                     setFinalResponseData(prevState => ({
                         ...prevState,
@@ -117,7 +132,7 @@ const Dashboard = () => {
                         tar_success: msg.success
                     }));
                 }
-                if(msg.step === selectedDevices.length + 1) {
+                if (msg.step === selectedDevices.length + 1) {
                     setFinalResponseData(prevState => ({
                         ...prevState,
                         cleanup_response: msg.response,
@@ -153,11 +168,12 @@ const Dashboard = () => {
                 });
                 if (transferFilesStepperRef.current)
                     transferFilesStepperRef.current.setActiveStep(selectedDevices.length + 1);
-                setFinalResponseStatus(false)
-                setFinalResponseData({ response: e?.message || 'Unknown Exception...'})
+                setFinalResponseStatus(false);
+                setFinalResponseData({ response: e?.message || 'Unknown Exception...' });
                 setLoading(false);
             });
     }
+
     function reboot() {
         setLoading(true);
         setRebootDialogVisible(true);
@@ -165,11 +181,11 @@ const Dashboard = () => {
         setFinalResponseStatus(null);
         setSelectedDevices(devices => {
             return devices.map(m => {
-                m.success = null
-                m.response = null
-                return m
+                m.success = null;
+                m.response = null;
+                return m;
             });
-        })
+        });
         sendMessageAndWaitForCondition({
             type: 'DEVICES-REBOOT',
             message: JSON.stringify(selectedDevices.map(m => m.server))
@@ -178,7 +194,7 @@ const Dashboard = () => {
                 const msg = JSON.parse(m.message);
                 if (msg.finished) {
                     if (rebootStepperRef.current) rebootStepperRef.current.setActiveStep(selectedDevices.length);
-                    setFinalResponseData({ response: msg?.response ?? 'There was no response back from server.'});
+                    setFinalResponseData({ response: msg?.response ?? 'There was no response back from server.' });
                     setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
                     return true;
                 }
@@ -225,14 +241,14 @@ const Dashboard = () => {
                 setTransferFilesInputDialogVisible(false);
             }} footer={() => (
                 <Button loading={loading} onClick={transferFiles}
-                        disabled={!isConnected || !localDirectoryInput || !targetDirectoryInput} label={'Execute'}
+                        disabled={!isConnected || !localDirectoryInput || !targetDirectoryInput || targetMethodInput === undefined || targetMethodInput === null} label={'Execute'}
                         severity={'danger'} className={'w-full'}></Button>
             )}>
                 <Divider align="center">
                     <Badge value="Local Directory"></Badge>
                 </Divider>
 
-                <InputText placeholder={'Local Directory Path'} className={'w-full'} value={localDirectoryInput}
+                <InputText invalid={localDirectoryInput ? !isValidPath(localDirectoryInput)  : false} placeholder={'Local Directory Path'} className={'w-full'} value={localDirectoryInput}
                            onChange={(e) => setLocalDirectoryInput(e.target.value)} />
 
 
@@ -240,8 +256,27 @@ const Dashboard = () => {
                     <Badge value="Target Directory"></Badge>
                 </Divider>
 
-                <InputText placeholder={'Target Directory Path'} className={'w-full'} value={targetDirectoryInput}
+                <InputText invalid={targetDirectoryInput ? !isValidPath(targetDirectoryInput)  : false} placeholder={'Target Directory Path'} className={'w-full'} value={targetDirectoryInput}
                            onChange={(e) => setTargetDirectoryInput(e.target.value)} />
+                <Divider align="center">
+                    <Badge value="Transfer Method"></Badge>
+                </Divider>
+
+                <SelectButton
+                    options={[{ name: 'Java Buffering', value: false }, { name: 'Java SFTP', value: true }]}
+                    allowEmpty={false}
+                    pt={{
+                        button: {
+                            style: { width: '50%' }
+                        },
+                    }}
+                    className="w-full"
+                    itemTemplate={(a) => (
+                        <div className="font-semibold">{a.name}</div>  // Make each item take full width
+                    )}
+                    value={targetMethodInput}
+                    onChange={(e) => setTargetMethodInput(e.target.value)}
+                />
             </Dialog>
             <Dialog draggable={false} visible={transferFilesDialogVisible} style={{ width: '50vw' }} onHide={() => {
                 if (!transferFilesDialogVisible) return;
@@ -433,7 +468,8 @@ const Dashboard = () => {
                         <i className="pi pi-save" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
                         <div className="ml-4">
                             <div className="text-xl font-semibold">Reload & Deploy</div>
-                            <span className="text-sm text-gray-500 block"> Reload service daemons and redeploy services.</span>
+                            <span
+                                className="text-sm text-gray-500 block"> Reload service daemons and redeploy services.</span>
                         </div>
                     </div>
                     <Button onClick={() => setTransferFilesInputDialogVisible(true)} icon={'pi pi-play-circle'}
