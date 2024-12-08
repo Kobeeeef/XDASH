@@ -43,10 +43,10 @@ const AppMenu = () => {
 
             ]
         },
-        // {
-        //     label: 'Settings',
-        //     items: [{ label: 'Settings', icon: 'pi pi-cog', to: '/settings' }]
-        // },
+        {
+            label: 'Settings',
+            items: [{ label: 'Settings', icon: 'pi pi-cog', to: '/settings' }]
+        },
         // {
         //     label: 'UI Components',
         //     items: [

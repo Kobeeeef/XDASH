@@ -17,6 +17,7 @@ import { Divider } from 'primereact/divider';
 import { Badge } from 'primereact/badge';
 import { SelectButton } from 'primereact/selectbutton';
 import { isValidDirectoryPath, isValidPath } from '../../../utilities/utilities';
+import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
 
 
 const Dashboard = () => {
@@ -27,6 +28,7 @@ const Dashboard = () => {
     const [selectedDevices, setSelectedDevices] = useState([]);
     const [loading, setLoading] = useState(false);
     const [rebootDialogVisible, setRebootDialogVisible] = useState(false);
+    const [redeployDialogVisible, setRedeployDialogVisible] = useState(false);
     const [transferFilesInputDialogVisible, setTransferFilesInputDialogVisible] = useState(false);
     const [transferFilesDialogVisible, setTransferFilesDialogVisible] = useState(false);
     const [finalResponseData, setFinalResponseData] = useState(null);
@@ -119,6 +121,11 @@ const Dashboard = () => {
                         response: msg?.response ?? 'There was no response back from server.'
                     }));
                     setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
+                    if(msg?.success === true) {
+                        playSuccessNotificationSound()
+                    } else if (msg?.success === false) {
+                        playErrorNotificationSound()
+                    }
                     return true;
                 }
                 if (transferFilesStepperRef.current)
@@ -196,6 +203,11 @@ const Dashboard = () => {
                     if (rebootStepperRef.current) rebootStepperRef.current.setActiveStep(selectedDevices.length);
                     setFinalResponseData({ response: msg?.response ?? 'There was no response back from server.' });
                     setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
+                    if(msg?.success === true) {
+                        playSuccessNotificationSound()
+                    } else if (msg?.success === false) {
+                        playErrorNotificationSound()
+                    }
                     return true;
                 }
                 if (rebootStepperRef.current)
@@ -217,6 +229,70 @@ const Dashboard = () => {
             }
 
         }, 5000)
+            .then(() => {
+                setLoading(false);
+            })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || 'Unknown Exception...'
+                });
+                setLoading(false);
+            });
+    }
+    function redeploy() {
+        setLoading(true);
+        setRedeployDialogVisible(true);
+        setFinalResponseData(null);
+        setFinalResponseStatus(null);
+        setSelectedDevices(devices => {
+            return devices.map(m => {
+                m.success = null;
+                m.response = null;
+                return m;
+            });
+        });
+        sendMessageAndWaitForCondition({
+            type: 'DEVICES-REDEPLOY',
+            message: JSON.stringify(selectedDevices.map(m => m.server))
+        }, (m) => {
+            if (m.type === 'DEVICES-REDEPLOY') {
+                const msg = JSON.parse(m.message);
+                console.log(msg)
+                if (msg.finished) {
+                    if (rebootStepperRef.current) rebootStepperRef.current.setActiveStep(selectedDevices.length);
+                    setFinalResponseData(prevState => ({
+                        ...prevState,
+                        response: msg?.response ?? 'There was no response back from server.'
+                    }));
+                    setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
+                    if(msg?.success === true) {
+                        playSuccessNotificationSound()
+                    } else if (msg?.success === false) {
+                        playErrorNotificationSound()
+                    }
+                    return true;
+                }
+                if (rebootStepperRef.current)
+                    rebootStepperRef.current.setActiveStep(msg.step);
+                if (msg.server) {
+                    setSelectedDevices(prevState =>
+                        prevState.map(s =>
+                            s.server === msg.server
+                                ? {
+                                    ...s,
+                                    response: msg.response || s.response,
+                                    success: msg?.success
+                                }
+                                : s
+                        )
+                    );
+                }
+                return false;
+            }
+
+        }, 60000)
             .then(() => {
                 setLoading(false);
             })
@@ -286,7 +362,7 @@ const Dashboard = () => {
                     <StepperPanel header={'Tar Files'}>
                         <div className="flex flex-column h-12rem items-center justify-center">
                             <div
-                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.tar_success === true ? 'text-green-500' : finalResponseData?.tar_success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.tar_success === true ? 'text-green-500' : finalResponseData?.tar_success === false ? 'text-red-500' : 'text-yellow-500 animate-pulse')}>
                                 {finalResponseData?.tar_success === true ? 'All Files Compressed' : finalResponseData?.tar_success === false ? 'Systems Failed Compression' : 'Awaiting Final Response'}
                             </div>
                             <div
@@ -300,7 +376,7 @@ const Dashboard = () => {
                             <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
                                 <div className="flex flex-column h-12rem items-center justify-center">
                                     <div
-                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500 animate-pulse')}>
                                         {m?.success === true ? 'Files Transferred Successfully' : m?.success === false ? 'System Failed Transfer' : 'System Awaiting Transfer'}
                                     </div>
                                     <div
@@ -369,6 +445,46 @@ const Dashboard = () => {
                             <div
                                 className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500' : 'text-yellow-500')}>
                                 {finalResponseStatus === true ? 'All Systems Rebooted' : finalResponseStatus === false ? 'Systems Failed Reboot' : 'Awaiting Final Response'}
+                            </div>
+                            <div
+                                className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                {finalResponseData?.response}
+                            </div>
+                        </div>
+
+                    </StepperPanel>
+                </Stepper>
+            </Dialog>
+            <Dialog draggable={false} visible={redeployDialogVisible} style={{ width: '50vw' }} onHide={() => {
+                if (!redeployDialogVisible) return;
+                setRedeployDialogVisible(false);
+            }}>
+                <Stepper ref={rebootStepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
+
+                    {selectedDevices.map((m, key) => {
+                        return (
+                            <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
+                                <div className="flex flex-column h-12rem items-center justify-center">
+                                    <div
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                        {m?.success === true ? 'Machine Redeployed Successfully' : m?.success === false ? 'System Failed Redeploy' : 'System Awaiting Redeploy'}
+                                    </div>
+                                    <div
+                                        className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                        {m?.response}
+                                    </div>
+                                </div>
+
+
+                            </StepperPanel>
+                        );
+                    })}
+
+                    <StepperPanel header={'Finish'}>
+                        <div className="flex flex-column h-12rem items-center justify-center">
+                            <div
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500' : 'text-yellow-500')}>
+                                {finalResponseStatus === true ? 'All Systems Redeployed' : finalResponseStatus === false ? 'Systems Failed Redeploy' : 'Awaiting Final Response'}
                             </div>
                             <div
                                 className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
@@ -472,7 +588,7 @@ const Dashboard = () => {
                                 className="text-sm text-gray-500 block"> Reload service daemons and redeploy services.</span>
                         </div>
                     </div>
-                    <Button onClick={() => setTransferFilesInputDialogVisible(true)} icon={'pi pi-play-circle'}
+                    <Button onClick={() => redeploy()} icon={'pi pi-play-circle'}
                             severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
