@@ -1,10 +1,13 @@
 package org.kobe.xbot.xdashbackend;
 
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
-import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class ConfigLoader {
     private final Properties properties = new Properties();
@@ -46,7 +49,23 @@ public class ConfigLoader {
         }
     }
 
+    public void save() {
+        saveProperties(new File(fileName));
+    }
+    public List<String> getPropertyList(String key) {
+        String value = this.getProperty(key);
+        if (value == null || value.isEmpty()) return Collections.emptyList();
+        return Arrays.asList(value.split(","));
+    }
 
+    public void setPropertyList(String key, List<String> list) {
+        if (list == null || list.isEmpty()) {
+            properties.remove(key);
+        } else {
+            String value = String.join(",", list);
+            properties.setProperty(key, value);
+        }
+    }
     private void setDefaultProperties() {
         properties.setProperty("servers.password", "I<3Robots!");
         properties.setProperty("servers.user", "xbot");
@@ -57,6 +76,7 @@ public class ConfigLoader {
         properties.setProperty("roboRIO.username", "admin");
         properties.setProperty("roboRIO.server", "roboRIO-488-FRC.local");
         properties.setProperty("roboRIO.address", "10.4.88.2");
+        properties.setProperty("services", "");
         logger.info("Default properties set.");
     }
 
@@ -100,9 +120,7 @@ public class ConfigLoader {
     public long getRetryTimeout() {
         return getPropertyLong("servers.retryTimeout", DEFAULT_RETRY_TIMEOUT);
     }
-    public static void main(String[] args) {
-        ConfigLoader config = new ConfigLoader();
-        String port = config.getProperty("server.port");
-        System.out.println("Server Port: " + port);
+    public List<String> getServices() {
+        return getPropertyList("services");
     }
 }

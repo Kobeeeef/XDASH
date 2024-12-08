@@ -4,6 +4,7 @@ public class DevicesTransferFiles {
     private final String[] servers;
     private final String localDirectory;
     private final String remoteDirectory;
+    private final boolean useLocalSCP;
 
     public String[] getServers() {
         return servers;
@@ -17,9 +18,14 @@ public class DevicesTransferFiles {
         return remoteDirectory;
     }
 
-    public DevicesTransferFiles(String[] servers, String localDirectory, String remoteDirectory) {
+    public boolean isUseLocalSCP() {
+        return useLocalSCP;
+    }
+
+    public DevicesTransferFiles(String[] servers, String localDirectory, String remoteDirectory, boolean useLocalSCP) {
         this.servers = servers;
         this.localDirectory = localDirectory;
         this.remoteDirectory = remoteDirectory;
+        this.useLocalSCP = useLocalSCP;
     }
 }

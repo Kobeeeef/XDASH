@@ -528,10 +528,11 @@ public class SSHHostAddress {
         }
     }
 
-    public boolean transferAndExtract(String tarFilePath, String remoteTargetDir, Consumer<TransferProgress> progressConsumer) {
+    public boolean transferAndExtract(String tarFilePath, String remoteTargetDir, boolean useLocalSCP, Consumer<TransferProgress> progressConsumer) {
         TransferProgress progress = new TransferProgress("Uploading file now...", 0, 0, 0);
         progressConsumer.accept(progress);
-        boolean uploaded = this.uploadFile(tarFilePath, remoteTargetDir + "/" + new File(tarFilePath).getName(), progressConsumer);
+        boolean uploaded = this.uploadFile(tarFilePath, remoteTargetDir + "/" + new File(tarFilePath).getName(), progressConsumer, useLocalSCP);
+
         if (!uploaded) {
             return false;
         }
@@ -553,12 +554,14 @@ public class SSHHostAddress {
         return true;
     }
 
-    public boolean uploadFile(String localFilePath, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
+    public boolean uploadFile(String localFilePath, String remoteFilePath, Consumer<TransferProgress> progressConsumer, boolean useLocalSCP) {
         if (session == null || !forceIsConnected()) {
             logger.severe("SSH session is not connected.");
             throw new IllegalStateException("SSH session is not connected.");
         }
-
+        if (useLocalSCP) {
+            return uploadFileUsingLocalSCP(localFilePath, remoteFilePath, username, password, address, progressConsumer);
+        }
         Channel channel = null;
         try {
             channel = session.openChannel("exec");
@@ -632,7 +635,77 @@ public class SSHHostAddress {
             }
         }
     }
+    public boolean uploadFileUsingLocalSCP(String localFilePath, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
 
+        ChannelSftp channel = null;
+
+        try {
+
+            // Open SFTP channel
+            channel = (ChannelSftp) session.openChannel("sftp");
+            channel.connect();
+
+            // Upload the file using the SFTP put method
+            File localFile = new File(localFilePath);
+            long fileSize = localFile.length();
+
+            // You can track the progress by using the following method to handle chunks
+            try (FileInputStream fis = new FileInputStream(localFile)) {
+                channel.put(fis, remoteFilePath, new ProgressMonitor(progressConsumer, fileSize));
+            }
+
+            // Success
+            logger.info("File upload completed successfully.");
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+
+            return true;
+
+        } catch (JSchException | SftpException | IOException e) {
+            logger.severe("Error during SFTP upload: " + e.getMessage());
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Error during SFTP upload: " + e.getMessage(), 0, 0, 0));
+            return false;
+        } finally {
+            if (channel != null) {
+                channel.exit();
+            }
+        }
+    }
+
+    // Progress monitor class to show progress
+    public static class ProgressMonitor implements SftpProgressMonitor {
+
+        private final Consumer<TransferProgress> progressConsumer;
+        private final long totalSize;
+        private long bytesTransferred;
+
+        public ProgressMonitor(Consumer<TransferProgress> progressConsumer, long totalSize) {
+            this.progressConsumer = progressConsumer;
+            this.totalSize = totalSize;
+            this.bytesTransferred = 0;
+        }
+
+        @Override
+        public void init(int op, String src, String dest, long max) {
+            // Initializing progress monitor
+        }
+
+        @Override
+        public boolean count(long bytes) {
+            bytesTransferred += bytes;
+            if (progressConsumer != null) {
+                double percentage = (double) bytesTransferred / totalSize * 100;
+                progressConsumer.accept(new TransferProgress("Uploading...", percentage, bytesTransferred, totalSize));
+            }
+            return true;
+        }
+
+        @Override
+        public void end() {
+            // Upload complete
+        }
+    }
 
     public boolean uploadFile(MultipartFile multipartFile, String remoteFilePath, Consumer<TransferProgress> progressConsumer) {
         if (session == null || !forceIsConnected()) {
