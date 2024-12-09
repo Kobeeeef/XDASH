@@ -18,6 +18,12 @@ To run XDASH, open a terminal and execute the following command:
 java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
 ```
 
+# XCASTER - NOTICE
+
+### **⚠️ NOTICE: All machines must be running [XCASTER](https://github.com/Kobeeeef/XCASTER) for XDASH to discover the machine.**
+
+This is a crucial step for the real-time discovery of your devices and seamless operation within the XDASH system.
+
 ### Login Page
 ![image](https://github.com/user-attachments/assets/ad35a999-6a32-414c-bf05-e42bc50ef42a)
 
