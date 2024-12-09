@@ -30,6 +30,9 @@ This is a crucial step for the real-time discovery of your devices and seamless 
 ### Machine Discovery Page & Realtime Backend Logs
 ![image](https://github.com/user-attachments/assets/06b5df37-39d1-4d46-bfd6-37adb9797982)
 
+### Machine Scripts
+![image](https://github.com/user-attachments/assets/d4cd0643-c051-46e5-b798-630e0441a609)
+
 ### Realtime Device Shell Terminal
 ![image](https://github.com/user-attachments/assets/9784848a-11f6-40b0-a736-c4259af63a49)
 
@@ -74,6 +77,9 @@ This is a crucial step for the real-time discovery of your devices and seamless 
 
 ### Home Page
 ![image](https://github.com/user-attachments/assets/c9777a3b-51e4-4a45-a46e-f2693b6eaff5)
+
+### Settings Page
+![image](https://github.com/user-attachments/assets/e3252cbc-fbea-42e9-8982-58eb838fa3c5)
 
 ### Auto Configuration File
 ![image](https://github.com/user-attachments/assets/57ca673c-a72a-4dcd-bc8f-f452ca91e560)
