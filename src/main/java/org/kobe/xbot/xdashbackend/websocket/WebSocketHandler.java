@@ -380,6 +380,37 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REBOOT").toJSON()));
             }
+        } else if (message.getType().equals("DEVICES-CUSTOM-COMMAND")) {
+            String msg = message.getMessage();
+            try {
+                CustomCommandReturn customCommandReturn = gson.fromJson(msg, CustomCommandReturn.class);
+                String[] servers = customCommandReturn.getServers();
+                int failures = 0;
+                for (int i = 0; i < servers.length; i++) {
+                    String server = servers[i];
+                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
+                    if (sshHostAddress != null) {
+                        if (sshHostAddress.forceIsConnected()) {
+                            int finalI = i;
+                            sshHostAddress.sendExecCommandWithSudoPermissions(customCommandReturn.getCommand(), 1, (a) -> {
+                                try {
+                                    session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(a.getMessage(), server, finalI, null, false), message.getType()).toJSON()));
+                                } catch (Exception ignored) {
+                                }
+                            });
+                        } else {
+                            failures++;
+                            session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn("The machine server is not connected.", server, i, false, false), message.getType()).toJSON()));
+                        }
+                    } else {
+                        failures++;
+                        session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn("The machine server was not found.", server, i, false, false), message.getType()).toJSON()));
+                    }
+                }
+                session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(String.format("%1$s/%2$s commands were executed successfully.", servers.length - failures, servers.length), null, servers.length, failures == 0, true), message.getType()).toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), message.getType()).toJSON()));
+            }
         } else if (message.getType().equals("DEVICES-REDEPLOY")) {
             List<String> services = XdashbackendApplication.getConfigLoader().getServices();
             if (services == null || services.isEmpty()) {
