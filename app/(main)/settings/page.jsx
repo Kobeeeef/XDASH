@@ -306,7 +306,7 @@ const Dashboard = () => {
             <div className={'col-12'}>
                 <div className="card">
                     <TabView scrollable={true}>
-                        <TabPanel disabled={!isConnected || loading} header="RIO" leftIcon="pi pi-microchip mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="RIO" leftIcon="pi pi-microchip mr-2">
 
                             <Divider align="center">
                                 <Badge value="RoboRIO Hostname"></Badge>
@@ -342,7 +342,7 @@ const Dashboard = () => {
                                        }))} />
 
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} header="Server" leftIcon="pi pi-server mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Server" leftIcon="pi pi-server mr-2">
                             <Divider align="center">
                                 <Badge value="Password"></Badge>
                             </Divider>
@@ -352,7 +352,7 @@ const Dashboard = () => {
                                            SERVER_PASSWORD: e.target.value
                                        }))} />
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} header="Machines" leftIcon="pi pi-users mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Machines" leftIcon="pi pi-users mr-2">
                             <Divider align="center">
                                 <Badge value="Connect Timeout"></Badge>
                             </Divider>
@@ -396,11 +396,11 @@ const Dashboard = () => {
                                 <Chips separator={','} placeholder={'Services'} value={newData?.SERVICES}
                                        onChange={(e) =>
                                            setNewData(prev => {
-                                               if (prev?.SERVICES.some(item => e.value.includes(item))) {
+                                               if (e.value.length > prev?.SERVICES?.length && prev?.SERVICES?.includes(e.value[e.value.length - 1])) {
                                                    toast.current.show({
                                                        severity: 'error',
                                                        summary: 'Duplicate Services!',
-                                                       detail: 'There cannot be multiple services!'
+                                                       detail: 'There cannot be multiple duplicate services!'
                                                    });
                                                    playErrorNotificationSound()
                                                    return prev;
@@ -414,10 +414,20 @@ const Dashboard = () => {
                                        } />
                             </div>
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} header="XTABLES" leftIcon="pi pi-table mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Docker" leftIcon="pi pi-image mr-2">
 
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} header="General" leftIcon="pi pi-cog mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="XTABLES" leftIcon="pi pi-table mr-2">
+
+                        </TabPanel>
+
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Mapping" leftIcon="pi pi-map mr-2">
+
+                        </TabPanel>
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Preferences" leftIcon="pi pi-user mr-2">
+
+                        </TabPanel>
+                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="General" leftIcon="pi pi-cog mr-2">
 
                         </TabPanel>
                     </TabView>

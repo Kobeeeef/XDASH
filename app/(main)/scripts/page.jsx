@@ -35,10 +35,16 @@ const Dashboard = () => {
     const [finalResponseStatus, setFinalResponseStatus] = useState(null);
     const rebootStepperRef = useRef(null);
     const transferFilesStepperRef = useRef(null);
-
+    const redeployStepperRef = useRef(null);
+    const customCLICommandStepperRef = useRef(null);
+    const [executeCLICommandDialogVisible, setExecuteCLICommandDialogVisible] = useState(false)
+    const [customCLICommandInput, setCustomCLICommandInput] = useState(null);
+    const [customCLICommandDialogVisible, setCustomCLICommandDialogVisible] = useState(false);
     const [localDirectoryInput, setLocalDirectoryInput] = useState(null);
     const [targetDirectoryInput, setTargetDirectoryInput] = useState(null);
     const [targetMethodInput, setTargetMethodInput] = useState(true);
+    const [networkingManagerTypeDialogVisible, setNetworkingManagerTypeDialogVisible] = useState(false)
+    const [networkingManagerTypeInput, setNetworkingManagerTypeInput] = useState(null)
     const isMounted = useRef(true); // Tracks if the component is mounted
     const timeoutId = useRef(null); // Stores the timeout ID persistently
 
@@ -93,7 +99,6 @@ const Dashboard = () => {
     function transferFiles() {
         setLoading(true);
         setTransferFilesDialogVisible(true);
-        setTransferFilesInputDialogVisible(false);
         setFinalResponseData(null);
         setFinalResponseStatus(null);
         setSelectedDevices(devices => {
@@ -261,7 +266,7 @@ const Dashboard = () => {
                 const msg = JSON.parse(m.message);
                 console.log(msg)
                 if (msg.finished) {
-                    if (rebootStepperRef.current) rebootStepperRef.current.setActiveStep(selectedDevices.length);
+                    if (redeployStepperRef.current) redeployStepperRef.current.setActiveStep(selectedDevices.length);
                     setFinalResponseData(prevState => ({
                         ...prevState,
                         response: msg?.response ?? 'There was no response back from server.'
@@ -274,8 +279,75 @@ const Dashboard = () => {
                     }
                     return true;
                 }
-                if (rebootStepperRef.current)
-                    rebootStepperRef.current.setActiveStep(msg.step);
+                if (redeployStepperRef.current)
+                    redeployStepperRef.current.setActiveStep(msg.step);
+                if (msg.server) {
+                    setSelectedDevices(prevState =>
+                        prevState.map(s =>
+                            s.server === msg.server
+                                ? {
+                                    ...s,
+                                    response: msg.response || s.response,
+                                    success: msg?.success
+                                }
+                                : s
+                        )
+                    );
+                }
+                return false;
+            }
+
+        }, 60000)
+            .then(() => {
+                setLoading(false);
+            })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || 'Unknown Exception...'
+                });
+                setLoading(false);
+            });
+    }
+    function custom_command(command) {
+        setLoading(true);
+        setCustomCLICommandDialogVisible(true);
+        setFinalResponseData(null);
+        setFinalResponseStatus(null);
+        setSelectedDevices(devices => {
+            return devices.map(m => {
+                m.success = null;
+                m.response = null;
+                return m;
+            });
+        });
+        sendMessageAndWaitForCondition({
+            type: 'DEVICES-CUSTOM-COMMAND',
+            message: JSON.stringify({
+                servers: selectedDevices.map(m => m.server),
+                command: command
+            })
+        }, (m) => {
+            if (m.type === 'DEVICES-CUSTOM-COMMAND') {
+                const msg = JSON.parse(m.message);
+                console.log(msg)
+                if (msg.finished) {
+                    if (customCLICommandStepperRef.current) customCLICommandStepperRef.current.setActiveStep(selectedDevices.length);
+                    setFinalResponseData(prevState => ({
+                        ...prevState,
+                        response: msg?.response ?? 'There was no response back from server.'
+                    }));
+                    setFinalResponseStatus(msg?.success === true ? true : msg?.success === false ? false : null);
+                    if(msg?.success === true) {
+                        playSuccessNotificationSound()
+                    } else if (msg?.success === false) {
+                        playErrorNotificationSound()
+                    }
+                    return true;
+                }
+                if (customCLICommandStepperRef.current)
+                    customCLICommandStepperRef.current.setActiveStep(msg.step);
                 if (msg.server) {
                     setSelectedDevices(prevState =>
                         prevState.map(s =>
@@ -310,6 +382,40 @@ const Dashboard = () => {
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
+            <Dialog header={'Select Networking Manager Type'} draggable={false}
+                    visible={networkingManagerTypeDialogVisible}
+                    style={{ width: '50vw' }} onHide={() => {
+                if (!networkingManagerTypeDialogVisible) return;
+                setNetworkingManagerTypeDialogVisible(false);
+            }} footer={() => (
+                <Button loading={loading}
+                        onClick={() => {
+                            custom_command("systemctl restart " + networkingManagerTypeInput)
+                        }}
+                        disabled={!isConnected || !networkingManagerTypeInput} label={'Execute'}
+                        severity={'danger'} className={'w-full'}></Button>
+            )}>
+                <Divider align="center">
+                    <Badge value="Networking Manger"></Badge>
+                </Divider>
+
+                <SelectButton
+                    options={[{ name: 'Network Manager', value: "NetworkManager" }, { name: 'Networking', value: "networking" }, { name: "Systemd Networkd", value: "systemd-networkd"}, { name: "Wicd", value: "wicd"}, { name: "Systemd Resolved", value: "systemd-resolved"}]}
+                    allowEmpty={false}
+
+                    pt={{
+                        button: {
+                            className: "flex-1 flex justify-center items-center",
+                        },
+                    }}
+                    className="w-full lg:flex flex-col"
+                    itemTemplate={(a) => (
+                        <div className="font-semibold">{a.name}</div>  // Make each item take full width
+                    )}
+                    value={networkingManagerTypeInput}
+                    onChange={(e) => setNetworkingManagerTypeInput(e.target.value)}
+                />
+            </Dialog>
             <Dialog header={'Select Host & Target Destination'} draggable={false}
                     visible={transferFilesInputDialogVisible}
                     style={{ width: '50vw' }} onHide={() => {
@@ -354,6 +460,24 @@ const Dashboard = () => {
                     onChange={(e) => setTargetMethodInput(e.target.value)}
                 />
             </Dialog>
+            <Dialog header={'Execute CLI Command'} draggable={false}
+                    visible={executeCLICommandDialogVisible}
+                    style={{ width: '50vw' }} onHide={() => {
+                if (!executeCLICommandDialogVisible) return;
+                setExecuteCLICommandDialogVisible(false);
+            }} footer={() => (
+                <Button loading={loading} onClick={() => custom_command(customCLICommandInput)}
+                        disabled={!isConnected || !customCLICommandInput} label={'Execute'}
+                        severity={'danger'} className={'w-full'}></Button>
+            )}>
+                <Divider align="center">
+                    <Badge value="CLI Command"></Badge>
+                </Divider>
+
+                <InputText placeholder={'Custom CLI Command'} className={'w-full'} value={customCLICommandInput}
+                           onChange={(e) => setCustomCLICommandInput(e.target.value)} />
+
+            </Dialog>
             <Dialog draggable={false} visible={transferFilesDialogVisible} style={{ width: '50vw' }} onHide={() => {
                 if (!transferFilesDialogVisible) return;
                 setTransferFilesDialogVisible(false);
@@ -362,7 +486,7 @@ const Dashboard = () => {
                     <StepperPanel header={'Tar Files'}>
                         <div className="flex flex-column h-12rem items-center justify-center">
                             <div
-                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.tar_success === true ? 'text-green-500' : finalResponseData?.tar_success === false ? 'text-red-500' : 'text-yellow-500 animate-pulse')}>
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.tar_success === true ? 'text-green-500' : finalResponseData?.tar_success === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                 {finalResponseData?.tar_success === true ? 'All Files Compressed' : finalResponseData?.tar_success === false ? 'Systems Failed Compression' : 'Awaiting Final Response'}
                             </div>
                             <div
@@ -376,7 +500,7 @@ const Dashboard = () => {
                             <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
                                 <div className="flex flex-column h-12rem items-center justify-center">
                                     <div
-                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500 animate-pulse')}>
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                         {m?.success === true ? 'Files Transferred Successfully' : m?.success === false ? 'System Failed Transfer' : 'System Awaiting Transfer'}
                                     </div>
                                     <div
@@ -392,7 +516,7 @@ const Dashboard = () => {
                     <StepperPanel header={'Cleanup'}>
                         <div className="flex flex-column h-12rem items-center justify-center">
                             <div
-                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.cleanup_success === true ? 'text-green-500' : finalResponseData?.cleanup_success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseData?.cleanup_success === true ? 'text-green-500' : finalResponseData?.cleanup_success === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                 {finalResponseData?.cleanup_success === true ? 'All Files Compressed' : finalResponseData?.cleanup_success === false ? 'Systems Failed Compression' : 'Awaiting Final Response'}
                             </div>
                             <div
@@ -404,7 +528,7 @@ const Dashboard = () => {
                     <StepperPanel header={'Final Status'}>
                         <div className="flex flex-column h-12rem items-center justify-center">
                             <div
-                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500' : 'text-yellow-500')}>
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                 {finalResponseStatus === true ? 'All Files Transfered' : finalResponseStatus === false ? 'Systems Failed Transfer' : 'Awaiting Final Response'}
                             </div>
                             <div
@@ -426,7 +550,7 @@ const Dashboard = () => {
                             <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
                                 <div className="flex flex-column h-12rem items-center justify-center">
                                     <div
-                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                         {m?.success === true ? 'Command Sent Successfully' : m?.success === false ? 'System Failed Reboot' : 'System Awaiting Reboot'}
                                     </div>
                                     <div
@@ -443,8 +567,48 @@ const Dashboard = () => {
                     <StepperPanel header={'Finish'}>
                         <div className="flex flex-column h-12rem items-center justify-center">
                             <div
-                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500' : 'text-yellow-500')}>
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                 {finalResponseStatus === true ? 'All Systems Rebooted' : finalResponseStatus === false ? 'Systems Failed Reboot' : 'Awaiting Final Response'}
+                            </div>
+                            <div
+                                className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                {finalResponseData?.response}
+                            </div>
+                        </div>
+
+                    </StepperPanel>
+                </Stepper>
+            </Dialog>
+            <Dialog draggable={false} visible={customCLICommandDialogVisible} style={{ width: '50vw' }} onHide={() => {
+                if (!customCLICommandDialogVisible) return;
+                setCustomCLICommandDialogVisible(false);
+            }}>
+                <Stepper ref={customCLICommandStepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
+
+                    {selectedDevices.map((m, key) => {
+                        return (
+                            <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
+                                <div className="flex flex-column h-12rem items-center justify-center">
+                                    <div
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
+                                        {m?.success === true ? 'Command Executed Successfully' : m?.success === false ? 'System Failed Command' : 'System Awaiting Command'}
+                                    </div>
+                                    <div
+                                        className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                        {m?.response}
+                                    </div>
+                                </div>
+
+
+                            </StepperPanel>
+                        );
+                    })}
+
+                    <StepperPanel header={'Finish'}>
+                        <div className="flex flex-column h-12rem items-center justify-center">
+                            <div
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
+                                {finalResponseStatus === true ? 'All Commands Executed' : finalResponseStatus === false ? 'Commands Failed Execution' : 'Awaiting Final Response'}
                             </div>
                             <div
                                 className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
@@ -459,14 +623,14 @@ const Dashboard = () => {
                 if (!redeployDialogVisible) return;
                 setRedeployDialogVisible(false);
             }}>
-                <Stepper ref={rebootStepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
+                <Stepper ref={redeployStepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
 
                     {selectedDevices.map((m, key) => {
                         return (
                             <StepperPanel header={m?.server ?? 'Unknown Server'} key={key}>
                                 <div className="flex flex-column h-12rem items-center justify-center">
                                     <div
-                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500' : 'text-yellow-500')}>
+                                        className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (m?.success === true ? 'text-green-500' : m?.success === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                         {m?.success === true ? 'Machine Redeployed Successfully' : m?.success === false ? 'System Failed Redeploy' : 'System Awaiting Redeploy'}
                                     </div>
                                     <div
@@ -483,7 +647,7 @@ const Dashboard = () => {
                     <StepperPanel header={'Finish'}>
                         <div className="flex flex-column h-12rem items-center justify-center">
                             <div
-                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500' : 'text-yellow-500')}>
+                                className={('flex justify-content-center align-items-center text-2xl mb-2 font-bold ') + (finalResponseStatus === true ? 'text-green-500' : finalResponseStatus === false ? 'text-red-500 animate-pulse' : 'text-yellow-500 animate-pulse-fast')}>
                                 {finalResponseStatus === true ? 'All Systems Redeployed' : finalResponseStatus === false ? 'Systems Failed Redeploy' : 'Awaiting Final Response'}
                             </div>
                             <div
@@ -533,6 +697,7 @@ const Dashboard = () => {
                     <MultiSelect disabled={!isConnected} onChange={(e) => {
                         const filtered = e.value.filter(e => e?.status !== 'CONNECTED');
                         if (filtered.length > 0) {
+                            playErrorNotificationSound()
                             filtered.forEach(e => {
                                 toast.current.show({
                                     severity: 'error',
@@ -556,7 +721,10 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Unlock the filesystem and mount the disk for immediate access.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
+                    <Button  onClick={() => {
+                        setCustomCLICommandInput("mount -o remount,rw /")
+                        setExecuteCLICommandDialogVisible(true)
+                    }} icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -604,22 +772,9 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Restart network services to re-establish connections.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
-                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
-                            className="ml-auto"></Button>
-                </div>
-            </div>
-            <div className="col-12">
-                <div
-                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
-                    <div className="flex items-center">
-                        <i className="pi pi-sitemap" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
-                        <div className="ml-4">
-                            <div className="text-xl font-semibold">Flush DNS Cache</div>
-                            <span className="text-sm text-gray-500 block">Clear DNS cache to resolve domain resolution issues.</span>
-                        </div>
-                    </div>
-                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
+                    <Button onClick={() => {
+                        setNetworkingManagerTypeDialogVisible(true)
+                    }} icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -634,7 +789,10 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Update installed software packages to their latest versions.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
+                    <Button onClick={() => {
+                        setCustomCLICommandInput("apt-get update")
+                        setExecuteCLICommandDialogVisible(true)
+                    }} icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
@@ -665,7 +823,10 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Run a custom script on the machines.</span>
                         </div>
                     </div>
-                    <Button icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
+                    <Button onClick={() => {
+                        setCustomCLICommandInput(null)
+                        setExecuteCLICommandDialogVisible(true)
+                    }} icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>
                 </div>
