@@ -23,10 +23,24 @@ const AppMenu = () => {
                     to: '/network/mDNS'
                 }, { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' }]
             },
-                { label: 'Machine Scripts', icon: 'pi pi-code', to: '/scripts' },
-                { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' }]
-        },
 
+            ]
+        },
+        {
+            label: 'Vision',
+            items: [
+                { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' },
+                { label: 'Live Camera', icon: 'pi pi-camera', to: '/camera' }
+            ]
+        },
+        {
+            label: 'Machines',
+            items: [
+                { label: 'Scripts', icon: 'pi pi-code', to: '/scripts' },
+                { label: 'Dockers', icon: 'pi pi-image', to: '/dockers' }
+
+            ]
+        },
         {
             label: 'Network Tables',
             items: [
