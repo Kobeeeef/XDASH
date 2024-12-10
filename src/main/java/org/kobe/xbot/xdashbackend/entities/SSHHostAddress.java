@@ -672,7 +672,7 @@ public class SSHHostAddress {
         }
     }
 
-    // Progress monitor class to show progress
+    // DockerProgress monitor class to show progress
     public static class ProgressMonitor implements SftpProgressMonitor {
 
         private final Consumer<TransferProgress> progressConsumer;
