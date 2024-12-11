@@ -14,7 +14,7 @@ interface AppLayoutProps {
 
 // Component that accesses the WebSocket context
 function AppLayout({ children }: AppLayoutProps) {
-    const { latestLog }: any = useContext(WebsocketContext); // Now it will properly consume the context
+    const { latestLog, latestNotification }: any = useContext(WebsocketContext); // Now it will properly consume the context
     const toast = useRef<Toast | null>(null);
 
     useEffect(() => {
@@ -29,7 +29,18 @@ function AppLayout({ children }: AppLayoutProps) {
             playErrorNotificationSound();
         }
     }, [latestLog]);
+    useEffect(() => {
+        if (latestNotification && latestNotification?.severity) {
+            toast.current?.show({
+                severity: latestNotification?.severity,
+                summary:  latestNotification?.summary,
+                detail: latestNotification?.detail,
+                life: 5000,
+            });
 
+            playErrorNotificationSound();
+        }
+    }, [latestNotification]);
     return (
         <Layout>
             <Toast ref={toast} />

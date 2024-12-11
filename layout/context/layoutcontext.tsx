@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, createContext } from 'react';
+import React, { useState, createContext, useRef, useEffect } from 'react';
 import { LayoutState, ChildContainerProps, LayoutConfig, LayoutContextProps } from '@/types';
 export const LayoutContext = createContext({} as LayoutContextProps);
 
@@ -51,7 +51,7 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
         layoutState,
         setLayoutState,
         onMenuToggle,
-        showProfileSidebar
+        showProfileSidebar,
     };
 
     return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;

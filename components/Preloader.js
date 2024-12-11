@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { loadAllSounds } from '@/utilities/notification';
 
 const Preloader = ({ children }) => {
     const [isLoaded, setIsLoaded] = useState(false);
@@ -36,6 +37,7 @@ const Preloader = ({ children }) => {
 
         // Check if the document is already loaded
         const handleLoad = () => {
+            loadAllSounds()
             setTimeout(() => {
 
 

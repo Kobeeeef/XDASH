@@ -19,6 +19,8 @@ import { Badge } from 'primereact/badge';
 import { Dialog } from 'primereact/dialog';
 import { InputNumber } from 'primereact/inputnumber';
 import { Chips } from 'primereact/chips';
+import { Dropdown } from 'primereact/dropdown';
+import { isValidPath } from '../../../utilities/utilities';
 
 
 const Dashboard = () => {
@@ -31,6 +33,7 @@ const Dashboard = () => {
     const timeoutId = useRef(null); // Stores the timeout ID persistently
     const [newData, setNewData] = useState(null);
     const [saveChangesDialogVisible, setSaveChangesDialogVisible] = useState(false);
+    const [wifiSSIDs, setWifiSSIDs] = useState([]);
     const [lock, setLock] = useState(false);
     useEffect(() => {
         isMounted.current = true; // Set the mounted flag
@@ -116,6 +119,40 @@ const Dashboard = () => {
                     severity: 'error',
                     summary: 'Exception Occurred!',
                     detail: e?.message || 'Unknown Exception...'
+                });
+                playErrorNotificationSound();
+                setLoading(false);
+            });
+    }
+
+    function get_wifi_list() {
+        setLoading(true);
+        sendMessageAndWaitForCondition({
+                type: 'WIFI-LIST'
+            }, (m) =>
+                m.type === 'WIFI-LIST'
+        ).then((m) => {
+            if (m?.message?.success && m?.message?.message) {
+                let json = JSON.parse(m?.message?.message);
+                setWifiSSIDs(json.sort((a, b) => (b?.signalStrength ?? 0) - (a?.signalStrength ?? 0)));
+
+                setLoading(false);
+            } else {
+                console.log(m);
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Failed to list!',
+                    detail: m?.message?.message || 'Unknown Message...'
+                });
+                playErrorNotificationSound();
+            }
+            setLoading(false);
+        })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || e?.message?.message || 'Unknown Exception...'
                 });
                 playErrorNotificationSound();
                 setLoading(false);
@@ -209,6 +246,8 @@ const Dashboard = () => {
         });
         if (JSON.stringify(copyData) !== JSON.stringify(copyNewData)) setSaveChangesDialogVisible(true); else setSaveChangesDialogVisible(false);
     }, [newData, data]);
+
+
     // @ts-ignore
     return (
         <div className="grid fadeIn">
@@ -306,7 +345,8 @@ const Dashboard = () => {
             <div className={'col-12'}>
                 <div className="card">
                     <TabView scrollable={true}>
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="RIO" leftIcon="pi pi-microchip mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="RIO"
+                                  leftIcon="pi pi-microchip mr-2">
 
                             <Divider align="center">
                                 <Badge value="RoboRIO Hostname"></Badge>
@@ -342,7 +382,8 @@ const Dashboard = () => {
                                        }))} />
 
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Server" leftIcon="pi pi-server mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="Server"
+                                  leftIcon="pi pi-server mr-2">
                             <Divider align="center">
                                 <Badge value="Password"></Badge>
                             </Divider>
@@ -352,7 +393,8 @@ const Dashboard = () => {
                                            SERVER_PASSWORD: e.target.value
                                        }))} />
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Machines" leftIcon="pi pi-users mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="Machines"
+                                  leftIcon="pi pi-users mr-2">
                             <Divider align="center">
                                 <Badge value="Connect Timeout"></Badge>
                             </Divider>
@@ -402,7 +444,7 @@ const Dashboard = () => {
                                                        summary: 'Duplicate Services!',
                                                        detail: 'There cannot be multiple duplicate services!'
                                                    });
-                                                   playErrorNotificationSound()
+                                                   playErrorNotificationSound();
                                                    return prev;
                                                } else {
                                                    return ({
@@ -414,21 +456,111 @@ const Dashboard = () => {
                                        } />
                             </div>
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Docker" leftIcon="pi pi-image mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="Docker"
+                                  leftIcon="pi pi-image mr-2">
+                            <Divider align="center">
+                                <Badge value="Project Directory"></Badge>
+                            </Divider>
+                            <InputText invalid={!isValidPath(newData?.PROJECT_DIRECTORY)} className={'w-full'} placeholder={'Directory'} value={newData?.PROJECT_DIRECTORY}
+                                       onChange={(e) => setNewData(prev => ({
+                                           ...prev,
+                                           PROJECT_DIRECTORY: e.target.value
+                                       }))} />
+                            <Divider align="center">
+                                <Badge value="Images Directory"></Badge>
+                            </Divider>
+                            <InputText invalid={!isValidPath(newData?.DOCKER_IMAGES_DIRECTORY)} className={'w-full'} placeholder={'This is where the images are saved.'} value={newData?.DOCKER_IMAGES_DIRECTORY}
+                                       onChange={(e) => setNewData(prev => ({
+                                           ...prev,
+                                           DOCKER_IMAGES_DIRECTORY: e.target.value
+                                       }))} />
+                        </TabPanel>
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="XTABLES"
+                                  leftIcon="pi pi-table mr-2">
 
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="XTABLES" leftIcon="pi pi-table mr-2">
+
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="Mapping"
+                                  leftIcon="pi pi-map mr-2">
 
                         </TabPanel>
-
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Mapping" leftIcon="pi pi-map mr-2">
-
-                        </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="Preferences" leftIcon="pi pi-user mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="Preferences"
+                                  leftIcon="pi pi-user mr-2">
 
                         </TabPanel>
-                        <TabPanel disabled={!isConnected || loading} className={"w-full"} header="General" leftIcon="pi pi-cog mr-2">
+                        <TabPanel disabled={!isConnected || loading} className={'w-full'} header="General"
+                                  leftIcon="pi pi-cog mr-2">
+                            <Divider align="center">
+                                <Badge value="Internet WiFi SSID"></Badge>
+                            </Divider>
+                            <Dropdown panelFooterTemplate={() => (
+                                <div className="py-2 px-3">
+                                    {newData?.WIFI_SSID ? (
+                                        <span>
+                        <b>{newData?.WIFI_SSID}</b> selected.
+                    </span>
+                                    ) : (
+                                        'No SSID selected.'
+                                    )}
+                                </div>
+                            )} showClear={true} editable={true} itemTemplate={(option) => (
+                                <div className="flex align-items-center">
+                                    {getWifiSVG(option?.signalStrength ?? 0)}
 
+                                    <div className={'text-lg my-2'}>{option?.ssid}</div>
+                                </div>
+                            )} className={'w-full'} placeholder={'Select Robot'}
+                                      value={newData?.WIFI_SSID}
+                                      onChange={(e) => setNewData(prev => ({
+                                          ...prev,
+                                          WIFI_SSID: e.value?.ssid ?? e.value
+                                      }))}
+                                      options={wifiSSIDs}
+                                      virtualScrollerOptions={{
+                                          lazy: true,
+                                          onLazyLoad: get_wifi_list,
+                                          itemSize: 30,
+                                          showLoader: true,
+                                          loading: loading,
+                                          delay: 250
+                                      }}
+                            />
+
+                            <Divider align="center">
+                                <Badge value="Robot WiFi SSID"></Badge>
+                            </Divider>
+                            <Dropdown panelFooterTemplate={() => (
+                                <div className="py-2 px-3">
+                                    {newData?.ROBOT_WIFI_SSID ? (
+                                        <span>
+                        <b>{newData?.ROBOT_WIFI_SSID}</b> selected.
+                    </span>
+                                    ) : (
+                                        'No SSID selected.'
+                                    )}
+                                </div>
+                            )} showClear={true} editable={true} itemTemplate={(option) => (
+                                <div className="flex align-items-center">
+                                    {getWifiSVG(option?.signalStrength ?? 0)}
+
+                                    <div className={'text-lg my-2'}>{option?.ssid}</div>
+                                </div>
+                            )} className={'w-full'} placeholder={'Select Robot'}
+                                      value={newData?.ROBOT_WIFI_SSID}
+                                      onChange={(e) => setNewData(prev => ({
+                                          ...prev,
+                                          ROBOT_WIFI_SSID: e.value?.ssid ?? e.value
+                                      }))}
+                                      options={wifiSSIDs}
+                                      virtualScrollerOptions={{
+                                          lazy: true,
+                                          onLazyLoad: get_wifi_list,
+                                          itemSize: 30,
+                                          showLoader: true,
+                                          loading: loading,
+                                          delay: 250
+                                      }}
+                            />
                         </TabPanel>
                     </TabView>
                 </div>
@@ -437,5 +569,28 @@ const Dashboard = () => {
     );
 };
 
+function getWifiSVG(strength) {
+    if (strength >= 66)
+        return (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                      d="M12 18h.01m-2.838-2.828a4 4 0 0 1 5.656 0m-8.485-2.829a8 8 0 0 1 11.314 0" />
+            </svg>
+        );
+
+    if (strength >= 33)
+        return (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                      d="M12 18h.01m-2.838-2.828a4 4 0 0 1 5.656 0" />
+            </svg>
+        );
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" strokeLinecap="round"
+                  strokeLinejoin="round" strokeWidth="2" d="M12 18h.01" />
+        </svg>
+    );
+}
 
 export default Dashboard;

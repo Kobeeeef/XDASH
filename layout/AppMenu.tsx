@@ -37,7 +37,10 @@ const AppMenu = () => {
             label: 'Machines',
             items: [
                 { label: 'Scripts', icon: 'pi pi-code', to: '/scripts' },
-                { label: 'Dockers', icon: 'pi pi-image', to: '/dockers' }
+                { label: 'Dockers', icon: 'pi pi-box', items: [
+                        { label: "Pipeline", icon: "pi pi-clock", to: '/dockers'},
+                        { label: "Scripts", icon: "pi pi-code", to: '/dockers/scripts'}
+                    ] }
 
             ]
         },

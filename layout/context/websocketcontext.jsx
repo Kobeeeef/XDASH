@@ -8,6 +8,10 @@ export const WebSocketProvider = ({ children, url }) => {
     const [lastConnectionUpdate, setLastConnectionUpdate] = useState(new Date());
     const socket = useRef(null);
     const [latestLog, setLatestLog] =useState(null)
+    const [latestNotification, setLatestNotification] = useState(null)
+
+
+
     useEffect(() => {
         function connect() {
             console.log('Connecting to websocket');
@@ -24,7 +28,6 @@ export const WebSocketProvider = ({ children, url }) => {
             };
 
             socket.current.onerror = (error) => {
-                console.error('WebSocket Error: ', error);
                 socket.current.close();
                 setIsConnected(false);
             };
@@ -41,11 +44,6 @@ export const WebSocketProvider = ({ children, url }) => {
         setLastConnectionUpdate(new Date());
     }, [isConnected]);
 
-    const ping = () => {
-        if (isConnected) {
-            socket.current.send(JSON.stringify({ type: 'ping' }));
-        }
-    };
 
     const sendMessageTillCondition = (message, conditionFunc) => {
         if (!isConnected) {
@@ -106,6 +104,9 @@ export const WebSocketProvider = ({ children, url }) => {
                 const msg = JSON.parse(data.message);
                 setLatestLog(msg)
 
+            } else if(data.type === 'NOTIFICATION') {
+                const msg = JSON.parse(data.message);
+                setLatestNotification(msg)
             }
         };
         if (socket.current) {
@@ -144,6 +145,7 @@ export const WebSocketProvider = ({ children, url }) => {
                 listenTillCondition,
                 socket,
                 latestLog,
+                latestNotification,
                 sendMessage
             }}
         >
