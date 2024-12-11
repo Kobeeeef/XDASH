@@ -187,13 +187,57 @@ const Dashboard = () => {
                 }
             }
         }, 120000).then((msg) => {
-            setLoading(false);
+
             if (msg?.message.success === false) {
                 playErrorNotificationSound();
+                setLoading(false);
             } else if (msg?.message.success === true) {
+                setLoading(true);
                 playSuccessNotificationSound();
+                stepperRef.current.setActiveStep(2)
+                setSetup((prev) => ({
+                    ...prev,
+                    ROBOT_CONNECTION_MESSAGES: ['Attempting to connect back to robot WiFi now...']
+                }));
+                connect_wifi('ROBOT', (m) => {
+                    if (m.type === 'WIFI-CONNECT') {
+                        let msg = JSON.parse(m.message);
+
+                        setSetup((prev) => {
+                            prev.ROBOT_CONNECTION_MESSAGES.unshift(msg.message);
+                            return ({
+                                ...prev,
+                                ROBOT_CONNECTION_SUCCESS: msg?.success === true ? true : msg?.success === false ? false : prev?.ROBOT_CONNECTION_SUCCESS,
+                                ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
+                            });
+                        });
+                        if (msg?.finished) {
+                            return true;
+                        }
+                    }
+                })
+                    .then((msg) => {
+                        setLoading(false);
+                        if (msg?.message?.success === false) {
+                            playErrorNotificationSound();
+                        } else if (msg?.message?.success === true) {
+                            playSuccessNotificationSound();
+
+
+                            //CONTINUE RECONNECTION HERE
+                        }
+                    }).catch((e) => {
+                    setSetup((prev) => {
+                        prev.ROBOT_CONNECTION_MESSAGES.unshift(e?.message || 'Unknown Exception while connecting to robot WiFi...');
+                        return ({
+                            ...prev,
+                            ROBOT_CONNECTION_SUCCESS: false,
+                            ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
+                        });
+                    });
+                    setLoading(false);
+                });
             }
-            // stepperRef.current.setActiveStep(2)
         }).catch((e) => {
             setLoading(false);
             setBuildStatus((prev) => {
