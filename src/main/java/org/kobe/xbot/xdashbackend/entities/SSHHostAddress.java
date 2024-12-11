@@ -329,7 +329,7 @@ public class SSHHostAddress {
 
     private FileInfo parseLsOutput(String line, String directory) {
         // Example of `ls -lh` output:
-        // "-rw-r--r-- 1 user group 1.2K Jan 01 12:00 filename.txt"
+        // "-rw-r--r-- 1 user group 1.2 K Jan 01 12:00 filename.txt"
         String[] parts = line.split("\\s+");
         if (parts.length < 9) {
             return null; // Invalid line format
@@ -381,7 +381,7 @@ public class SSHHostAddress {
                     }
 
                     // If we have a full line, process it
-                    if (currentLine.length() > 0) {
+                    if (!currentLine.isEmpty()) {
                         String line = currentLine.reverse().toString().trim();
                         currentLine.setLength(0);  // Reset StringBuilder for next line
 
@@ -559,7 +559,7 @@ public class SSHHostAddress {
             throw new IllegalStateException("SSH session is not connected.");
         }
         if (useLocalSCP) {
-            return uploadFileUsingLocalSCP(localFilePath, remoteFilePath, username, password, address, progressConsumer);
+            return uploadFileUsingLocalSFTP(localFilePath, remoteFilePath, username, password, address, progressConsumer);
         }
         Channel channel = null;
         try {
@@ -634,7 +634,7 @@ public class SSHHostAddress {
             }
         }
     }
-    public boolean uploadFileUsingLocalSCP(String localFilePath, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
+    public boolean uploadFileUsingLocalSFTP(String localFilePath, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
 
         ChannelSftp channel = null;
 
@@ -671,7 +671,47 @@ public class SSHHostAddress {
             }
         }
     }
+    public boolean uploadFileUsingLocalSFTP(File localFile, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
 
+        ChannelSftp channel = null;
+
+        try {
+            // Open SFTP channel
+            JSch jsch = new JSch();
+            Session session = jsch.getSession(username, host, 22);
+            session.setPassword(password);
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.connect();
+
+            channel = (ChannelSftp) session.openChannel("sftp");
+            channel.connect();
+
+            // Get the size of the file
+            long fileSize = localFile.length();
+
+            // Upload the file using the SFTP put method
+            try (FileInputStream fis = new FileInputStream(localFile)) {
+                channel.put(fis, remoteFilePath, new ProgressMonitor(progressConsumer, fileSize));
+            }
+
+            // Success
+            logger.info("File upload completed successfully.");
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+
+            return true;
+
+        } catch (JSchException | SftpException | IOException e) {
+            logger.severe("Error during SFTP upload: " + e.getMessage());
+            if (progressConsumer != null)
+                progressConsumer.accept(new TransferProgress("Error during SFTP upload: " + e.getMessage(), 0, 0, 0));
+            return false;
+        } finally {
+            if (channel != null) {
+                channel.exit();
+            }
+        }
+    }
     // DockerProgress monitor class to show progress
     public static class ProgressMonitor implements SftpProgressMonitor {
 

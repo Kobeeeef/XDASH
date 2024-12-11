@@ -4,6 +4,7 @@ public class DockerProgress extends DataReturn {
     private String message;
     private double percentage;
     private boolean finished = false;
+    private Boolean success = null;
     private String step;
     public DockerProgress(String message, DockerStep step, double percentage) {
         this.message = message;
@@ -11,10 +12,30 @@ public class DockerProgress extends DataReturn {
         this.step = step.name();
     }
 
+    public Boolean getSuccess() {
+        return success;
+    }
+
+    public DockerProgress setSuccess(Boolean success) {
+        this.success = success;
+        return this;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 
     public DockerProgress setStep(DockerStep step) {
         this.step = step.name();
         return this;
+    }
+
+    public double getPercentage() {
+        return percentage;
+    }
+
+    public DockerStep getStep() {
+        return DockerStep.valueOf(step);
     }
 
     public boolean isFinished() {

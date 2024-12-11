@@ -20,6 +20,7 @@ public class ConfigLoader {
     public static final long DEFAULT_RETRY_TIMEOUT = 4000;
     public static final String DEFAULT_SERVERS_PASSWORD = "I<3Robots!";
     public static final String DEFAULT_SERVERS_USER = "xbot";
+    private static final String DEFAULT_DOCKER_IMAGES_DIRECTORY = "XDASH-DOCKER-IMAGES";
 
     public static final String DEFAULT_SERVER_PASSWORD = "I<3Robotics!";
     public static final String DEFAULT_ROBORIO_HOSTNAME = "roboRIO-488-FRC";
@@ -99,6 +100,7 @@ public class ConfigLoader {
         properties.setProperty("roboRIO.server", DEFAULT_ROBORIO_SERVER);
         properties.setProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
         properties.setProperty("services", DEFAULT_SERVICES);
+        properties.setProperty("docker.imagesDirectory", DEFAULT_DOCKER_IMAGES_DIRECTORY);
         logger.info("Default properties set.");
     }
 
@@ -188,7 +190,18 @@ public class ConfigLoader {
     public String getRoboRIOAddress() {
         return getProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
     }
-
+    public String getRobotWifiSSID() {
+        return getProperty("wifi.robot");
+    }
+    public String getInternetWifiSSID() {
+        return getProperty("wifi.internet");
+    }
+    public String getProjectDirectory() {
+        return getProperty("project.directory");
+    }
+    public String getDockerImagesDirectory() {
+        return getProperty("docker.imagesDirectory", DEFAULT_DOCKER_IMAGES_DIRECTORY);
+    }
     public ConfigProperties getConfigProperties() {
         return new ConfigProperties(lastUpdated, lastReloaded)
                 .setSERVERS_PASSWORD(getServersPassword())
@@ -198,7 +211,11 @@ public class ConfigLoader {
                 .setSERVER_PASSWORD(getServerPassword())
                 .setROBORIO_HOSTNAME(getRoboRIOHostname())
                 .setROBORIO_USERNAME(getRoboRIOUsername())
+                .setPROJECT_DIRECTORY(getProjectDirectory())
                 .setROBORIO_SERVER(getRoboRIOServer())
+                .setDOCKER_IMAGES_DIRECTORY(getDockerImagesDirectory())
+                .setWIFI_SSID(getInternetWifiSSID())
+                .setROBOT_WIFI_SSID(getRobotWifiSSID())
                 .setROBORIO_ADDRESS(getRoboRIOAddress())
                 .setSERVICES(getServices().toArray(new String[0]));
     }
@@ -209,6 +226,26 @@ public class ConfigLoader {
         }
         if (configProperties.getSERVERS_USERNAME() != null) {
             properties.setProperty("servers.user", configProperties.getSERVERS_USERNAME());
+        }
+        if (configProperties.getPROJECT_DIRECTORY() != null && !configProperties.getPROJECT_DIRECTORY().isEmpty()) {
+            properties.setProperty("project.directory", configProperties.getPROJECT_DIRECTORY());
+        } else {
+            properties.remove("project.directory");
+        }
+        if (configProperties.getDOCKER_IMAGES_DIRECTORY() != null && !configProperties.getDOCKER_IMAGES_DIRECTORY().isEmpty()) {
+            properties.setProperty("docker.imagesDirectory", configProperties.getDOCKER_IMAGES_DIRECTORY());
+        } else {
+            properties.setProperty("docker.imagesDirectory", DEFAULT_DOCKER_IMAGES_DIRECTORY);
+        }
+        if (configProperties.getROBOT_WIFI_SSID() != null && !configProperties.getROBOT_WIFI_SSID().isEmpty()) {
+            properties.setProperty("wifi.robot", configProperties.getROBOT_WIFI_SSID());
+        } else {
+            properties.remove("wifi.robot");
+        }
+        if (configProperties.getWIFI_SSID() != null && !configProperties.getWIFI_SSID().isEmpty()) {
+            properties.setProperty("wifi.internet", configProperties.getWIFI_SSID());
+        }else {
+            properties.remove("wifi.internet");
         }
         if (configProperties.getSERVERS_CONNECT_TIMEOUT() != null) {
             properties.setProperty("servers.connectTimeout", configProperties.getSERVERS_CONNECT_TIMEOUT());

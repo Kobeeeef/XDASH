@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Copy the current directory (including the Python script) into the container
 COPY . .
-
 # Install any necessary Python dependencies (none in this case)
 # RUN pip install --no-cache-dir -r requirements.txt
 

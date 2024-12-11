@@ -15,6 +15,10 @@ public class ConfigProperties {
     private String ROBORIO_USERNAME;
     private String ROBORIO_SERVER;
     private String ROBORIO_ADDRESS;
+    private String WIFI_SSID;
+    private String PROJECT_DIRECTORY;
+    private String DOCKER_IMAGES_DIRECTORY;
+    private String ROBOT_WIFI_SSID;
     private String[] SERVICES;
 
     public ConfigProperties(LocalDateTime LAST_UPDATED, LocalDateTime LAST_RELOADED) {
@@ -22,8 +26,44 @@ public class ConfigProperties {
         this.LAST_RELOADED = LAST_RELOADED.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
+    public String getPROJECT_DIRECTORY() {
+        return PROJECT_DIRECTORY;
+    }
+
+    public String getDOCKER_IMAGES_DIRECTORY() {
+        return DOCKER_IMAGES_DIRECTORY;
+    }
+
+    public ConfigProperties setDOCKER_IMAGES_DIRECTORY(String DOCKER_IMAGES_DIRECTORY) {
+        this.DOCKER_IMAGES_DIRECTORY = DOCKER_IMAGES_DIRECTORY;
+        return this;
+    }
+
+    public ConfigProperties setPROJECT_DIRECTORY(String PROJECT_DIRECTORY) {
+        this.PROJECT_DIRECTORY = PROJECT_DIRECTORY;
+        return this;
+    }
+
     public String getROBORIO_ADDRESS() {
         return ROBORIO_ADDRESS;
+    }
+
+    public String getWIFI_SSID() {
+        return WIFI_SSID;
+    }
+
+    public ConfigProperties setWIFI_SSID(String WIFI_SSID) {
+        this.WIFI_SSID = WIFI_SSID;
+        return this;
+    }
+
+    public String getROBOT_WIFI_SSID() {
+        return ROBOT_WIFI_SSID;
+    }
+
+    public ConfigProperties setROBOT_WIFI_SSID(String ROBOT_WIFI_SSID) {
+        this.ROBOT_WIFI_SSID = ROBOT_WIFI_SSID;
+        return this;
     }
 
     public ConfigProperties setROBORIO_ADDRESS(String ROBORIO_ADDRESS) {

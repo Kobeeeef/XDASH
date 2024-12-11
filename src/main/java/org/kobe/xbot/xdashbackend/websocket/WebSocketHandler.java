@@ -4,13 +4,14 @@ import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.LatencyInfo;
 import org.kobe.xbot.Utilities.ResponseStatus;
-import org.kobe.xbot.xdashbackend.StatusResponseCode;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.kobe.xbot.xdashbackend.utilities.DockerManager;
 import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
+import org.kobe.xbot.xdashbackend.utilities.NetworkManager;
 import org.kobe.xbot.xdashbackend.utilities.Utilities;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -213,9 +214,21 @@ public class WebSocketHandler extends TextWebSocketHandler {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICES-DATA-LIMITED")) {
-
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, null), "DEVICES-DATA-LIMITED").toJSON()));
+        } else if (message.getType().equals("DOCKER-PAGE")) {
+            List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
+            boolean ready = true;
+            String response = "The docker pipeline is ready.";
+            if (XdashbackendApplication.getConfigLoader().getInternetWifiSSID() == null || XdashbackendApplication.getConfigLoader().getInternetWifiSSID().isEmpty()) {
+                ready = false;
+                response = "The internet WiFi SSID has not been configured.";
+            }
+            if (XdashbackendApplication.getConfigLoader().getRobotWifiSSID() == null || XdashbackendApplication.getConfigLoader().getRobotWifiSSID().isEmpty()) {
+                ready = false;
+                response = "The robot WiFi SSID has not been configured.";
+            }
+            session.sendMessage(new TextMessage(new Message(new DockerPageReturn(gson.toJson(dataList), ready, response, XdashbackendApplication.getConfigLoader().getProjectDirectory()), message.getType()).toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
             String server = message.getMessage();
             SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
@@ -336,24 +349,106 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } else {
                 session.sendMessage(new TextMessage(new Message(new CommandReturn(null, "DISCONNECTED", false, true), "DEVICE-REBOOT").toJSON()));
             }
+        } else if (message.getType().equals("DOCKER-BUILD")) {
+            String msg = message.getMessage();
+            if (msg != null) {
+                try {
+                    DockerBuildReturn dockerBuildReturn = gson.fromJson(msg, DockerBuildReturn.class);
+                    if (dockerBuildReturn.getARCHITECTURE() == null || dockerBuildReturn.getIMAGE_NAME() == null) {
+                        session.sendMessage(new TextMessage(new Message(new DockerProgress("Missing arguments.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
+                        return;
+                    }
+                    if (XdashbackendApplication.getConfigLoader().getProjectDirectory() == null || XdashbackendApplication.getConfigLoader().getProjectDirectory().isEmpty()) {
+                        session.sendMessage(new TextMessage(new Message(new DockerProgress("Missing project directory.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
+                        return;
+                    }
+                    if (XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() == null || XdashbackendApplication.getConfigLoader().getDockerImagesDirectory().isEmpty()) {
+                        session.sendMessage(new TextMessage(new Message(new DockerProgress("Missing docker images directory.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
+                        return;
+                    }
+                    Architecture architecture = Architecture.valueOfNull(dockerBuildReturn.getARCHITECTURE());
+                    if(architecture == null) {
+                        session.sendMessage(new TextMessage(new Message(new DockerProgress("Invalid architecture type or unsupported.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
+                        return;
+                    }
+                    File file = DockerManager.buildTARImage(XdashbackendApplication.getConfigLoader().getProjectDirectory(),
+                            dockerBuildReturn.getIMAGE_NAME(),
+                            XdashbackendApplication.getConfigLoader().getDockerImagesDirectory(),
+                            (a) -> {
+                                try {
+                                    session.sendMessage(new TextMessage(new Message(a, message.getType()).toJSON()));
+                                } catch (IOException ignored) {
+                                }
+
+                            }, architecture);
+                    if(file == null) {
+                        session.sendMessage(new TextMessage(new Message(new DockerProgress("Image TARBALL file could not be located.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
+                    } else {
+                        session.sendMessage(new TextMessage(new Message(new DockerProgress("XDASH has finished building the docker image.", DockerStep.FINISHED, 100).setFinished(true).setSuccess(true), message.getType()).toJSON()));
+                    }
+                } catch (Exception e) {
+                    session.sendMessage(new TextMessage(new Message(new DockerProgress("Failed while building: " + e.getMessage(), DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
+                }
+            }
+        } else if (message.getType().equals("WIFI-LIST")) {
+            try {
+                List<Wifi> wifis = NetworkManager.scanNetworks();
+                String json = gson.toJson(wifis);
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, json), message.getType()).toJSON()));
+
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, e.getMessage()), message.getType()).toJSON()));
+
+            }
+        } else if (message.getType().equals("WIFI-CONNECT")) {
+            try {
+                String type = message.getMessage();
+                if (type == null || type.isEmpty() || type.isBlank()) {
+                    session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "There was no type in payload.").setFinished(true), message.getType()).toJSON()));
+                    return;
+                }
+                if (type.equals("ROBOT") || type.equals("INTERNET")) {
+                    if (XdashbackendApplication.getConfigLoader().getRobotWifiSSID() == null || XdashbackendApplication.getConfigLoader().getRobotWifiSSID().isEmpty() || XdashbackendApplication.getConfigLoader().getRobotWifiSSID().isBlank()) {
+                        session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The robot WiFi SSID is not configured.").setFinished(true), message.getType()).toJSON()));
+                        return;
+                    }
+                    if (XdashbackendApplication.getConfigLoader().getInternetWifiSSID() == null || XdashbackendApplication.getConfigLoader().getInternetWifiSSID().isEmpty() || XdashbackendApplication.getConfigLoader().getInternetWifiSSID().isBlank()) {
+                        session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The internet WiFi SSID is not configured.").setFinished(true), message.getType()).toJSON()));
+                        return;
+                    }
+                    String ssid = type.equals("ROBOT") ? XdashbackendApplication.getConfigLoader().getRobotWifiSSID() : XdashbackendApplication.getConfigLoader().getInternetWifiSSID();
+                    NetworkManager.connectWifi(ssid, (a) -> {
+                        try {
+                            session.sendMessage(new TextMessage(new Message(a, message.getType()).toJSON()));
+                        } catch (IOException ignored) {
+                        }
+                    });
+
+                } else {
+                    session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The type is not valid.").setFinished(true), message.getType()).toJSON()));
+                }
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, e.getMessage()).setFinished(true), message.getType()).toJSON()));
+
+            }
         } else if (message.getType().equals("DEVICE-ADD")) {
             String msg = message.getMessage();
             try {
                 DeviceAddData deviceAddData = gson.fromJson(msg, DeviceAddData.class);
                 String server = deviceAddData.getHostname() + ".local";
                 if (XdashbackendApplication.getResolvedXCASTERServices().values().stream().anyMatch(m -> m.getAddress().equals(deviceAddData.getAddress()))) {
-                    session.sendMessage(new TextMessage(new Message(new StatusResponseCode(false, "Another machine with the same address already exists!"), "DEVICE-ADD").toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Another machine with the same address already exists!"), "DEVICE-ADD").toJSON()));
                     return;
                 }
                 SSHHostAddress sshHostAddress = new SSHHostAddress(deviceAddData.getHostname(), deviceAddData.getUsername(), deviceAddData.getPassword(), deviceAddData.getAddress(), server);
                 SSHHostAddress previous = XdashbackendApplication.getResolvedXCASTERServices().put(server, sshHostAddress);
                 if (previous != null)
-                    session.sendMessage(new TextMessage(new Message(new StatusResponseCode(true, "Machine registered at: " + server), "DEVICE-ADD").toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "Machine registered at: " + server), "DEVICE-ADD").toJSON()));
                 else
-                    session.sendMessage(new TextMessage(new Message(new StatusResponseCode(true, "Updated value at: " + server), "DEVICE-ADD").toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "Updated value at: " + server), "DEVICE-ADD").toJSON()));
 
             } catch (Exception e) {
-                session.sendMessage(new TextMessage(new Message(new StatusResponseCode(false, "Failed to run: " + e.getMessage()), "DEVICE-ADD").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Failed to run: " + e.getMessage()), "DEVICE-ADD").toJSON()));
             }
         } else if (message.getType().equals("DEVICES-REBOOT")) {
             String serversMsg = message.getMessage();
