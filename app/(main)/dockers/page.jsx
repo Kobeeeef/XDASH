@@ -43,8 +43,12 @@ const Dashboard = () => {
     });
     const [finished, setFinished] = useState(false);
     const [setup, setSetup] = useState({});
+    const [reconnectionMessages, setReconnectionMessages] = useState({});
+    const [reconnectionData, setReconnectionData] = useState({});
+
     const stepperRef = useRef(null);
     const [buildIndex, setBuildIndex] = useState(0);
+    const [reconnectionIndex, setReconnectionIndex] = useState(0);
     const isMounted = useRef(true); // Tracks if the component is mounted
     const timeoutId = useRef(null); // Stores the timeout ID persistently
     const [ready, setReady] = useState(null);
@@ -123,10 +127,65 @@ const Dashboard = () => {
         return sendMessageAndWaitForCondition({ type: 'WIFI-CONNECT', message: type }, vFunc, 4000);
     }
 
+    function reconnection() {
+        setFinished(false);
+        stepperRef.current.setActiveStep(3);
+        setReconnectionData({});
+        setReconnectionMessages({});
+        setLoading(true);
+        sendMessageAndWaitForCondition({
+            type: 'DEVICES-RECONNECT', message: JSON.stringify(selectedDevices)
+        }, (m) => {
+            if (m?.type === 'DEVICES-RECONNECT') {
+                const msg = JSON.parse(m?.message);
+                if (msg?.sshHostAddress) {
+                    const device = JSON.parse(msg?.sshHostAddress);
+                    setReconnectionMessages((prev) => {
+                        const array = prev[device.server] ?? [];
+                        array.unshift(msg?.response || `Unknown message while reconnecting on machine: ${device?.server}...`);
+                        prev[device.server] = array;
+                        return prev;
+                    });
+                    const index = selectedDevices.findIndex(obj => obj?.server === device?.server);
+                    if(index !== -1) {
+                        setReconnectionIndex(index)
+                    }
+                }
+                if (msg.finished) {
+                    setReconnectionIndex(selectedDevices.length)
+                    setReconnectionData((prev) => {
+                        return ({
+                            ...prev,
+                            DEVICES_RECONNECTION_SUCCESS: msg?.success ?? false
+                        });
+                    });
+                    return true;
+                }
+            }
+        }, 60000).then((m) => {
+            setLoading(false)
+            setReconnectionData((prev) => {
+                const array = prev?.messages ?? [];
+                array.unshift(m?.message?.response || `No final message received back from server.`);
+                prev.messages = array;
+                return prev;
+            });
+        }).catch(() => {
+            setReconnectionData((prev) => {
+                return ({
+                    ...prev,
+                    DEVICES_RECONNECTION_SUCCESS: false
+                });
+            });
+            setLoading(false);
+        });
+    }
+
     function build() {
         stepperRef.current.setActiveStep(1);
+        setFinished(false);
         setBuildStatus(null);
-        setLoading(true)
+        setLoading(true);
         sendMessageAndWaitForCondition({
             type: 'DOCKER-BUILD', message: JSON.stringify({
                 CONTAINER_NAME: additionalArguments?.CONTAINER_NAME,
@@ -166,7 +225,6 @@ const Dashboard = () => {
                             FINISHED: array
                         });
                     });
-                    playSuccessNotificationSound();
                 } else {
                     setBuildIndex(2);
                     setBuildStatus((prev) => {
@@ -180,9 +238,10 @@ const Dashboard = () => {
                     playErrorNotificationSound();
                 }
 
-                if(msg?.success === true || msg?.success === false){
-                    if(msg?.finished) {
-                        return true
+                if (msg?.success === true || msg?.success === false) {
+                    if (msg?.finished) {
+                        playSuccessNotificationSound();
+                        return true;
                     }
                 }
             }
@@ -194,7 +253,7 @@ const Dashboard = () => {
             } else if (msg?.message.success === true) {
                 setLoading(true);
                 playSuccessNotificationSound();
-                stepperRef.current.setActiveStep(2)
+                stepperRef.current.setActiveStep(2);
                 setSetup((prev) => ({
                     ...prev,
                     ROBOT_CONNECTION_MESSAGES: ['Attempting to connect back to robot WiFi now...']
@@ -217,14 +276,21 @@ const Dashboard = () => {
                     }
                 })
                     .then((msg) => {
-                        setLoading(false);
+
                         if (msg?.message?.success === false) {
                             playErrorNotificationSound();
+                            setLoading(false);
                         } else if (msg?.message?.success === true) {
                             playSuccessNotificationSound();
-
-
-                            //CONTINUE RECONNECTION HERE
+                            setSetup((prev) => {
+                                prev.ROBOT_CONNECTION_MESSAGES.unshift('Continuing onto reconnection in 3 seconds.');
+                                return ({
+                                    ...prev,
+                                    ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
+                                });
+                            });
+                            playSuccessNotificationSound();
+                            setTimeout(reconnection, 3000);
                         }
                     }).catch((e) => {
                     setSetup((prev) => {
@@ -252,6 +318,7 @@ const Dashboard = () => {
 
     function start() {
         setSetup({});
+        setFinished(false);
         stepperRef.current.setActiveStep(0);
         if (!ready) {
             toast.current.show({
@@ -304,12 +371,20 @@ const Dashboard = () => {
             }
         })
             .then((msg) => {
-                setLoading(false);
+
                 if (msg?.message?.success === false) {
                     playErrorNotificationSound();
+                    setLoading(false);
                 } else if (msg?.message?.success === true) {
                     playSuccessNotificationSound();
-                    build();
+                    setSetup((prev) => {
+                        prev.INTERNET_CONNECTION_MESSAGES.unshift('Continuing onto build in 3 seconds...');
+                        return ({
+                            ...prev,
+                            INTERNET_CONNECTION_MESSAGES: prev.INTERNET_CONNECTION_MESSAGES
+                        });
+                    });
+                    setTimeout(build, 3000);
                 }
             }).catch((e) => {
             setSetup((prev) => {
@@ -389,7 +464,7 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <div className={'grid'}>
                         <div className={'col-12'}>
-                            <MultiSelect disabled={!isConnected} onChange={(e) => {
+                            <MultiSelect disabled={!isConnected || loading} onChange={(e) => {
                                 const filtered = e.value.filter(e => e?.status !== 'CONNECTED');
                                 if (filtered.length > 0) {
                                     playErrorNotificationSound();
@@ -401,6 +476,9 @@ const Dashboard = () => {
                                         });
                                     });
                                 }
+                                stepperRef.current.setActiveStep(0)
+                                setSetup({})
+                                setFinished(false)
                                 setSelectedDevices(e.value.filter(e => e?.status === 'CONNECTED'));
                             }} value={selectedDevices} options={devices} optionLabel="server" display="chip"
                                          placeholder="Select Machines" itemTemplate={template} className="w-full" />
@@ -486,7 +564,15 @@ const Dashboard = () => {
                                     className={('mt-3 w-full ') + ((setup?.INTERNET_CONNECTION_SUCCESS ?? true) && 'hidden')}
                                     severity={'warning'} label="Yes, I am connected to the internet."
                                     icon="pi pi-arrow-right" iconPos="right"
-                                    onClick={build} />
+                                    onClick={() => {
+                                        setSetup((prev) => {
+                                            return ({
+                                                ...prev,
+                                                INTERNET_CONNECTION_SUCCESS: true
+                                            });
+                                        });
+                                        build();
+                                    }} />
 
                         </StepperPanel>
                         <StepperPanel header="Build">
@@ -534,15 +620,55 @@ const Dashboard = () => {
                                     className={('mt-3 w-full ') + ((setup?.ROBOT_CONNECTION_SUCCESS ?? true) && 'hidden')}
                                     severity={'warning'} label="Yes, I am connected to the robot."
                                     icon="pi pi-arrow-right" iconPos="right"
-                                    onClick={() => stepperRef.current.nextCallback()} />
+                                    onClick={() => {
+                                        setSetup((prev) => {
+                                            return ({
+                                                ...prev,
+                                                ROBOT_CONNECTION_SUCCESS: true
+                                            });
+                                        });
+                                        reconnection();
+                                    }} />
 
                         </StepperPanel>
                         <StepperPanel header="Reconnection">
-                            <TerminalDisplay
-                                messages={setup?.RECONNECTION_MESSAGES ?? []}
-                                loadingDots={true}
-                                placeholder={'Waiting for a message'}
-                            />
+                            <TabView activeIndex={reconnectionIndex} onTabChange={(e) => setReconnectionIndex(e.index)}
+                                     scrollable={true}>
+                                {
+                                    selectedDevices.map((m, key) => (
+                                        <TabPanel key={key} className={'w-full'} header={m?.hostname}
+                                                  leftIcon={('mr-2 pi ') + (additionalArguments?.ARCHITECTURE.toLowerCase().includes('windows') ? 'pi-microsoft' : additionalArguments?.ARCHITECTURE.toLowerCase().includes('mac') ? 'pi-apple' : additionalArguments?.ARCHITECTURE.toLowerCase().includes('linux') ? 'pi-microchip' : 'pi-desktop')}>
+                                            <TerminalDisplay
+                                                messages={reconnectionMessages[m?.server] ?? []}
+                                                loadingDots={true}
+                                                placeholder={'Waiting for a message'}
+                                            />
+                                        </TabPanel>
+                                    ))
+                                }
+                                <TabPanel className={'w-full'}
+                                          header={"Information"}
+                                          leftIcon={'mr-2 pi pi-info-circle'}>
+                                    <TerminalDisplay
+                                        messages={reconnectionData?.messages ?? []}
+                                        loadingDots={true}
+                                        placeholder={'Waiting for a message'}
+                                    />
+                                </TabPanel>
+                            </TabView>
+                            <Button disabled={!isConnected} loading={loading}
+                                    className={('mt-3 w-full ') + ((reconnectionData?.DEVICES_RECONNECTION_SUCCESS ?? true) && 'hidden')}
+                                    severity={'warning'} label="Some machines failed. Continue?"
+                                    icon="pi pi-arrow-right" iconPos="right"
+                                    onClick={() => {
+                                        setSetup((prev) => {
+                                            return ({
+                                                ...prev,
+                                                DEVICES_RECONNECTION_SUCCESS: true
+                                            });
+                                        });
+                                        // method to transfer
+                                    }} />
                         </StepperPanel>
                         <StepperPanel header="Transport & Execute">
                             <div className="flex flex-column h-12rem">
