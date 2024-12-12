@@ -909,7 +909,7 @@ public class SSHHostAddress {
     }
 
     private void executeCommandDocker(Session session, String command, Consumer<DockerImportReturn> updates) throws JSchException, IOException {
-        updates.accept(new DockerImportReturn("Executing: " + command, session.getHost(), true, false));
+        updates.accept(new DockerImportReturn("Executing: " + command, server, true, false));
 
         ChannelExec channel = (ChannelExec) session.openChannel("exec");
         channel.setCommand(command);
