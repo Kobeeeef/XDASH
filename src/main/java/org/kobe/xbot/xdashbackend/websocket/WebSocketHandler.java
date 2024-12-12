@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.LatencyInfo;
 import org.kobe.xbot.Utilities.ResponseStatus;
+import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
@@ -474,6 +475,25 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(String.format("%1$s/%2$s machines were rebooted successfully.", servers.length - failures, servers.length), null, servers.length, failures == 0, true), "DEVICES-REBOOT").toJSON()));
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REBOOT").toJSON()));
+            }
+        }else if (message.getType().equals("DEVICES-RECONNECT")) {
+            String serversMsg = message.getMessage();
+            try {
+                SSHHostAddress[] sshHostAddresses = gson.fromJson(serversMsg, SSHHostAddress[].class);
+
+                SSHConnectionManager.reconnectToAll(sshHostAddresses, (a) -> {
+                    try {
+                        session.sendMessage(new TextMessage(new Message(a, message.getType()).toJSON()));
+                    } catch (IOException ignored) {
+
+                    }
+
+                });
+
+                session.sendMessage(new TextMessage(new Message(new DevicesReconnectReturn("All machines have been reconnected.", null, true, true), message.getType()).toJSON()));
+
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new DevicesReconnectReturn("Error while reconnecting devices: "+ e.getMessage(), null, false, true), message.getType()).toJSON()));
             }
         } else if (message.getType().equals("DEVICES-CUSTOM-COMMAND")) {
             String msg = message.getMessage();

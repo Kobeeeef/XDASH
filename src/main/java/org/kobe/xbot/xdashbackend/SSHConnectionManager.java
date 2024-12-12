@@ -3,6 +3,7 @@ package org.kobe.xbot.xdashbackend;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.kobe.xbot.xdashbackend.entities.DevicesReconnectReturn;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class SSHConnectionManager {
     private static final AtomicBoolean running = new AtomicBoolean(true);
@@ -25,7 +27,7 @@ public class SSHConnectionManager {
         long retryTimeout = config.getRetryTimeout();
         int connectTimeout = config.getConnectTimeout();
         try {
-           String rioHostname = config.getProperty("roboRIO.hostname");
+            String rioHostname = config.getProperty("roboRIO.hostname");
             String rioUsername = config.getProperty("roboRIO.username");
             String rioServer = config.getProperty("roboRIO.server");
             String rioAddress = config.getProperty("roboRIO.address");
@@ -67,11 +69,63 @@ public class SSHConnectionManager {
         });
     }
 
+    public static void reconnectToAll(SSHHostAddress[] sshHostAddresses, Consumer<DevicesReconnectReturn> updates) {
+        for (SSHHostAddress sshHostAddress : sshHostAddresses) {
+            try {
+
+                updates.accept(new DevicesReconnectReturn(String.format("Checking connection status for host: %s (%s)...",
+                        sshHostAddress.getHostname(), sshHostAddress.getAddress()),
+                        sshHostAddress.toString(), null, false));
+                // Check if the session is disconnected or null
+                Session session = sshHostAddress.getSession();
+                if (session == null || !session.isConnected() || !sshHostAddress.forceIsConnected()) {
+                    updates.accept(new DevicesReconnectReturn(String.format("Host %s (%s) is disconnected. Attempting to reconnect...",
+                            sshHostAddress.getHostname(), sshHostAddress.getAddress()),
+                            sshHostAddress.toString(), null, false));
+                    // Reconnect to the host
+                    Map<String, SSHHostAddress> resolvedServices = XdashbackendApplication.getResolvedXCASTERServices();
+                    if (!resolvedServices.containsKey(sshHostAddress.getServer())) {
+                        resolvedServices.remove(sshHostAddress.getServer());
+                    }
+                    session = connectToHost(sshHostAddress, XdashbackendApplication.getConfigLoader().getConnectTimeout(), sshHostAddress.getUsername(), sshHostAddress.getPassword());
+                    if (session != null && session.isConnected()) {
+
+                        updates.accept(new DevicesReconnectReturn(String.format("Successfully reconnected to host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()),
+                                sshHostAddress.toString(), null, false));
+
+                        if (!resolvedServices.containsKey(sshHostAddress.getServer())) {
+                            updates.accept(new DevicesReconnectReturn(String.format("Adding host %s (%s) back to machine lists...", sshHostAddress.getHostname(), sshHostAddress.getAddress()),
+                                    sshHostAddress.toString(), null, false));
+                            resolvedServices.put(sshHostAddress.getServer(), sshHostAddress);
+                        }
+
+                        sshHostAddress.setSession(session);
+                        sshHostAddress.setStatus("CONNECTED");
+                        if (!sshHostAddress.startJournalCtlReader()) {
+                            updates.accept(new DevicesReconnectReturn(String.format("Failed to start journalctl reader for host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()),
+                                    sshHostAddress.toString(), null, false));
+                        }
+                    } else {
+
+                        updates.accept(new DevicesReconnectReturn(String.format("Failed to reconnect to host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()),
+                                sshHostAddress.toString(), null, false));
+                    }
+                } else {
+                    updates.accept(new DevicesReconnectReturn(String.format("Host %s (%s) is already connected.", sshHostAddress.getHostname(), sshHostAddress.getAddress()),
+                            sshHostAddress.toString(), null, false));
+                }
+            } catch (Exception e) {
+                updates.accept(new DevicesReconnectReturn(String.format("An error occurred while reconnecting to host: %s (%s): %s", sshHostAddress.getHostname(), sshHostAddress.getAddress(), e.getMessage()),
+                        sshHostAddress.toString(), null, false));
+            }
+        }
+    }
+
     private static Session connectToHost(SSHHostAddress sshHostAddress, int timeout, String username, String password) {
         try {
             JSch jsch = new JSch();
-            if(sshHostAddress.getUsername() != null) username = sshHostAddress.getUsername();
-            if(sshHostAddress.getPassword() != null) password = sshHostAddress.getPassword();
+            if (sshHostAddress.getUsername() != null) username = sshHostAddress.getUsername();
+            if (sshHostAddress.getPassword() != null) password = sshHostAddress.getPassword();
             logger.info(String.format("Connecting to %s with username '%s' and password '%s'", sshHostAddress.getAddress(), username, password));
             Session session = jsch.getSession(username, sshHostAddress.getAddress(), 22);
 

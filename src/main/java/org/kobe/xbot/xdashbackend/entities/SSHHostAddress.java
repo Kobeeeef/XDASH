@@ -36,6 +36,13 @@ public class SSHHostAddress {
         this.server = server;
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "{\"username\": \"%s\", \"password\": \"%s\", \"hostname\": \"%s\", \"address\": \"%s\", \"server\": \"%s\"}",
+                username, password, hostname, address, server
+        );
+    }
     public String getUsername() {
         return username;
     }
@@ -712,6 +719,9 @@ public class SSHHostAddress {
             }
         }
     }
+
+
+
     // DockerProgress monitor class to show progress
     public static class ProgressMonitor implements SftpProgressMonitor {
 
