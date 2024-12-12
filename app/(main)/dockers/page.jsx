@@ -171,7 +171,7 @@ const Dashboard = () => {
                     return true;
                 }
             }
-        }, 70000).then((m) => {
+        }, 400000).then((m) => {
             setLoading(false)
             setTransferData((prev) => {
                 const updatedData = { ...prev };
