@@ -571,7 +571,71 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REDEPLOY").toJSON()));
             }
-        } else if (message.getType().equals("DEVICES-TRANSFER-FILES")) {
+        }
+        else if (message.getType().equals("DEVICES-DOCKER-IMPORT")) {
+            String msg = message.getMessage();
+            try {
+                DockerImportRequest devicesTransferFiles = gson.fromJson(msg, DockerImportRequest.class);
+
+
+                String[] servers = devicesTransferFiles.getServers();
+                if (servers ==null) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No servers in argument.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
+                String archString = devicesTransferFiles.getArchitecture();
+                if (archString ==null) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No architecture in argument.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
+                Architecture architecture = Architecture.valueOfNull(archString);
+                if (architecture ==null) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid architecture in argument.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
+                String imageName = devicesTransferFiles.getImageName();
+                if (imageName ==null) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No image name in argument.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
+                String containerName = devicesTransferFiles.getContainerName();
+                if (containerName ==null) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No container name in argument.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
+                String imagePath = XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() + "/" + imageName  + ".tar";
+                File imageFile = new File(imagePath);
+                if (imageFile ==null || !imageFile.exists() || !imageFile.isFile()) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid image found.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
+                int failures = 0;
+                for (String server : servers) {
+                    SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
+                    if (sshHostAddress != null) {
+                        if (sshHostAddress.forceIsConnected()) {
+                            sshHostAddress.uploadDockerImage(imageFile, containerName, (v) -> {
+                                try {
+                                    session.sendMessage(new TextMessage(new Message(v, message.getType()).toJSON()));
+                                } catch (Exception ignored) {
+                                }
+                            });
+                            session.sendMessage(new TextMessage(new Message(new DockerImportReturn(String.format("Docker pipeline finished for host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, true, false), message.getType()).toJSON()));
+                        } else {
+                            failures++;
+                            session.sendMessage(new TextMessage(new Message(new DockerImportReturn(String.format("The machine server is not connected: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, false, false), message.getType()).toJSON()));
+                        }
+                    } else {
+                        failures++;
+                        session.sendMessage(new TextMessage(new Message(new DockerImportReturn(String.format("The machine server was not found: %s", server), server, true, false), message.getType()).toJSON()));
+                    }
+                }
+                session.sendMessage(new TextMessage(new Message(new DockerImportReturn(String.format("%1$s/%2$s machines were flashed successfully.", servers.length - failures, servers.length), null, true, true), message.getType()).toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new DockerImportReturn(e.getMessage(), null, false, true), message.getType()).toJSON()));
+            }
+        }
+        else if (message.getType().equals("DEVICES-TRANSFER-FILES")) {
             String msg = message.getMessage();
             try {
                 DevicesTransferFiles devicesTransferFiles = gson.fromJson(msg, DevicesTransferFiles.class);

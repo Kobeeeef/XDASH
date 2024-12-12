@@ -43,6 +43,7 @@ public class SSHHostAddress {
                 username, password, hostname, address, server
         );
     }
+
     public String getUsername() {
         return username;
     }
@@ -266,7 +267,8 @@ public class SSHHostAddress {
                     i++;
                     messageLinePair.setLine(i);
                     messageLinePair.setMessage(line);
-                    if (i == 1) consumer.accept(messageLinePair); else if (i % step == 0) consumer.accept(messageLinePair);
+                    if (i == 1) consumer.accept(messageLinePair);
+                    else if (i % step == 0) consumer.accept(messageLinePair);
                 }
             }
 
@@ -278,7 +280,8 @@ public class SSHHostAddress {
                     i++;
                     messageLinePair.setLine(i);
                     messageLinePair.setMessage(line);
-                    if (i == 1) consumer.accept(messageLinePair); else if (i % step == 0) consumer.accept(messageLinePair);
+                    if (i == 1) consumer.accept(messageLinePair);
+                    else if (i % step == 0) consumer.accept(messageLinePair);
                 }
             }
 
@@ -641,6 +644,7 @@ public class SSHHostAddress {
             }
         }
     }
+
     public boolean uploadFileUsingLocalSFTP(String localFilePath, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
 
         ChannelSftp channel = null;
@@ -678,6 +682,7 @@ public class SSHHostAddress {
             }
         }
     }
+
     public boolean uploadFileUsingLocalSFTP(File localFile, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
 
         ChannelSftp channel = null;
@@ -719,7 +724,6 @@ public class SSHHostAddress {
             }
         }
     }
-
 
 
     // DockerProgress monitor class to show progress
@@ -834,6 +838,107 @@ public class SSHHostAddress {
                 channel.disconnect();
             }
         }
+    }
+
+    public void uploadDockerImage(File image, String containerName, Consumer<DockerImportReturn> updates) {
+        String imageName = image.getName().toLowerCase().replace(".tar", ""); // Assuming the image name is the file name
+        containerName = containerName.toLowerCase();
+        try {
+            // Check if Docker is installed
+            updates.accept(new DockerImportReturn("Checking if Docker is installed...", server, true, false));
+            if (!isDockerInstalled(session, updates)) {
+                updates.accept(new DockerImportReturn("Docker is not installed. Please install docker.io manually and try again.", server, true, true));
+                return;
+            } else {
+                updates.accept(new DockerImportReturn("Docker is already installed.", server, true, false));
+            }
+
+            // Step 1: Remove existing container with the same name
+            executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
+
+            // Step 2: Remove existing image with the same name
+            executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+
+            // Step 3: Load the new image
+            updates.accept(new DockerImportReturn("Starting image upload...", server, true, false));
+            try (FileInputStream fileInputStream = new FileInputStream(image)) {
+                ChannelExec channel = (ChannelExec) session.openChannel("exec");
+                channel.setCommand("sudo -S docker load");
+                channel.setErrStream(System.err);
+
+                OutputStream outputStream = channel.getOutputStream();
+                InputStream responseStream = channel.getInputStream();
+
+                channel.connect();
+
+                // Step 1: Send the sudo password
+                outputStream.write((password + "\n").getBytes());
+                outputStream.flush();
+
+                // Step 2: Write the image file to the Docker command's input stream
+                byte[] buffer = new byte[128 * 1024];
+                int bytesRead;
+                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                outputStream.flush();
+                channel.disconnect();
+                updates.accept(new DockerImportReturn("Image uploaded successfully. Waiting 3 seconds before starting container...", server, true, false));
+            }
+
+            // Step 4: Run a new container with the given name and image name
+            Thread.sleep(3000);
+            String runCommand = "sudo -S docker run -d --name " + containerName + " " + imageName;
+            executeCommandDocker(session, runCommand, updates);
+
+            updates.accept(new DockerImportReturn("Container command finished.", server, true, false));
+        } catch (IOException | JSchException | InterruptedException e) {
+            updates.accept(new DockerImportReturn(e.getMessage(), server, false, false));
+            e.printStackTrace();
+        }
+    }
+
+    private boolean isDockerInstalled(Session session, Consumer<DockerImportReturn> updates) throws JSchException, IOException {
+        try {
+            executeCommandDocker(session, "docker --version", updates);
+            return true;
+        } catch (IOException e) {
+            updates.accept(new DockerImportReturn("Docker not found.", server, true, false));
+            return false;
+        }
+    }
+
+    private void executeCommandDocker(Session session, String command, Consumer<DockerImportReturn> updates) throws JSchException, IOException {
+        updates.accept(new DockerImportReturn("Executing: " + command, session.getHost(), true, false));
+
+        ChannelExec channel = (ChannelExec) session.openChannel("exec");
+        channel.setCommand(command);
+        channel.setErrStream(System.err);
+
+        InputStream responseStream = channel.getInputStream();
+        OutputStream outputStream = channel.getOutputStream();
+
+        channel.connect();
+
+        // Optional: Send sudo password if needed
+        if (command.startsWith("sudo")) {
+            outputStream.write((password + "\n").getBytes()); // Replace with actual password
+            outputStream.flush();
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(responseStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                updates.accept(new DockerImportReturn(line, server, true, false));
+            }
+        } finally {
+            channel.disconnect();
+        }
+    }
+
+
+    public String getSudoPrefix() {
+        return String.format("echo \"%1$s\" | sudo -S ", password);
     }
 
     public boolean streamFile(String remoteFilePath, HttpServletResponse response, String id) {
