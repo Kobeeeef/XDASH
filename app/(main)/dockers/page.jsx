@@ -59,7 +59,11 @@ const Dashboard = () => {
         IMAGE_NAME: 'xdash-docker-image',
         ARCHITECTURE: 'ARM64_LINUX'
     });
+    const [transferMessages, setTransferMessages] = useState({})
+    const [transferData, setTransferData] = useState({})
+    const [transferIndex, setTransferIndex] = useState(0)
     const [projectDirectory, setProjectDirectory] = useState(null);
+    const [finalSummary, setFinalSummary] = useState([])
     useEffect(() => {
         isMounted.current = true; // Set the mounted flag
         let isRequestInProgress = false;
@@ -126,7 +130,77 @@ const Dashboard = () => {
     function connect_wifi(type, vFunc) {
         return sendMessageAndWaitForCondition({ type: 'WIFI-CONNECT', message: type }, vFunc, 4000);
     }
+    function finish() {
+        setFinished(true)
+        setLoading(false)
+        stepperRef.current.setActiveStep(5);
+    }
+    function transfer_import() {
+        setFinished(false);
+        setTransferData({})
+        setTransferMessages({})
+        setTransferIndex(0)
+        stepperRef.current.setActiveStep(4);
+        setLoading(true);
+        sendMessageAndWaitForCondition({
+            type: 'DEVICES-DOCKER-IMPORT', message: JSON.stringify({
+                servers: selectedDevices.map(m => m.server),
+                containerName: additionalArguments?.CONTAINER_NAME,
+                imageName: additionalArguments?.IMAGE_NAME,
+                architecture: additionalArguments?.ARCHITECTURE
+            })
+        }, (m) => {
+            if (m?.type === 'DEVICES-DOCKER-IMPORT') {
+                const msg = JSON.parse(m?.message);
+                console.log(msg)
+                if (msg?.server) {
+                    setTransferMessages((prev) => {
+                        const updatedMessages = { ...prev };
+                        const array = updatedMessages[msg.server] ?? [];
+                        updatedMessages[msg.server] = [msg?.response || `Unknown message while importing on machine: ${msg.server}...`, ...array];
+                        return updatedMessages; // Return the updated object
+                    });
 
+                    const index = selectedDevices.findIndex(obj => obj?.server === msg.server);
+                    if(index !== -1) {
+                        setTransferIndex(index)
+                    }
+                }
+                if (msg.finished) {
+                    setTransferIndex(selectedDevices.length)
+                    return true;
+                }
+            }
+        }, 70000).then((m) => {
+            setLoading(false)
+            setTransferData((prev) => {
+                const updatedData = { ...prev };
+                updatedData.messages = [
+                    m?.message?.response || `No final message received back from server.`,
+                    ...(prev?.messages ?? []),
+                ];
+                return updatedData;
+            });
+            setFinalSummary((prevArray) => [(m?.message?.response || `No final message received back from server.`), ...prevArray]);
+
+            if(m?.message?.success) {
+                playSuccessNotificationSound()
+                finish()
+            } else {
+                playErrorNotificationSound()
+            }
+        }).catch((e) => {
+            setTransferData((prev) => ({
+                ...prev,
+                messages: [
+                    e?.message ?? `There was an unknown exception.`,
+                    ...(prev?.messages ?? []),
+                ],
+            }));
+            playErrorNotificationSound()
+            setLoading(false);
+        });
+    }
     function reconnection() {
         setFinished(false);
         stepperRef.current.setActiveStep(3);
@@ -140,12 +214,14 @@ const Dashboard = () => {
                 const msg = JSON.parse(m?.message);
                 if (msg?.sshHostAddress) {
                     const device = JSON.parse(msg?.sshHostAddress);
-                    setReconnectionMessages((prev) => {
-                        const array = prev[device.server] ?? [];
-                        array.unshift(msg?.response || `Unknown message while reconnecting on machine: ${device?.server}...`);
-                        prev[device.server] = array;
-                        return prev;
-                    });
+                    setReconnectionMessages((prev) => ({
+                        ...prev,
+                        [device.server]: [
+                            msg?.response || `Unknown message while reconnecting on machine: ${device?.server}...`,
+                            ...(prev[device.server] ?? []),
+                        ],
+                    }));
+
                     const index = selectedDevices.findIndex(obj => obj?.server === device?.server);
                     if(index !== -1) {
                         setReconnectionIndex(index)
@@ -162,21 +238,39 @@ const Dashboard = () => {
                     return true;
                 }
             }
-        }, 60000).then((m) => {
-            setLoading(false)
-            setReconnectionData((prev) => {
-                const array = prev?.messages ?? [];
-                array.unshift(m?.message?.response || `No final message received back from server.`);
-                prev.messages = array;
-                return prev;
-            });
-        }).catch(() => {
-            setReconnectionData((prev) => {
-                return ({
+        }, 65000).then((m) => {
+            setReconnectionData((prev) => ({
+                ...prev,
+                messages: [
+                    m?.message?.response || `No final message received back from server.`,
+                    ...(prev?.messages ?? []),
+                ],
+            }));
+            if(m?.message?.success) {
+                playSuccessNotificationSound()
+                setReconnectionData((prev) => ({
                     ...prev,
-                    DEVICES_RECONNECTION_SUCCESS: false
-                });
-            });
+                    messages: [
+                        `Continuing onto transfer & execute in 3 seconds...`,
+                        ...(prev?.messages ?? []),
+                    ],
+                }));
+                setTimeout(transfer_import, 3000)
+            } else {
+                setLoading(false)
+                playErrorNotificationSound()
+            }
+        }).catch((e) => {
+            setReconnectionData((prev) => ({
+                ...prev,
+                messages: [
+                    e?.message ?? `There was an unknown exception.`,
+                    ...(prev?.messages ?? []),
+                ],
+                DEVICES_RECONNECTION_SUCCESS: false,
+            }));
+            setReconnectionIndex(selectedDevices.length)
+            playErrorNotificationSound()
             setLoading(false);
         });
     }
@@ -318,7 +412,11 @@ const Dashboard = () => {
 
     function start() {
         setSetup({});
+        setTransferData({})
+        setTransferMessages({})
         setFinished(false);
+        setFinalSummary([])
+        setTransferIndex(0)
         stepperRef.current.setActiveStep(0);
         if (!ready) {
             toast.current.show({
@@ -658,7 +756,7 @@ const Dashboard = () => {
                             </TabView>
                             <Button disabled={!isConnected} loading={loading}
                                     className={('mt-3 w-full ') + ((reconnectionData?.DEVICES_RECONNECTION_SUCCESS ?? true) && 'hidden')}
-                                    severity={'warning'} label="Some machines failed. Continue?"
+                                    severity={'warning'} label="Reconnection returned bad status. Continue anyways?"
                                     icon="pi pi-arrow-right" iconPos="right"
                                     onClick={() => {
                                         setSetup((prev) => {
@@ -667,34 +765,48 @@ const Dashboard = () => {
                                                 DEVICES_RECONNECTION_SUCCESS: true
                                             });
                                         });
-                                        // method to transfer
+                                        transfer_import()
                                     }} />
                         </StepperPanel>
                         <StepperPanel header="Transport & Execute">
-                            <div className="flex flex-column h-12rem">
-                                <div
-                                    className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">Content
-                                    II
-                                </div>
-                            </div>
-                            <div className="flex py-4 gap-2">
-                                <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
-                                        onClick={() => stepperRef.current.prevCallback()} />
-                                <Button label="Next" icon="pi pi-arrow-right" iconPos="right"
-                                        onClick={() => stepperRef.current.nextCallback()} />
-                            </div>
+                            <TabView activeIndex={transferIndex} onTabChange={(e) => setTransferIndex(e.index)}
+                                     scrollable={true}>
+                                {
+                                    selectedDevices.map((m, key) => (
+                                        <TabPanel key={key} className={'w-full'} header={m?.hostname}
+                                                  leftIcon={('mr-2 pi ') + (additionalArguments?.ARCHITECTURE.toLowerCase().includes('windows') ? 'pi-microsoft' : additionalArguments?.ARCHITECTURE.toLowerCase().includes('mac') ? 'pi-apple' : additionalArguments?.ARCHITECTURE.toLowerCase().includes('linux') ? 'pi-microchip' : 'pi-desktop')}>
+                                            <TerminalDisplay
+                                                messages={transferMessages[m?.server] ?? []}
+                                                loadingDots={true}
+                                                placeholder={'Waiting for a message'}
+                                            />
+                                        </TabPanel>
+                                    ))
+                                }
+                                <TabPanel className={'w-full'}
+                                          header={"Information"}
+                                          leftIcon={'mr-2 pi pi-info-circle'}>
+                                    <TerminalDisplay
+                                        messages={transferData?.messages ?? []}
+                                        loadingDots={true}
+                                        placeholder={'Waiting for a message'}
+                                    />
+                                </TabPanel>
+                            </TabView>
                         </StepperPanel>
                         <StepperPanel header="Pipeline Summary">
-                            <div className="flex flex-column h-12rem">
-                                <div
-                                    className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">Content
-                                    III
-                                </div>
-                            </div>
-                            <div className="flex py-4">
-                                <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
-                                        onClick={() => stepperRef.current.prevCallback()} />
-                            </div>
+                            <TerminalDisplay
+                                messages={finalSummary}
+                                loadingDots={true}
+                                placeholder={'Waiting for a message'}
+                            />
+                            <Button disabled={!isConnected} loading={loading}
+                                    className={'mt-3 w-full'}
+                                    severity={'warning'} label="Restart?"
+                                    icon="pi pi-sync" iconPos="right"
+                                    onClick={() => {
+                                        start()
+                                    }} />
                         </StepperPanel>
                     </Stepper>
                 </div>
