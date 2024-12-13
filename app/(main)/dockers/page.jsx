@@ -13,18 +13,14 @@ import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { Divider } from 'primereact/divider';
-import { Badge } from 'primereact/badge';
-import { SelectButton } from 'primereact/selectbutton';
-import { isValidDirectoryPath, isValidPath } from '../../../utilities/utilities';
 import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
 import { TabPanel, TabView } from 'primereact/tabview';
-import { Terminal } from 'primereact/terminal';
 import TerminalDisplay from '../../../components/TerminalDisplay';
 import { Tag } from 'primereact/tag';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dropdown } from 'primereact/dropdown';
-import { FloatLabel } from 'primereact/floatlabel';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { countdown } from '../../../utilities/utilities';
 
 
 const Dashboard = () => {
@@ -41,6 +37,7 @@ const Dashboard = () => {
         ERRORS: [],
         FINISHED: []
     });
+    const [confirmChanges, setConfirmChanges] = useState(false)
     const [finished, setFinished] = useState(false);
     const [setup, setSetup] = useState({});
     const [reconnectionMessages, setReconnectionMessages] = useState({});
@@ -55,7 +52,7 @@ const Dashboard = () => {
     const [readyLock, setReadyLock] = useState(false);
     const [response, setResponse] = useState(null);
     const [additionalArguments, setAdditionalArguments] = useState({
-        CONTAINER_NAME: 'XDASH-DOCKER-PIPELINE',
+        CONTAINER_NAME: 'xdash-docker-pipeline',
         IMAGE_NAME: 'xdash-docker-image',
         ARCHITECTURE: 'ARM64_LINUX'
     });
@@ -248,14 +245,15 @@ const Dashboard = () => {
             }));
             if(m?.message?.success) {
                 playSuccessNotificationSound()
-                setReconnectionData((prev) => ({
-                    ...prev,
-                    messages: [
-                        `Continuing onto transfer & execute in 3 seconds...`,
-                        ...(prev?.messages ?? []),
-                    ],
-                }));
-                setTimeout(transfer_import, 3000)
+                countdown(3, (s) => {
+                    setReconnectionData((prev) => ({
+                        ...prev,
+                        messages: [
+                            `Continuing onto transfer & execute in ${s} seconds...`,
+                            ...(prev?.messages ?? []),
+                        ],
+                    }));
+                }, transfer_import)
             } else {
                 setLoading(false)
                 playErrorNotificationSound()
@@ -334,7 +332,7 @@ const Dashboard = () => {
 
                 if (msg?.success === true || msg?.success === false) {
                     if (msg?.finished) {
-                        playSuccessNotificationSound();
+                        if(msg?.success === true)  playSuccessNotificationSound();
                         return true;
                     }
                 }
@@ -376,15 +374,15 @@ const Dashboard = () => {
                             setLoading(false);
                         } else if (msg?.message?.success === true) {
                             playSuccessNotificationSound();
-                            setSetup((prev) => {
-                                prev.ROBOT_CONNECTION_MESSAGES.unshift('Continuing onto reconnection in 3 seconds.');
-                                return ({
-                                    ...prev,
-                                    ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
+                            countdown(5, (s) => {
+                                setSetup((prev) => {
+                                    prev.ROBOT_CONNECTION_MESSAGES.unshift(`Continuing onto reconnection in ${s} seconds...`);
+                                    return ({
+                                        ...prev,
+                                        ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
+                                    });
                                 });
-                            });
-                            playSuccessNotificationSound();
-                            setTimeout(reconnection, 3000);
+                            }, reconnection)
                         }
                     }).catch((e) => {
                     setSetup((prev) => {
@@ -475,14 +473,16 @@ const Dashboard = () => {
                     setLoading(false);
                 } else if (msg?.message?.success === true) {
                     playSuccessNotificationSound();
-                    setSetup((prev) => {
-                        prev.INTERNET_CONNECTION_MESSAGES.unshift('Continuing onto build in 3 seconds...');
-                        return ({
-                            ...prev,
-                            INTERNET_CONNECTION_MESSAGES: prev.INTERNET_CONNECTION_MESSAGES
+                    countdown(5, (s) => {
+                        setSetup((prev) => {
+                            prev.INTERNET_CONNECTION_MESSAGES.unshift(`Continuing onto build in ${s} seconds...`);
+                            return ({
+                                ...prev,
+                                INTERNET_CONNECTION_MESSAGES: prev.INTERNET_CONNECTION_MESSAGES
+                            });
                         });
-                    });
-                    setTimeout(build, 3000);
+                    }, build)
+
                 }
             }).catch((e) => {
             setSetup((prev) => {
@@ -497,11 +497,71 @@ const Dashboard = () => {
         });
 
     }
+    function checkConfirmChangesArgs() {
+        if(!confirmChanges) {
+            confirmDialog({
+                group: "headless",
+                breakpoints: { '1100px': '75vw', '960px': '100vw' },
+                position: 'center',
+            });
+        }
+    }
 
     // @ts-ignore
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
+            <ConfirmDialog
+                group="headless"
+                content={({ headerRef, contentRef, footerRef, hide, message }) => (
+                    <div className="flex flex-column align-items-center p-5 surface-overlay border-round">
+                        <div className="border-circle bg-primary inline-flex justify-content-center align-items-center h-6rem w-6rem -mt-8">
+                            <i className="pi pi-exclamation-triangle text-5xl"></i>
+                        </div>
+                        <span className="font-bold text-2xl block mb-2 mt-4" ref={headerRef}>
+                Confirm Changes
+            </span>
+                        <div className="p-4 rounded-lg shadow-md" ref={contentRef}>
+                            <p className="text-lg">
+                                You are about to modify the container or image name arguments. Changing these settings
+                                could result in unintended behavior, including:
+                            </p>
+                            <ul className="mt-2 list-disc list-inside text-base">
+                                <li>Multiple instances of the same Docker containers running.</li>
+                                <li>Potential conflicts or errors in container management.</li>
+                                <li>XDASH will lose track of existing containers/images, breaking management.</li>
+                            </ul>
+                            <p className="mt-2 text-lg font-medium text-red-600">
+                                Only proceed if you understand the implications of these changes.
+                            </p>
+                        </div>
+                        <div className="flex align-items-center gap-2 mt-4" ref={footerRef}>
+
+                            <Button
+                                label="Cancel"
+                                outlined={false}
+                                onClick={(event) => hide(event)}
+                                className="w-8rem"
+                            ></Button>
+                            <Button
+                                outlined={true}
+                                label="Okay"
+                                onClick={(event) => {
+                                    hide(event);
+                                    setConfirmChanges(true);
+                                    toast.current.show({
+                                        severity: 'warn',
+                                        life: 6000,
+                                        summary: 'Changes Confirmed',
+                                        detail: 'You have agreed to modify the arguments. Proceed with caution.'
+                                    });
+                                }}
+                                className="w-8rem"
+                            ></Button>
+                        </div>
+                    </div>
+                )}
+            />
             <Dialog header={() => (
                 <>
                     <div>
@@ -608,6 +668,7 @@ const Dashboard = () => {
                                                 <label htmlFor="CONTAINER_NAME" className={'text-sm'}>Container
                                                     Name</label>
                                                 <InputText id={'CONTAINER_NAME'} onChange={(e) => {
+                                                    if(!confirmChanges) return checkConfirmChangesArgs()
                                                     setAdditionalArguments((prev) => {
                                                         return ({
                                                             ...prev,
@@ -623,6 +684,7 @@ const Dashboard = () => {
                                             <div className="flex flex-column gap-2">
                                                 <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image Name</label>
                                                 <InputText id={'IMAGE_NAME'} onChange={(e) => {
+                                                    if(!confirmChanges) return checkConfirmChangesArgs()
                                                     setAdditionalArguments((prev) => {
                                                         return ({
                                                             ...prev,

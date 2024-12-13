@@ -21,5 +21,20 @@ function isValidPath(path) {
     // If it's neither a valid Windows nor Unix path
     return false;
 }
+function countdown(seconds, onTick, onComplete) {
+    let timeLeft = seconds;
+    onTick(timeLeft);
+    timeLeft--;
+    const timer = setInterval(() => {
+        onTick(timeLeft);
+        timeLeft--;
+
+        if (timeLeft < 0) {
+            clearInterval(timer);
+            onComplete();
+        }
+    }, 1000);
+}
+module.exports.countdown = countdown;
 module.exports.truncateString = truncateString;
 module.exports.isValidPath = isValidPath;
