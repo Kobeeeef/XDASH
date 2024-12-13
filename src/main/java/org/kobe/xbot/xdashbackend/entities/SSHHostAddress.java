@@ -890,12 +890,25 @@ public class SSHHostAddress {
                     outputStream.write(buffer, 0, bytesRead);
                 }
                 outputStream.flush();
-                channel.disconnect();
-                updates.accept(new DockerImportReturn("Image uploaded successfully. Waiting 3 seconds before starting container...", server, true, false));
-            }
+                outputStream.close();
+                int times = 0;
+                // Step 3: Wait for the command to finish
+                while (!channel.isClosed() && times < 15) {
+                    Thread.sleep(1000);
+                    updates.accept(new DockerImportReturn(String.format("Waiting for image data to finish sending (%1$s/15)...", times), server, true, false));
+                    times++;
+                }
 
+                int exitStatus = channel.getExitStatus();
+                if (exitStatus == 0) {
+                    updates.accept(new DockerImportReturn("Image uploaded successfully. Proceeding to start container...", server, true, false));
+                } else {
+                    updates.accept(new DockerImportReturn("Failed to upload the image. Exit status: " + exitStatus, server, false, false));
+                    return;
+                }
+                channel.disconnect();
+            }
             // Step 4: Run a new container with the given name and image name
-            Thread.sleep(3000);
             String runCommand = "sudo -S docker run -d --name " + containerName + " " + imageName;
             boolean success = executeCommandDocker(session, runCommand, updates);
             if (success)
