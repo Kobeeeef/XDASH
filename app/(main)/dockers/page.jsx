@@ -22,11 +22,12 @@ import { Dropdown } from 'primereact/dropdown';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { countdown } from '../../../utilities/utilities';
 import { ToggleButton } from 'primereact/togglebutton';
+import TimeoutsDialog from '../../../components/TimeoutsDialog';
 
 
 const Dashboard = () => {
     const toast = useRef(null);
-    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageAndWaitForConditionWithManage, timeoutsRef } = useContext(WebsocketContext);
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [devices, setDevices] = useState([]);
     const [selectedDevices, setSelectedDevices] = useState([]);
@@ -127,7 +128,7 @@ const Dashboard = () => {
     }, [ready, readyLock]);
 
     function connect_wifi(type, vFunc) {
-        return sendMessageAndWaitForCondition({ type: 'WIFI-CONNECT', message: type }, vFunc, 4000);
+        return sendMessageAndWaitForConditionWithManage("CONNECT-WIFI", { type: 'WIFI-CONNECT', message: type }, vFunc, 5000);
     }
     function finish() {
         setFinished(true)
@@ -287,13 +288,12 @@ const Dashboard = () => {
             setLoading(false);
         });
     }
-
     function build() {
         stepperRef.current.setActiveStep(1);
         setFinished(false);
         setBuildStatus(null);
         setLoading(true);
-        sendMessageAndWaitForCondition({
+        sendMessageAndWaitForConditionWithManage("DOCKER-BUILD", {
             type: 'DOCKER-BUILD', message: JSON.stringify({
                 CONTAINER_NAME: additionalArguments?.CONTAINER_NAME,
                 IMAGE_NAME: additionalArguments?.IMAGE_NAME,
@@ -422,7 +422,6 @@ const Dashboard = () => {
             });
         });
     }
-
     function start() {
         setSetup({});
         setTransferData({})
@@ -464,8 +463,9 @@ const Dashboard = () => {
             ...prev,
             INTERNET_CONNECTION_MESSAGES: ['Attempting to connect to internet WiFi now...']
         }));
+
         connect_wifi('INTERNET', (m) => {
-            if (m.type === 'WIFI-CONNECT') {
+            if (m.type === 'WIFI-CONNECaT') {
                 let msg = JSON.parse(m.message);
                 console.log(msg);
                 setSetup((prev) => {
@@ -508,6 +508,7 @@ const Dashboard = () => {
                     INTERNET_CONNECTION_MESSAGES: prev.INTERNET_CONNECTION_MESSAGES
                 });
             });
+            playErrorNotificationSound()
             setLoading(false);
         });
 
@@ -526,6 +527,7 @@ const Dashboard = () => {
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
+            <TimeoutsDialog timeoutsRef={timeoutsRef} updateInterval={1}/>
             <ConfirmDialog
                 group="headless"
                 content={({ headerRef, contentRef, footerRef, hide, message }) => (
