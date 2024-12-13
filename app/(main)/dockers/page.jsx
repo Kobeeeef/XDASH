@@ -21,6 +21,7 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dropdown } from 'primereact/dropdown';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { countdown } from '../../../utilities/utilities';
+import { ToggleButton } from 'primereact/togglebutton';
 
 
 const Dashboard = () => {
@@ -54,7 +55,8 @@ const Dashboard = () => {
     const [additionalArguments, setAdditionalArguments] = useState({
         CONTAINER_NAME: 'xdash-docker-pipeline',
         IMAGE_NAME: 'xdash-docker-image',
-        ARCHITECTURE: 'ARM64_LINUX'
+        ARCHITECTURE: 'ARM64_LINUX',
+        FLASH_TYPE: 'HARD'
     });
     const [transferMessages, setTransferMessages] = useState({})
     const [transferData, setTransferData] = useState({})
@@ -144,12 +146,12 @@ const Dashboard = () => {
                 servers: selectedDevices.map(m => m.server),
                 containerName: additionalArguments?.CONTAINER_NAME,
                 imageName: additionalArguments?.IMAGE_NAME,
-                architecture: additionalArguments?.ARCHITECTURE
+                architecture: additionalArguments?.ARCHITECTURE,
+                flashType: additionalArguments?.FLASH_TYPE
             })
         }, (m) => {
             if (m?.type === 'DEVICES-DOCKER-IMPORT') {
                 const msg = JSON.parse(m?.message);
-                console.log(msg)
                 if (msg?.server) {
                     setTransferMessages((prev) => {
                         const updatedMessages = { ...prev };
@@ -161,6 +163,19 @@ const Dashboard = () => {
                     const index = selectedDevices.findIndex(obj => obj?.server === msg.server);
                     if(index !== -1) {
                         setTransferIndex(index)
+                    }
+                }
+                if(msg?.success === false) {
+                    playErrorNotificationSound()
+                    if(msg?.response) {
+                        setTransferData((prev) => {
+                            const updatedData = { ...prev };
+                            updatedData.messages = [
+                                msg.response || `Unknown unsuccessful error from server.`,
+                                ...(prev?.messages ?? []),
+                            ];
+                            return updatedData;
+                        });
                     }
                 }
                 if (msg.finished) {
@@ -523,7 +538,7 @@ const Dashboard = () => {
             </span>
                         <div className="p-4 rounded-lg shadow-md" ref={contentRef}>
                             <p className="text-lg">
-                                You are about to modify the container or image name arguments. Changing these settings
+                                You are about to modify the preset additional arguments. Changing these settings
                                 could result in unintended behavior, including:
                             </p>
                             <ul className="mt-2 list-disc list-inside text-base">
@@ -650,8 +665,10 @@ const Dashboard = () => {
                                             <InputText value={projectDirectory} disabled={true} className={'w-full'}
                                                        placeholder={'There is no project directory configured.'} />
                                         </div>
-                                        <div className={'col-12'}>
-                                            <Dropdown value={additionalArguments?.ARCHITECTURE} onChange={(e) => {
+                                        <div className={'col-12 lg:col-6'}>
+                                            <div className="flex flex-column gap-2">
+                                            <label htmlFor="ARCHITECTURE" className={'text-sm'}>Architecture</label>
+                                            <Dropdown id={"ARCHITECTURE"} value={additionalArguments?.ARCHITECTURE} onChange={(e) => {
                                                 setAdditionalArguments((prev) => {
                                                     return ({
                                                         ...prev,
@@ -662,41 +679,55 @@ const Dashboard = () => {
                                                       options={['X86_LINUX', 'ARM64_LINUX', 'ARM_V7_LINUX', 'ARM_V6_LINUX', 'ARM_V6_LINUX', 'POWERPC_LINUX', 'S390X_LINUX', 'ARM64_WINDOWS', 'X86_WINDOWS', 'ARM_V7_WINDOWS', 'X86_MACOS', 'ARM64_MACOS']}
                                                       disabled={!isConnected || loading} className={'w-full'}
                                                       placeholder={'There is no architecture configured.'} />
+                                            </div>
                                         </div>
                                         <div className={'col-12 lg:col-6'}>
                                             <div className="flex flex-column gap-2">
-                                                <label htmlFor="CONTAINER_NAME" className={'text-sm'}>Container
-                                                    Name</label>
-                                                <InputText id={'CONTAINER_NAME'} onChange={(e) => {
-                                                    if(!confirmChanges) return checkConfirmChangesArgs()
+                                                <label htmlFor="FLASH_TYPE" className={'text-sm'}>Flash Type</label>
+                                                <ToggleButton disabled={!isConnected || loading} onLabel={"Hard Flash"} offLabel={"Light Flash"} checked={additionalArguments?.FLASH_TYPE === 'HARD'} onChange={(e) => {
+                                                    if (!confirmChanges) return checkConfirmChangesArgs();
                                                     setAdditionalArguments((prev) => {
                                                         return ({
                                                             ...prev,
-                                                            CONTAINER_NAME: e.target.value
+                                                            FLASH_TYPE: e.value ? "HARD" : "LIGHT"
                                                         });
                                                     });
-                                                }} value={additionalArguments?.CONTAINER_NAME}
-                                                           disabled={!isConnected || loading} className={'w-full'}
-                                                           placeholder={'There is no container name configured.'} />
+                                                }} />
                                             </div>
                                         </div>
-                                        <div className={'col-12 lg:col-6 '}>
-                                            <div className="flex flex-column gap-2">
-                                                <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image Name</label>
-                                                <InputText id={'IMAGE_NAME'} onChange={(e) => {
-                                                    if(!confirmChanges) return checkConfirmChangesArgs()
-                                                    setAdditionalArguments((prev) => {
-                                                        return ({
-                                                            ...prev,
-                                                            IMAGE_NAME: e.target.value
+                                            <div className={'col-12 lg:col-6'}>
+                                                <div className="flex flex-column gap-2">
+                                                    <label htmlFor="CONTAINER_NAME" className={'text-sm'}>Container</label>
+                                                    <InputText id={'CONTAINER_NAME'} onChange={(e) => {
+                                                        if (!confirmChanges) return checkConfirmChangesArgs();
+                                                        setAdditionalArguments((prev) => {
+                                                            return ({
+                                                                ...prev,
+                                                                CONTAINER_NAME: e.target.value
+                                                            });
                                                         });
-                                                    });
-                                                }} value={additionalArguments?.IMAGE_NAME}
-                                                           disabled={!isConnected || loading} className={'w-full'}
-                                                           placeholder={'There is no image name configured.'} />
+                                                    }} value={additionalArguments?.CONTAINER_NAME}
+                                                               disabled={!isConnected || loading} className={'w-full'}
+                                                               placeholder={'There is no container name configured.'} />
+                                                </div>
+                                            </div>
+                                            <div className={'col-12 lg:col-6 '}>
+                                                <div className="flex flex-column gap-2">
+                                                    <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image</label>
+                                                    <InputText id={'IMAGE_NAME'} onChange={(e) => {
+                                                        if (!confirmChanges) return checkConfirmChangesArgs();
+                                                        setAdditionalArguments((prev) => {
+                                                            return ({
+                                                                ...prev,
+                                                                IMAGE_NAME: e.target.value
+                                                            });
+                                                        });
+                                                    }} value={additionalArguments?.IMAGE_NAME}
+                                                               disabled={!isConnected || loading} className={'w-full'}
+                                                               placeholder={'There is no image name configured.'} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
                                 </AccordionTab>
                             </Accordion>
