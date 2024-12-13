@@ -27,6 +27,7 @@ public class SSHHostAddress {
     private transient OutputStream outputStream;
     private final String username;
     private final String password;
+    private transient Thread journalThread = null;
 
     public SSHHostAddress(String hostname, String username, String password, String address, String server) {
         this.username = username;
@@ -415,12 +416,18 @@ public class SSHHostAddress {
         return journalEntries;
     }
 
+    public boolean isJournalCtlReaderRunning() {
+        return journalThread != null && journalThread.isAlive() && !journalThread.isInterrupted();
+    }
 
     public boolean startJournalCtlReader() {
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("SSH session is not connected.");
         }
-
+        if (isJournalCtlReaderRunning()) {
+            logger.severe("Journal CTL reader already running...");
+            return true;
+        }
         // Create the directory if it doesn't exist
         File logDir = new File("XDASH_LOGS");
         if (!logDir.exists()) {
@@ -444,7 +451,7 @@ public class SSHHostAddress {
             channel.connect(); // Connect the channel
 
             // Start a new thread to keep the channel open and stream logs
-            new Thread(() -> {
+            this.journalThread = new Thread(() -> {
                 // Overwrite the file if it exists (non-append mode)
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                      BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false))) {  // 'false' for overwrite mode
@@ -473,7 +480,8 @@ public class SSHHostAddress {
                         channel.disconnect();
                     }
                 }
-            }).start(); // Start the log streaming thread
+            });
+            journalThread.start(); // Start the log streaming thread
 
         } catch (JSchException | IOException e) {
             logger.severe("Failed to start journalctl reader on host: " + getHostname() + "\n" + e.getMessage());
@@ -889,9 +897,11 @@ public class SSHHostAddress {
             // Step 4: Run a new container with the given name and image name
             Thread.sleep(3000);
             String runCommand = "sudo -S docker run -d --name " + containerName + " " + imageName;
-            executeCommandDocker(session, runCommand, updates);
-
-            updates.accept(new DockerImportReturn("Container command finished.", server, true, false));
+            boolean success = executeCommandDocker(session, runCommand, updates);
+            if (success)
+                updates.accept(new DockerImportReturn("Container command finished successfully.", server, true, false));
+            else
+                updates.accept(new DockerImportReturn("Container command finished with bad status code.", server, false, false));
         } catch (IOException | JSchException | InterruptedException e) {
             updates.accept(new DockerImportReturn(e.getMessage(), server, false, false));
             e.printStackTrace();
@@ -908,7 +918,7 @@ public class SSHHostAddress {
         }
     }
 
-    private void executeCommandDocker(Session session, String command, Consumer<DockerImportReturn> updates) throws JSchException, IOException {
+    private boolean executeCommandDocker(Session session, String command, Consumer<DockerImportReturn> updates) throws JSchException, IOException {
         updates.accept(new DockerImportReturn("Executing: " + command, server, true, false));
 
         ChannelExec channel = (ChannelExec) session.openChannel("exec");
@@ -933,6 +943,15 @@ public class SSHHostAddress {
             }
         } finally {
             channel.disconnect();
+        }
+
+        int exitStatus = channel.getExitStatus();
+        if (exitStatus == 0) {
+            updates.accept(new DockerImportReturn("Command executed successfully. Exit code: 0", server, true, false));
+            return true; // Success
+        } else {
+            updates.accept(new DockerImportReturn("Command failed with exit code: " + exitStatus, server, false, true));
+            return false; // Failure
         }
     }
 

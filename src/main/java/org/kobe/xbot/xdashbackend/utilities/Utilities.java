@@ -8,19 +8,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.function.Consumer;
 
 public class Utilities {
     public static InetAddress getLocalInetAddress() throws SocketException, UnknownHostException {
-
         InetAddress localHost = Inet4Address.getLocalHost();
         if (localHost.isLoopbackAddress()) {
             return findNonLoopbackAddress();
         }
         return localHost;
-
-
+    }
+    public static InetAddress getLocalInetAddressOrNull() {
+        try {
+            return getLocalInetAddress();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static boolean createTar(String sourcePath, String outputTarFile, Consumer<TransferProgress> consumer) {

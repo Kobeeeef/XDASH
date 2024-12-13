@@ -78,8 +78,7 @@ public class SSHConnectionManager {
 
                 // Check if the session is disconnected or null
                 Session session = XdashbackendApplication.getResolvedXCASTERServices().getOrDefault(sshHostAddress.getServer(), sshHostAddress).getSession();
-
-                if (session == null || !session.isConnected() || !sshHostAddress.forceIsConnected()) {
+                if (session == null || !session.isConnected()) {
                     updates.accept(new DevicesReconnectReturn(String.format("Host %s (%s) is disconnected. Attempting to reconnect...",
                             sshHostAddress.getHostname(), sshHostAddress.getAddress()),
                             sshHostAddress.toString(), null, false));
