@@ -76,46 +76,50 @@ public class SSHConnectionManager {
                         sshHostAddress.getHostname(), sshHostAddress.getAddress()),
                         sshHostAddress.toString(), null, false));
 
+                // Access the resolved services map
+                Map<String, SSHHostAddress> resolvedServices = XdashbackendApplication.getResolvedXCASTERServices();
+
+                // Ensure the host is in the map
+                resolvedServices.putIfAbsent(sshHostAddress.getServer(), sshHostAddress);
+
+                // Get the SSHHostAddress from the map
+                SSHHostAddress currentHost = resolvedServices.get(sshHostAddress.getServer());
+
                 // Check if the session is disconnected or null
-                Session session = XdashbackendApplication.getResolvedXCASTERServices().getOrDefault(sshHostAddress.getServer(), sshHostAddress).getSession();
+                Session session = currentHost.getSession();
                 if (session == null || !session.isConnected()) {
                     updates.accept(new DevicesReconnectReturn(String.format("Host %s (%s) is disconnected. Attempting to reconnect...",
-                            sshHostAddress.getHostname(), sshHostAddress.getAddress()),
-                            sshHostAddress.toString(), null, false));
+                            currentHost.getHostname(), currentHost.getAddress()),
+                            currentHost.toString(), null, false));
 
                     // Reconnect to the host
-                    session = connectToHost(sshHostAddress, XdashbackendApplication.getConfigLoader().getConnectTimeout(),
-                            sshHostAddress.getUsername(), sshHostAddress.getPassword());
+                    session = connectToHost(currentHost, XdashbackendApplication.getConfigLoader().getConnectTimeout(),
+                            currentHost.getUsername(), currentHost.getPassword());
 
                     if (session != null && session.isConnected()) {
                         updates.accept(new DevicesReconnectReturn(String.format("Successfully reconnected to host: %s (%s)",
-                                sshHostAddress.getHostname(), sshHostAddress.getAddress()),
-                                sshHostAddress.toString(), null, false));
+                                currentHost.getHostname(), currentHost.getAddress()),
+                                currentHost.toString(), null, false));
 
-                        // Directly update the existing SSHHostAddress in the map
-                        Map<String, SSHHostAddress> resolvedServices = XdashbackendApplication.getResolvedXCASTERServices();
-                        SSHHostAddress updatedSSHHostAddress = resolvedServices.get(sshHostAddress.getServer());
-                        if (updatedSSHHostAddress != null) {
-                            updatedSSHHostAddress.setSession(session);  // Update the session
-                            updatedSSHHostAddress.setStatus("CONNECTED");
+                        // Update the session and status
+                        currentHost.setSession(session);
+                        currentHost.setStatus("CONNECTED");
 
-                            // Optionally restart journalctl reader if necessary
-                            if (!updatedSSHHostAddress.startJournalCtlReader()) {
-                                updates.accept(new DevicesReconnectReturn(String.format("Failed to start journalctl reader for host: %s (%s)",
-                                        sshHostAddress.getHostname(), sshHostAddress.getAddress()),
-                                        sshHostAddress.toString(), null, false));
-                            }
+                        // Optionally restart journalctl reader if necessary
+                        if (!currentHost.startJournalCtlReader()) {
+                            updates.accept(new DevicesReconnectReturn(String.format("Failed to start journalctl reader for host: %s (%s)",
+                                    currentHost.getHostname(), currentHost.getAddress()),
+                                    currentHost.toString(), null, false));
                         }
-
                     } else {
                         updates.accept(new DevicesReconnectReturn(String.format("Failed to reconnect to host: %s (%s)",
-                                sshHostAddress.getHostname(), sshHostAddress.getAddress()),
-                                sshHostAddress.toString(), null, false));
+                                currentHost.getHostname(), currentHost.getAddress()),
+                                currentHost.toString(), null, false));
                     }
                 } else {
                     updates.accept(new DevicesReconnectReturn(String.format("Host %s (%s) is already connected.",
-                            sshHostAddress.getHostname(), sshHostAddress.getAddress()),
-                            sshHostAddress.toString(), null, false));
+                            currentHost.getHostname(), currentHost.getAddress()),
+                            currentHost.toString(), null, false));
                 }
             } catch (Exception e) {
                 updates.accept(new DevicesReconnectReturn(String.format("An error occurred while reconnecting to host: %s (%s): %s",

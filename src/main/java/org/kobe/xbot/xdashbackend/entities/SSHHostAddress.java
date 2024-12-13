@@ -848,7 +848,7 @@ public class SSHHostAddress {
         }
     }
 
-    public void uploadDockerImage(File image, String containerName, Consumer<DockerImportReturn> updates) {
+    public void uploadDockerImage(File image, String containerName, DockerFlashType type, Consumer<DockerImportReturn> updates) {
         String imageName = image.getName().toLowerCase().replace(".tar", ""); // Assuming the image name is the file name
         containerName = containerName.toLowerCase();
         try {
@@ -861,11 +861,19 @@ public class SSHHostAddress {
                 updates.accept(new DockerImportReturn("Docker is already installed.", server, true, false));
             }
 
-            // Step 1: Remove existing container with the same name
-            executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
 
-            // Step 2: Remove existing image with the same name
-            executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+
+            if(type.equals(DockerFlashType.LIGHT)) {
+                // Step 1: Remove existing container with the same name
+                executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
+                // Step 2: Remove existing image with the same name
+                executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+            } else {
+                // Step 1: Remove all existing containers
+                executeCommandDocker(session, "sudo -S docker rm -f $(docker ps -q -a)", updates);
+                // Step 2: Remove all existing images
+                executeCommandDocker(session, "sudo -S docker rmi -f $(docker images -a -q)", updates);
+            }
 
             // Step 3: Load the new image
             updates.accept(new DockerImportReturn("Starting image upload...", server, true, false));
@@ -963,7 +971,7 @@ public class SSHHostAddress {
             updates.accept(new DockerImportReturn("Command executed successfully. Exit code: 0", server, true, false));
             return true; // Success
         } else {
-            updates.accept(new DockerImportReturn("Command failed with exit code: " + exitStatus, server, false, true));
+            updates.accept(new DockerImportReturn("Command failed with exit code: " + exitStatus, server, false, false));
             return false; // Failure
         }
     }

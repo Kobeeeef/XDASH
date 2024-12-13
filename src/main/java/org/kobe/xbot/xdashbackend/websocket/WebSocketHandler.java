@@ -593,6 +593,16 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid architecture in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
+                String flashTypeString = devicesTransferFiles.getFlashType();
+                if (flashTypeString ==null) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No flashType in argument.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
+                DockerFlashType flashType = DockerFlashType.valueOfNull(flashTypeString);
+                if (flashType ==null) {
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid flash type in argument.", null, false, true), message.getType()).toJSON()));
+                    return;
+                }
                 String imageName = devicesTransferFiles.getImageName();
                 if (imageName ==null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No image name in argument.", null, false, true), message.getType()).toJSON()));
@@ -603,6 +613,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No container name in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
+
                 String imagePath = XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() + "/" + imageName  + ".tar";
                 File imageFile = new File(imagePath);
                 if (imageFile ==null || !imageFile.exists() || !imageFile.isFile()) {
@@ -614,7 +625,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
                     if (sshHostAddress != null) {
                         if (sshHostAddress.forceIsConnected()) {
-                            sshHostAddress.uploadDockerImage(imageFile, containerName, (v) -> {
+                            sshHostAddress.uploadDockerImage(imageFile, containerName, flashType, (v) -> {
                                 try {
                                     session.sendMessage(new TextMessage(new Message(v, message.getType()).toJSON()));
                                 } catch (Exception ignored) {

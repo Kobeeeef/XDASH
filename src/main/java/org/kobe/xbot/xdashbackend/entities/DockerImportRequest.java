@@ -5,6 +5,11 @@ public class DockerImportRequest {
     private String containerName;
     private String imageName;
     private String architecture;
+    private String flashType;
+
+    public String getFlashType() {
+        return flashType;
+    }
 
     public String[] getServers() {
         return servers;
