@@ -18,11 +18,13 @@ import { Badge } from 'primereact/badge';
 import { SelectButton } from 'primereact/selectbutton';
 import { isValidDirectoryPath, isValidPath } from '../../../utilities/utilities';
 import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
+import TerminalDisplay from '../../../components/TerminalDisplay';
+import TimeoutsDialog from '../../../components/TimeoutsDialog';
 
 
 const Dashboard = () => {
     const toast = useRef(null);
-    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageAndWaitForConditionWithManage, timeoutsRef } = useContext(WebsocketContext);
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [devices, setDevices] = useState([]);
     const [selectedDevices, setSelectedDevices] = useState([]);
@@ -47,7 +49,9 @@ const Dashboard = () => {
     const [networkingManagerTypeInput, setNetworkingManagerTypeInput] = useState(null)
     const isMounted = useRef(true); // Tracks if the component is mounted
     const timeoutId = useRef(null); // Stores the timeout ID persistently
-
+    const [fileEditInputDialogVisible, setFileEditInputDialogVisible] = useState(false)
+    const [fileEditDialogVisible, setFileEditDialogVisible] = useState(false)
+    const [fileEditInput, setFileEditInput] = useState(null)
     useEffect(() => {
         isMounted.current = true; // Set the mounted flag
         let isRequestInProgress = false;
@@ -108,7 +112,7 @@ const Dashboard = () => {
                 return m;
             });
         });
-        sendMessageAndWaitForCondition({
+        sendMessageAndWaitForConditionWithManage("DEVICES-TRANSFER-FILES", {
             type: 'DEVICES-TRANSFER-FILES',
             message: JSON.stringify({
                 servers: selectedDevices.map(m => m.server),
@@ -243,6 +247,54 @@ const Dashboard = () => {
                     summary: 'Exception Occurred!',
                     detail: e?.message || 'Unknown Exception...'
                 });
+                setLoading(false);
+            });
+    }
+    function fileEditor() {
+        setLoading(true);
+        setFileEditDialogVisible(true);
+        setFinalResponseData([])
+        setSelectedDevices(devices => {
+            return devices.map(m => {
+                m.success = null;
+                m.response = null;
+                return m;
+            });
+        });
+        sendMessageAndWaitForConditionWithManage("DEVICES-FILE-EDITOR", {
+            type: 'DEVICES-FILE-EDITOR',
+            message: JSON.stringify({
+                servers: selectedDevices.map(m => m.server),
+                remoteFilePath: fileEditInput
+            })
+        }, (m) => {
+            if (m.type === 'DEVICES-FILE-EDITOR') {
+                const msg = JSON.parse(m.message);
+                if (msg?.finished) {
+                    if(msg?.success === true) {
+                        playSuccessNotificationSound()
+                    } else if (msg?.success === false) {
+                        playErrorNotificationSound()
+                    }
+                    return true;
+                }
+                if(msg?.message) {
+                    setFinalResponseData((prevArray) => [(msg.message || `Unknown message received...`), ...prevArray]);
+                }
+                return false;
+            }
+
+        }, 15000)
+            .then(() => {
+                setLoading(false);
+            })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || 'Unknown Exception...'
+                });
+                setFinalResponseData((prevArray) => [(e?.message || `Unknown exception...`), ...prevArray]);
                 setLoading(false);
             });
     }
@@ -382,6 +434,7 @@ const Dashboard = () => {
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
+            <TimeoutsDialog timeoutsRef={timeoutsRef}/>
             <Dialog header={'Select Networking Manager Type'} draggable={false}
                     visible={networkingManagerTypeDialogVisible}
                     style={{ width: '50vw' }} onHide={() => {
@@ -400,7 +453,13 @@ const Dashboard = () => {
                 </Divider>
 
                 <SelectButton
-                    options={[{ name: 'Network Manager', value: "NetworkManager" }, { name: 'Networking', value: "networking" }, { name: "Systemd Networkd", value: "systemd-networkd"}, { name: "Wicd", value: "wicd"}, { name: "Systemd Resolved", value: "systemd-resolved"}]}
+                    options={[{ name: 'Network Manager', value: "NetworkManager" }, {
+                        name: 'Networking',
+                        value: "networking"
+                    }, { name: "Systemd Networkd", value: "systemd-networkd" }, {
+                        name: "Wicd",
+                        value: "wicd"
+                    }, { name: "Systemd Resolved", value: "systemd-resolved" }]}
                     allowEmpty={false}
 
                     pt={{
@@ -423,14 +482,16 @@ const Dashboard = () => {
                 setTransferFilesInputDialogVisible(false);
             }} footer={() => (
                 <Button loading={loading} onClick={transferFiles}
-                        disabled={!isConnected || !localDirectoryInput || !targetDirectoryInput || targetMethodInput === undefined || targetMethodInput === null} label={'Execute'}
+                        disabled={!isConnected || !localDirectoryInput || !targetDirectoryInput || targetMethodInput === undefined || targetMethodInput === null}
+                        label={'Execute'}
                         severity={'danger'} className={'w-full'}></Button>
             )}>
                 <Divider align="center">
                     <Badge value="Local Directory"></Badge>
                 </Divider>
 
-                <InputText invalid={localDirectoryInput ? !isValidPath(localDirectoryInput)  : false} placeholder={'Local Directory Path'} className={'w-full'} value={localDirectoryInput}
+                <InputText invalid={localDirectoryInput ? !isValidPath(localDirectoryInput) : false}
+                           placeholder={'Local Directory Path'} className={'w-full'} value={localDirectoryInput}
                            onChange={(e) => setLocalDirectoryInput(e.target.value)} />
 
 
@@ -438,7 +499,8 @@ const Dashboard = () => {
                     <Badge value="Target Directory"></Badge>
                 </Divider>
 
-                <InputText invalid={targetDirectoryInput ? !isValidPath(targetDirectoryInput)  : false} placeholder={'Target Directory Path'} className={'w-full'} value={targetDirectoryInput}
+                <InputText invalid={targetDirectoryInput ? !isValidPath(targetDirectoryInput) : false}
+                           placeholder={'Target Directory Path'} className={'w-full'} value={targetDirectoryInput}
                            onChange={(e) => setTargetDirectoryInput(e.target.value)} />
                 <Divider align="center">
                     <Badge value="Transfer Method"></Badge>
@@ -476,6 +538,37 @@ const Dashboard = () => {
 
                 <InputText placeholder={'Custom CLI Command'} className={'w-full'} value={customCLICommandInput}
                            onChange={(e) => setCustomCLICommandInput(e.target.value)} />
+
+            </Dialog>
+            <Dialog header={'Remote Directory'} draggable={false}
+                    visible={fileEditInputDialogVisible}
+                    style={{ width: '50vw' }} onHide={() => {
+                if (!fileEditInputDialogVisible) return;
+                setFileEditInputDialogVisible(false);
+            }} footer={() => (
+                <Button loading={loading} onClick={() => fileEditor()}
+                        disabled={!isConnected || !fileEditInput} label={'Execute'}
+                        severity={'danger'} className={'w-full'}></Button>
+            )}>
+                <Divider align="center">
+                    <Badge value="Remote Directory"></Badge>
+                </Divider>
+
+                <InputText placeholder={'Remote Directory Path'} className={'w-full'} value={fileEditInput}
+                           onChange={(e) => setFileEditInput(e.target.value)} />
+
+            </Dialog>
+            <Dialog draggable={false}
+                    visible={fileEditDialogVisible}
+                    style={{ width: '50vw' }} onHide={() => {
+                if (!fileEditDialogVisible) return;
+                setFileEditDialogVisible(false);
+            }} footer={() => (
+                <Button loading={loading} onClick={() => setFileEditDialogVisible(false)}
+                        label={'Okay'}
+                        className={'w-full'}></Button>
+            )}>
+                <TerminalDisplay messages={finalResponseData ?? []} placeholder={"Waiting for messages"} loadingDots={true}/>
 
             </Dialog>
             <Dialog draggable={false} visible={transferFilesDialogVisible} style={{ width: '50vw' }} onHide={() => {
@@ -721,9 +814,26 @@ const Dashboard = () => {
                             <span className="text-sm text-gray-500 block">Unlock the filesystem and mount the disk for immediate access.</span>
                         </div>
                     </div>
-                    <Button  onClick={() => {
+                    <Button onClick={() => {
                         setCustomCLICommandInput("mount -o remount,rw /")
                         setExecuteCLICommandDialogVisible(true)
+                    }} icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
+                            disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
+                            className="ml-auto"></Button>
+                </div>
+            </div>
+            <div className="col-12">
+                <div
+                    className="card mb-0 flex items-center justify-between w-full p-5 border border-gray-300 rounded-lg shadow-md">
+                    <div className="flex items-center">
+                        <i className="pi pi-file-edit" style={{ fontSize: '2rem', color: '#5865f2' }}></i>
+                        <div className="ml-4">
+                            <div className="text-xl font-semibold">File Editor</div>
+                            <span className="text-sm text-gray-500 block">Edit multiple files on all machines at the same time.</span>
+                        </div>
+                    </div>
+                    <Button onClick={() => {
+                        setFileEditInputDialogVisible(true)
                     }} icon={'pi pi-play-circle'} severity={'danger'} loading={loading}
                             disabled={!isConnected || selectedDevices.length === 0} label={'Execute'}
                             className="ml-auto"></Button>

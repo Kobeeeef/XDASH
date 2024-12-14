@@ -17,7 +17,7 @@ const TerminalDisplay = ({ messages, prompt = 'XDASH $ ', maxHeight = '300px', m
                 wordBreak: 'break-word', // Ensures long words break at boundaries
             }}
         >
-            {(messages.length === 0 && placeholder ? [placeholder] : messages).map((message, idx) => (
+            {(messages?.length === 0 && placeholder ? [placeholder] : messages).map((message, idx) => (
                 <div key={idx} className="flex">
                     <span className="text-gray-400 mr-2" style={{ whiteSpace: 'nowrap' }}>{prompt}</span>
                     <span className="text-primary-300">{message}{messages.length === 0 && placeholder && loadingDots && <LoadingDots delay={250}/>}</span>
