@@ -931,8 +931,7 @@ public class SSHHostAddress {
 
     private boolean isDockerInstalled(Session session, Consumer<DockerImportReturn> updates) throws JSchException, IOException {
         try {
-            executeCommandDocker(session, "docker --version", updates);
-            return true;
+            return executeCommandDocker(session, "docker --version", updates);
         } catch (IOException e) {
             updates.accept(new DockerImportReturn("Docker not found.", server, true, false));
             return false;
