@@ -950,9 +950,9 @@ public class SSHHostAddress {
 
         channel.connect();
 
-        // Optional: Send sudo password if needed
+
         if (command.startsWith("sudo")) {
-            outputStream.write((password + "\n").getBytes()); // Replace with actual password
+            outputStream.write((password + "\n").getBytes());
             outputStream.flush();
         }
 
