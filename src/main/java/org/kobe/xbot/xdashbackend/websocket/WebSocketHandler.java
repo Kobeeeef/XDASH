@@ -10,10 +10,7 @@ import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
-import org.kobe.xbot.xdashbackend.utilities.DockerManager;
-import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
-import org.kobe.xbot.xdashbackend.utilities.NetworkManager;
-import org.kobe.xbot.xdashbackend.utilities.Utilities;
+import org.kobe.xbot.xdashbackend.utilities.*;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -242,6 +239,40 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } else {
                 session.sendMessage(new TextMessage(new Message(new DeviceDataReturn(false, null, null, null, null), "DEVICE-DATA").toJSON()));
             }
+        } else if (message.getType().equals("DEVICES-FILE-EDITOR")) {
+            String msg = message.getMessage();
+            try {
+                DeviceFileEditorRequest deviceFileEditorRequest = gson.fromJson(msg, DeviceFileEditorRequest.class);
+                String[] servers = deviceFileEditorRequest.getServers();
+                if(servers == null) {
+                    session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The server is not in arguments."), message.getType()).toJSON()));
+                    return;
+                }
+                if(deviceFileEditorRequest.getRemoteFilePath() == null) {
+                    session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The remote file path is not in arguments."), message.getType()).toJSON()));
+                    return;
+                }
+                int failures = 0;
+                for (String server : servers) {
+                    try {
+                        SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
+                        if (sshHostAddress != null) {
+                            FileEditor.openRemoteFileEditor(sshHostAddress, deviceFileEditorRequest.getRemoteFilePath());
+                            session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "File editor started.").setFinished(false), message.getType()).toJSON()));
+                        } else {
+                            failures++;
+                            session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The server does not exist.").setFinished(false), message.getType()).toJSON()));
+                        }
+                    } catch (Exception e) {
+                        failures++;
+                        session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Error occurred: " + e.getMessage()).setFinished(false), message.getType()).toJSON()));
+                    }
+                }
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, String.format("%1$s/%2$s machines opened successfully.", servers.length - failures, servers.length)).setFinished(true), message.getType()).toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Error occurred: " + e.getMessage()).setFinished(true), message.getType()).toJSON()));
+
+            }
         } else if (message.getType().equals("DEVICE-LOGS")) {
             String msg = message.getMessage();
             if (msg != null) {
@@ -372,7 +403,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         return;
                     }
                     Architecture architecture = Architecture.valueOfNull(dockerBuildReturn.getARCHITECTURE());
-                    if(architecture == null) {
+                    if (architecture == null) {
                         session.sendMessage(new TextMessage(new Message(new DockerProgress("Invalid architecture type or unsupported.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
                         return;
                     }
@@ -386,7 +417,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                 }
 
                             }, architecture);
-                    if(file == null) {
+                    if (file == null) {
                         session.sendMessage(new TextMessage(new Message(new DockerProgress("Image TARBALL file could not be located.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
                     } else {
                         session.sendMessage(new TextMessage(new Message(new DockerProgress("XDASH has finished building the docker image.", DockerStep.FINISHED, 100).setFinished(true).setSuccess(true), message.getType()).toJSON()));
@@ -480,7 +511,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REBOOT").toJSON()));
             }
-        }else if (message.getType().equals("DEVICES-RECONNECT")) {
+        } else if (message.getType().equals("DEVICES-RECONNECT")) {
             String serversMsg = message.getMessage();
             try {
                 SSHHostAddress[] sshHostAddresses = gson.fromJson(serversMsg, SSHHostAddress[].class);
@@ -497,7 +528,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new DevicesReconnectReturn("All machines have been reconnected.", null, true, true), message.getType()).toJSON()));
 
             } catch (Exception e) {
-                session.sendMessage(new TextMessage(new Message(new DevicesReconnectReturn("Error while reconnecting devices: "+ e.getMessage(), null, false, true), message.getType()).toJSON()));
+                session.sendMessage(new TextMessage(new Message(new DevicesReconnectReturn("Error while reconnecting devices: " + e.getMessage(), null, false, true), message.getType()).toJSON()));
             }
         } else if (message.getType().equals("DEVICES-CUSTOM-COMMAND")) {
             String msg = message.getMessage();
@@ -575,52 +606,51 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REDEPLOY").toJSON()));
             }
-        }
-        else if (message.getType().equals("DEVICES-DOCKER-IMPORT")) {
+        } else if (message.getType().equals("DEVICES-DOCKER-IMPORT")) {
             String msg = message.getMessage();
             try {
                 DockerImportRequest devicesTransferFiles = gson.fromJson(msg, DockerImportRequest.class);
 
 
                 String[] servers = devicesTransferFiles.getServers();
-                if (servers ==null) {
+                if (servers == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No servers in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 String archString = devicesTransferFiles.getArchitecture();
-                if (archString ==null) {
+                if (archString == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No architecture in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 Architecture architecture = Architecture.valueOfNull(archString);
-                if (architecture ==null) {
+                if (architecture == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid architecture in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 String flashTypeString = devicesTransferFiles.getFlashType();
-                if (flashTypeString ==null) {
+                if (flashTypeString == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No flashType in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 DockerFlashType flashType = DockerFlashType.valueOfNull(flashTypeString);
-                if (flashType ==null) {
+                if (flashType == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid flash type in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 String imageName = devicesTransferFiles.getImageName();
-                if (imageName ==null) {
+                if (imageName == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No image name in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 String containerName = devicesTransferFiles.getContainerName();
-                if (containerName ==null) {
+                if (containerName == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No container name in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
 
-                String imagePath = XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() + "/" + imageName  + ".tar";
+                String imagePath = XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() + "/" + imageName + ".tar";
                 File imageFile = new File(imagePath);
-                if (imageFile ==null || !imageFile.exists() || !imageFile.isFile()) {
+                if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid image found.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
@@ -649,8 +679,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DockerImportReturn(e.getMessage(), null, false, true), message.getType()).toJSON()));
             }
-        }
-        else if (message.getType().equals("DEVICES-TRANSFER-FILES")) {
+        } else if (message.getType().equals("DEVICES-TRANSFER-FILES")) {
             String msg = message.getMessage();
             try {
                 DevicesTransferFiles devicesTransferFiles = gson.fromJson(msg, DevicesTransferFiles.class);
