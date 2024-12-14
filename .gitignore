@@ -18,7 +18,7 @@ target/
 *.iws
 *.iml
 *.ipr
-
+/XDASH-DOCKER-IMAGES/*
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
