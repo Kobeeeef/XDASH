@@ -16,14 +16,14 @@ const TimeoutsDialog = ({ timeoutsRef, updateInterval=100 }) => {
                 timeLeft: timeoutManager.getTimeLeft(),
             }));
             setTimeouts(currentTimeouts);
-            if(lock.current && currentTimeouts.length > 0) {
-                setVisible(false)
-                return;
+            if (currentTimeouts.length === 0) {
+                // Reset lock and hide dialog when all timeouts are cleared
+                lock.current = false;
+                setVisible(false);
+            } else if (!lock.current) {
+                // Show dialog if there are active timeouts and not locked
+                setVisible(true);
             }
-            if(lock && currentTimeouts.length === 0) {
-                lock.current = false
-            }
-            if(!lock.current) setVisible(currentTimeouts.length > 0);
         };
 
         // Initial update and periodic refresh

@@ -23,11 +23,20 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { countdown } from '../../../utilities/utilities';
 import { ToggleButton } from 'primereact/togglebutton';
 import TimeoutsDialog from '../../../components/TimeoutsDialog';
+import { useRouter } from 'next/navigation';
 
 
 const Dashboard = () => {
     const toast = useRef(null);
-    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageAndWaitForConditionWithManage, timeoutsRef } = useContext(WebsocketContext);
+    const router = useRouter()
+    const {
+        isConnected,
+        lastConnectionUpdate,
+        sendMessageAndWaitForCondition,
+        sendMessageAndWaitForConditionWithManage,
+        getTimeoutManagerById,
+        timeoutsRef
+    } = useContext(WebsocketContext);
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [devices, setDevices] = useState([]);
     const [selectedDevices, setSelectedDevices] = useState([]);
@@ -39,7 +48,7 @@ const Dashboard = () => {
         ERRORS: [],
         FINISHED: []
     });
-    const [confirmChanges, setConfirmChanges] = useState(false)
+    const [confirmChanges, setConfirmChanges] = useState(false);
     const [finished, setFinished] = useState(false);
     const [setup, setSetup] = useState({});
     const [reconnectionMessages, setReconnectionMessages] = useState({});
@@ -59,11 +68,11 @@ const Dashboard = () => {
         ARCHITECTURE: 'ARM64_LINUX',
         FLASH_TYPE: 'HARD'
     });
-    const [transferMessages, setTransferMessages] = useState({})
-    const [transferData, setTransferData] = useState({})
-    const [transferIndex, setTransferIndex] = useState(0)
+    const [transferMessages, setTransferMessages] = useState({});
+    const [transferData, setTransferData] = useState({});
+    const [transferIndex, setTransferIndex] = useState(0);
     const [projectDirectory, setProjectDirectory] = useState(null);
-    const [finalSummary, setFinalSummary] = useState([])
+    const [finalSummary, setFinalSummary] = useState([]);
     useEffect(() => {
         isMounted.current = true; // Set the mounted flag
         let isRequestInProgress = false;
@@ -128,21 +137,26 @@ const Dashboard = () => {
     }, [ready, readyLock]);
 
     function connect_wifi(type, vFunc) {
-        return sendMessageAndWaitForConditionWithManage("CONNECT-WIFI", { type: 'WIFI-CONNECT', message: type }, vFunc, 5000);
+        return sendMessageAndWaitForConditionWithManage('CONNECT-WIFI', {
+            type: 'WIFI-CONNECT',
+            message: type
+        }, vFunc, 20000);
     }
+
     function finish() {
-        setFinished(true)
-        setLoading(false)
+        setFinished(true);
+        setLoading(false);
         stepperRef.current.setActiveStep(5);
     }
+
     function transfer_import() {
         setFinished(false);
-        setTransferData({})
-        setTransferMessages({})
-        setTransferIndex(0)
+        setTransferData({});
+        setTransferMessages({});
+        setTransferIndex(0);
         stepperRef.current.setActiveStep(4);
         setLoading(true);
-        sendMessageAndWaitForCondition({
+        sendMessageAndWaitForConditionWithManage('DEVICES-DOCKER-IMPORT', {
             type: 'DEVICES-DOCKER-IMPORT', message: JSON.stringify({
                 servers: selectedDevices.map(m => m.server),
                 containerName: additionalArguments?.CONTAINER_NAME,
@@ -152,6 +166,8 @@ const Dashboard = () => {
             })
         }, (m) => {
             if (m?.type === 'DEVICES-DOCKER-IMPORT') {
+                let manager = getTimeoutManagerById("DEVICES-DOCKER-IMPORT")
+                if(manager) manager.extendTimeout(30000);
                 const msg = JSON.parse(m?.message);
                 if (msg?.server) {
                     setTransferMessages((prev) => {
@@ -162,68 +178,71 @@ const Dashboard = () => {
                     });
 
                     const index = selectedDevices.findIndex(obj => obj?.server === msg.server);
-                    if(index !== -1) {
-                        setTransferIndex(index)
+                    if (index !== -1) {
+                        setTransferIndex(index);
                     }
                 }
-                if(msg?.success === false) {
-                    playErrorNotificationSound()
-                    if(msg?.response) {
+                if (msg?.success === false) {
+                    playErrorNotificationSound();
+                    if (msg?.response) {
                         setTransferData((prev) => {
                             const updatedData = { ...prev };
                             updatedData.messages = [
                                 msg.response || `Unknown unsuccessful error from server.`,
-                                ...(prev?.messages ?? []),
+                                ...(prev?.messages ?? [])
                             ];
                             return updatedData;
                         });
                     }
                 }
                 if (msg.finished) {
-                    setTransferIndex(selectedDevices.length)
+                    setTransferIndex(selectedDevices.length);
                     return true;
                 }
             }
         }, 400000).then((m) => {
-            setLoading(false)
+            setLoading(false);
             setTransferData((prev) => {
                 const updatedData = { ...prev };
                 updatedData.messages = [
                     m?.message?.response || `No final message received back from server.`,
-                    ...(prev?.messages ?? []),
+                    ...(prev?.messages ?? [])
                 ];
                 return updatedData;
             });
             setFinalSummary((prevArray) => [(m?.message?.response || `No final message received back from server.`), ...prevArray]);
 
-            if(m?.message?.success) {
-                playSuccessNotificationSound()
-                finish()
+            if (m?.message?.success) {
+                playSuccessNotificationSound();
+                finish();
             } else {
-                playErrorNotificationSound()
+                playErrorNotificationSound();
             }
         }).catch((e) => {
             setTransferData((prev) => ({
                 ...prev,
                 messages: [
                     e?.message ?? `There was an unknown exception.`,
-                    ...(prev?.messages ?? []),
-                ],
+                    ...(prev?.messages ?? [])
+                ]
             }));
-            playErrorNotificationSound()
+            playErrorNotificationSound();
             setLoading(false);
         });
     }
+
     function reconnection() {
         setFinished(false);
         stepperRef.current.setActiveStep(3);
         setReconnectionData({});
         setReconnectionMessages({});
         setLoading(true);
-        sendMessageAndWaitForCondition({
+        sendMessageAndWaitForConditionWithManage('DEVICES-RECONNECT', {
             type: 'DEVICES-RECONNECT', message: JSON.stringify(selectedDevices)
         }, (m) => {
             if (m?.type === 'DEVICES-RECONNECT') {
+                let manager = getTimeoutManagerById("DEVICES-RECONNECT")
+                if(manager) manager.extendTimeout(10000);
                 const msg = JSON.parse(m?.message);
                 if (msg?.sshHostAddress) {
                     const device = JSON.parse(msg?.sshHostAddress);
@@ -231,17 +250,17 @@ const Dashboard = () => {
                         ...prev,
                         [device.server]: [
                             msg?.response || `Unknown message while reconnecting on machine: ${device?.server}...`,
-                            ...(prev[device.server] ?? []),
-                        ],
+                            ...(prev[device.server] ?? [])
+                        ]
                     }));
 
                     const index = selectedDevices.findIndex(obj => obj?.server === device?.server);
-                    if(index !== -1) {
-                        setReconnectionIndex(index)
+                    if (index !== -1) {
+                        setReconnectionIndex(index);
                     }
                 }
                 if (msg.finished) {
-                    setReconnectionIndex(selectedDevices.length)
+                    setReconnectionIndex(selectedDevices.length);
                     setReconnectionData((prev) => {
                         return ({
                             ...prev,
@@ -256,44 +275,45 @@ const Dashboard = () => {
                 ...prev,
                 messages: [
                     m?.message?.response || `No final message received back from server.`,
-                    ...(prev?.messages ?? []),
-                ],
+                    ...(prev?.messages ?? [])
+                ]
             }));
-            if(m?.message?.success) {
-                playSuccessNotificationSound()
+            if (m?.message?.success) {
+                playSuccessNotificationSound();
                 countdown(3, (s) => {
                     setReconnectionData((prev) => ({
                         ...prev,
                         messages: [
                             `Continuing onto transfer & execute in ${s} seconds...`,
-                            ...(prev?.messages ?? []),
-                        ],
+                            ...(prev?.messages ?? [])
+                        ]
                     }));
-                }, transfer_import)
+                }, transfer_import);
             } else {
-                setLoading(false)
-                playErrorNotificationSound()
+                setLoading(false);
+                playErrorNotificationSound();
             }
         }).catch((e) => {
             setReconnectionData((prev) => ({
                 ...prev,
                 messages: [
                     e?.message ?? `There was an unknown exception.`,
-                    ...(prev?.messages ?? []),
+                    ...(prev?.messages ?? [])
                 ],
-                DEVICES_RECONNECTION_SUCCESS: false,
+                DEVICES_RECONNECTION_SUCCESS: false
             }));
-            setReconnectionIndex(selectedDevices.length)
-            playErrorNotificationSound()
+            setReconnectionIndex(selectedDevices.length);
+            playErrorNotificationSound();
             setLoading(false);
         });
     }
+
     function build() {
         stepperRef.current.setActiveStep(1);
         setFinished(false);
-        setBuildStatus(null);
+        setBuildStatus({});
         setLoading(true);
-        sendMessageAndWaitForConditionWithManage("DOCKER-BUILD", {
+        sendMessageAndWaitForConditionWithManage('DOCKER-BUILD', {
             type: 'DOCKER-BUILD', message: JSON.stringify({
                 CONTAINER_NAME: additionalArguments?.CONTAINER_NAME,
                 IMAGE_NAME: additionalArguments?.IMAGE_NAME,
@@ -301,6 +321,8 @@ const Dashboard = () => {
             })
         }, (m) => {
             if (m.type === 'DOCKER-BUILD') {
+                let manager = getTimeoutManagerById("DOCKER-BUILD")
+                if(manager) manager.extendTimeout(30000);
                 const msg = JSON.parse(m.message);
                 if (msg.step === 'STARTING') {
                     setBuildIndex(0);
@@ -316,7 +338,7 @@ const Dashboard = () => {
                     setBuildIndex(1);
                     setBuildStatus((prev) => {
                         const array = prev?.BUILDING ?? [];
-                        array.unshift(msg?.message || 'Unknown message while building on step BUILDING...');
+                        array.unshift(msg?.message || '');
                         return ({
                             ...prev,
                             BUILDING: array
@@ -347,7 +369,7 @@ const Dashboard = () => {
 
                 if (msg?.success === true || msg?.success === false) {
                     if (msg?.finished) {
-                        if(msg?.success === true)  playSuccessNotificationSound();
+                        if (msg?.success === true) playSuccessNotificationSound();
                         return true;
                     }
                 }
@@ -397,7 +419,7 @@ const Dashboard = () => {
                                         ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
                                     });
                                 });
-                            }, reconnection)
+                            }, reconnection);
                         }
                     }).catch((e) => {
                     setSetup((prev) => {
@@ -414,21 +436,23 @@ const Dashboard = () => {
         }).catch((e) => {
             setLoading(false);
             setBuildStatus((prev) => {
-                prev.ERRORS.unshift(e?.message || 'Unknown Exception while building...');
+                const array = prev?.ERRORS ?? [];
+                array.unshift(e?.message || 'Unknown Exception while building...');
                 return ({
                     ...prev,
-                    ERRORS: prev.ERRORS
+                    ERRORS: array
                 });
             });
         });
     }
+
     function start() {
         setSetup({});
-        setTransferData({})
-        setTransferMessages({})
+        setTransferData({});
+        setTransferMessages({});
         setFinished(false);
-        setFinalSummary([])
-        setTransferIndex(0)
+        setFinalSummary([]);
+        setTransferIndex(0);
         stepperRef.current.setActiveStep(0);
         if (!ready) {
             toast.current.show({
@@ -465,7 +489,7 @@ const Dashboard = () => {
         }));
 
         connect_wifi('INTERNET', (m) => {
-            if (m.type === 'WIFI-CONNECaT') {
+            if (m.type === 'WIFI-CONNECT') {
                 let msg = JSON.parse(m.message);
                 console.log(msg);
                 setSetup((prev) => {
@@ -496,7 +520,7 @@ const Dashboard = () => {
                                 INTERNET_CONNECTION_MESSAGES: prev.INTERNET_CONNECTION_MESSAGES
                             });
                         });
-                    }, build)
+                    }, build);
 
                 }
             }).catch((e) => {
@@ -508,17 +532,19 @@ const Dashboard = () => {
                     INTERNET_CONNECTION_MESSAGES: prev.INTERNET_CONNECTION_MESSAGES
                 });
             });
-            playErrorNotificationSound()
+            playErrorNotificationSound();
             setLoading(false);
         });
 
     }
+
     function checkConfirmChangesArgs() {
-        if(!confirmChanges) {
+        if (!confirmChanges) {
+            playErrorNotificationSound()
             confirmDialog({
-                group: "headless",
+                group: 'headless',
                 breakpoints: { '1100px': '75vw', '960px': '100vw' },
-                position: 'center',
+                position: 'center'
             });
         }
     }
@@ -527,12 +553,13 @@ const Dashboard = () => {
     return (
         <div className="grid fadeIn">
             <Toast ref={toast} />
-            <TimeoutsDialog timeoutsRef={timeoutsRef} updateInterval={1}/>
+            <TimeoutsDialog timeoutsRef={timeoutsRef} updateInterval={10} />
             <ConfirmDialog
                 group="headless"
                 content={({ headerRef, contentRef, footerRef, hide, message }) => (
                     <div className="flex flex-column align-items-center p-5 surface-overlay border-round">
-                        <div className="border-circle bg-primary inline-flex justify-content-center align-items-center h-6rem w-6rem -mt-8">
+                        <div
+                            className="border-circle bg-primary inline-flex justify-content-center align-items-center h-6rem w-6rem -mt-8">
                             <i className="pi pi-exclamation-triangle text-5xl"></i>
                         </div>
                         <span className="font-bold text-2xl block mb-2 mt-4" ref={headerRef}>
@@ -579,29 +606,55 @@ const Dashboard = () => {
                     </div>
                 )}
             />
-            <Dialog header={() => (
-                <>
-                    <div>
-                        <i className="pi pi-exclamation-triangle text-xl text-yellow-600"
-                           style={{ marginRight: '8px' }} />
-                        <div className={'text-2xl'} style={{ display: 'inline', margin: 0 }}>Docker Pipeline</div>
-                    </div>
+            <ConfirmDialog
+                closable={false}
+                group="notReady"
+                visible={readyDialogVisible}
+                content={({ headerRef, contentRef, footerRef, hide, message }) => (
+                    <div className="flex flex-column align-items-center p-5 surface-overlay border-round">
+                        <div
+                            className="border-circle bg-red-600 inline-flex justify-content-center align-items-center h-6rem w-6rem -mt-8">
+                            <i className="pi pi-ban text-5xl"></i>
+                        </div>
+                        <span className="font-bold text-2xl block mb-2 mt-4" ref={headerRef}>
+                Docker Pipeline
+            </span>
+                        <div className="p-4 rounded-lg shadow-md" ref={contentRef}>
+                            <p className="text-lg">
+                                <strong>The Docker pipeline is not ready to be used.</strong>
+                                <br />The XDASH Docker pipeline setup is incomplete. Please verify and finalize all
+                                configuration steps before continuing to ensure proper functionality.
+                            </p>
+                            <div className="mt-2">
+                                <p className="text-lg">
+                                    <strong>Missing Configuration Details:</strong>
+                                </p>
+                                <code className="list-disc list-inside text-base ml-5">
+                                    {response}
+                                </code>
+                            </div>
+                            <p className="mt-4 text-lg font-medium text-red-600">
+                                If you need assistance, refer to the <a onClick={() => router.push('/documentation')}
+                                                                        className="text-primary"
+                                                                        style={{ cursor: 'pointer' }}>setup
+                                documentation</a> or contact support.
+                            </p>
 
-                </>
-            )} footer={() => response ? (
-                <Tag severity={'warning'} value={response} />
-            ) : null} modal={true} visible={readyDialogVisible} onHide={() => {
-                setReadyDialogVisible(false);
-                setReadyLock(true);
-            }}
-                    position={'right'}
-                    style={{ width: '60vw' }} closable={true} draggable={false} resizable={false}>
-                <p className="m-0 text-base">
-                    The Docker pipeline is not ready to be used. It appears that the full setup for the XDASH Docker
-                    pipeline has not been completed yet. Please ensure all configuration steps are finalized before
-                    proceeding. If you need assistance, refer to the setup documentation or contact support.
-                </p>
-            </Dialog>
+                        </div>
+                        <div className="flex align-items-center gap-2 mt-4" ref={footerRef}>
+                            <Button
+                                outlined={true}
+                                label="Okay"
+                                onClick={(event) => {
+                                    setReadyDialogVisible(false);
+                                    setReadyLock(true);
+                                }}
+                                className="w-8rem"
+                            ></Button>
+                        </div>
+                    </div>
+                )}
+            />
             <div className="col-12 lg:col-6">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
@@ -651,9 +704,9 @@ const Dashboard = () => {
                                         });
                                     });
                                 }
-                                stepperRef.current.setActiveStep(0)
-                                setSetup({})
-                                setFinished(false)
+                                stepperRef.current.setActiveStep(0);
+                                setSetup({});
+                                setFinished(false);
                                 setSelectedDevices(e.value.filter(e => e?.status === 'CONNECTED'));
                             }} value={selectedDevices} options={devices} optionLabel="server" display="chip"
                                          placeholder="Select Machines" itemTemplate={template} className="w-full" />
@@ -669,67 +722,71 @@ const Dashboard = () => {
                                         </div>
                                         <div className={'col-12 lg:col-6'}>
                                             <div className="flex flex-column gap-2">
-                                            <label htmlFor="ARCHITECTURE" className={'text-sm'}>Architecture</label>
-                                            <Dropdown id={"ARCHITECTURE"} value={additionalArguments?.ARCHITECTURE} onChange={(e) => {
-                                                setAdditionalArguments((prev) => {
-                                                    return ({
-                                                        ...prev,
-                                                        ARCHITECTURE: e.value
-                                                    });
-                                                });
-                                            }} valueTemplate={archTemplate} itemTemplate={archTemplate}
-                                                      options={['X86_LINUX', 'ARM64_LINUX', 'ARM_V7_LINUX', 'ARM_V6_LINUX', 'ARM_V6_LINUX', 'POWERPC_LINUX', 'S390X_LINUX', 'ARM64_WINDOWS', 'X86_WINDOWS', 'ARM_V7_WINDOWS', 'X86_MACOS', 'ARM64_MACOS']}
-                                                      disabled={!isConnected || loading} className={'w-full'}
-                                                      placeholder={'There is no architecture configured.'} />
+                                                <label htmlFor="ARCHITECTURE" className={'text-sm'}>Architecture</label>
+                                                <Dropdown id={'ARCHITECTURE'} value={additionalArguments?.ARCHITECTURE}
+                                                          onChange={(e) => {
+                                                              setAdditionalArguments((prev) => {
+                                                                  return ({
+                                                                      ...prev,
+                                                                      ARCHITECTURE: e.value
+                                                                  });
+                                                              });
+                                                          }} valueTemplate={archTemplate} itemTemplate={archTemplate}
+                                                          options={['X86_LINUX', 'ARM64_LINUX', 'ARM_V7_LINUX', 'ARM_V6_LINUX', 'ARM_V6_LINUX', 'POWERPC_LINUX', 'S390X_LINUX', 'ARM64_WINDOWS', 'X86_WINDOWS', 'ARM_V7_WINDOWS', 'X86_MACOS', 'ARM64_MACOS']}
+                                                          disabled={!isConnected || loading} className={'w-full'}
+                                                          placeholder={'There is no architecture configured.'} />
                                             </div>
                                         </div>
                                         <div className={'col-12 lg:col-6'}>
                                             <div className="flex flex-column gap-2">
                                                 <label htmlFor="FLASH_TYPE" className={'text-sm'}>Flash Type</label>
-                                                <ToggleButton disabled={!isConnected || loading} onLabel={"Hard Flash"} offLabel={"Light Flash"} checked={additionalArguments?.FLASH_TYPE === 'HARD'} onChange={(e) => {
+                                                <ToggleButton disabled={!isConnected || loading} onLabel={'Hard Flash'}
+                                                              offLabel={'Light Flash'}
+                                                              checked={additionalArguments?.FLASH_TYPE === 'HARD'}
+                                                              onChange={(e) => {
+                                                                  if (!confirmChanges) return checkConfirmChangesArgs();
+                                                                  setAdditionalArguments((prev) => {
+                                                                      return ({
+                                                                          ...prev,
+                                                                          FLASH_TYPE: e.value ? 'HARD' : 'LIGHT'
+                                                                      });
+                                                                  });
+                                                              }} />
+                                            </div>
+                                        </div>
+                                        <div className={'col-12 lg:col-6'}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="CONTAINER_NAME" className={'text-sm'}>Container</label>
+                                                <InputText id={'CONTAINER_NAME'} onChange={(e) => {
                                                     if (!confirmChanges) return checkConfirmChangesArgs();
                                                     setAdditionalArguments((prev) => {
                                                         return ({
                                                             ...prev,
-                                                            FLASH_TYPE: e.value ? "HARD" : "LIGHT"
+                                                            CONTAINER_NAME: e.target.value
                                                         });
                                                     });
-                                                }} />
+                                                }} value={additionalArguments?.CONTAINER_NAME}
+                                                           disabled={!isConnected || loading} className={'w-full'}
+                                                           placeholder={'There is no container name configured.'} />
                                             </div>
                                         </div>
-                                            <div className={'col-12 lg:col-6'}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="CONTAINER_NAME" className={'text-sm'}>Container</label>
-                                                    <InputText id={'CONTAINER_NAME'} onChange={(e) => {
-                                                        if (!confirmChanges) return checkConfirmChangesArgs();
-                                                        setAdditionalArguments((prev) => {
-                                                            return ({
-                                                                ...prev,
-                                                                CONTAINER_NAME: e.target.value
-                                                            });
+                                        <div className={'col-12 lg:col-6 '}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image</label>
+                                                <InputText id={'IMAGE_NAME'} onChange={(e) => {
+                                                    if (!confirmChanges) return checkConfirmChangesArgs();
+                                                    setAdditionalArguments((prev) => {
+                                                        return ({
+                                                            ...prev,
+                                                            IMAGE_NAME: e.target.value
                                                         });
-                                                    }} value={additionalArguments?.CONTAINER_NAME}
-                                                               disabled={!isConnected || loading} className={'w-full'}
-                                                               placeholder={'There is no container name configured.'} />
-                                                </div>
-                                            </div>
-                                            <div className={'col-12 lg:col-6 '}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image</label>
-                                                    <InputText id={'IMAGE_NAME'} onChange={(e) => {
-                                                        if (!confirmChanges) return checkConfirmChangesArgs();
-                                                        setAdditionalArguments((prev) => {
-                                                            return ({
-                                                                ...prev,
-                                                                IMAGE_NAME: e.target.value
-                                                            });
-                                                        });
-                                                    }} value={additionalArguments?.IMAGE_NAME}
-                                                               disabled={!isConnected || loading} className={'w-full'}
-                                                               placeholder={'There is no image name configured.'} />
-                                                </div>
+                                                    });
+                                                }} value={additionalArguments?.IMAGE_NAME}
+                                                           disabled={!isConnected || loading} className={'w-full'}
+                                                           placeholder={'There is no image name configured.'} />
                                             </div>
                                         </div>
+                                    </div>
 
                                 </AccordionTab>
                             </Accordion>
@@ -840,7 +897,7 @@ const Dashboard = () => {
                                     ))
                                 }
                                 <TabPanel className={'w-full'}
-                                          header={"Information"}
+                                          header={'Information'}
                                           leftIcon={'mr-2 pi pi-info-circle'}>
                                     <TerminalDisplay
                                         messages={reconnectionData?.messages ?? []}
@@ -860,7 +917,7 @@ const Dashboard = () => {
                                                 DEVICES_RECONNECTION_SUCCESS: true
                                             });
                                         });
-                                        transfer_import()
+                                        transfer_import();
                                     }} />
                         </StepperPanel>
                         <StepperPanel header="Transport & Execute">
@@ -879,7 +936,7 @@ const Dashboard = () => {
                                     ))
                                 }
                                 <TabPanel className={'w-full'}
-                                          header={"Information"}
+                                          header={'Information'}
                                           leftIcon={'mr-2 pi pi-info-circle'}>
                                     <TerminalDisplay
                                         messages={transferData?.messages ?? []}
@@ -900,7 +957,7 @@ const Dashboard = () => {
                                     severity={'warning'} label="Restart?"
                                     icon="pi pi-sync" iconPos="right"
                                     onClick={() => {
-                                        start()
+                                        start();
                                     }} />
                         </StepperPanel>
                     </Stepper>

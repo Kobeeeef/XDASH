@@ -284,7 +284,7 @@ const Dashboard = () => {
             </div>
             <div className="col-12">
                 <div className="card mb-0">
-                    <ToggleButton className={'w-full'} disabled={viewerLoading} checked={statusData?.isViewerOpen}
+                    <ToggleButton className={'w-full'} disabled={viewerLoading || !statusData?.connected} checked={statusData?.isViewerOpen}
                                   onClick={() => {
                                       setViewerLoading(true);
                                       sendMessageAndWaitForCondition({ type: 'XTABLES-VIEWER-TOGGLE' }, (m) => m.type === 'XTABLES-DATA')
