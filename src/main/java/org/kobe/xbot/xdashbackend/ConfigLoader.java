@@ -20,7 +20,7 @@ public class ConfigLoader {
     public static final long DEFAULT_RETRY_TIMEOUT = 4000;
     public static final String DEFAULT_SERVERS_PASSWORD = "I<3Robots!";
     public static final String DEFAULT_SERVERS_USER = "xbot";
-    private static final String DEFAULT_DOCKER_IMAGES_DIRECTORY = "XDASH-DOCKER-IMAGES";
+    private static final String DEFAULT_DOCKER_IMAGES_DIRECTORY = "xdash-docker-images";
 
     public static final String DEFAULT_SERVER_PASSWORD = "I<3Robotics!";
     public static final String DEFAULT_ROBORIO_HOSTNAME = "roboRIO-488-FRC";
