@@ -73,20 +73,4 @@ public class DockerManager {
     public static File buildTARImage(String dockerfileDirPath, String imageName, String tarDirectory, Consumer<DockerProgress> progressConsumer, Architecture architecture) {
         return buildAndSaveImageAsTarWithBuildx(dockerfileDirPath, imageName + ":latest", (tarDirectory + "/" + imageName + ".tar").toLowerCase(), progressConsumer, architecture);
     }
-
-
-//    public static void main(String[] args) {
-//        DockerManager dockerManager = new DockerManager();
-//
-//        // Example usage with progress updates
-//        String dockerfileDir = "docker";  // Directory where your Dockerfile is located
-//        String imageName = "test";  // Name for the image
-//
-//
-//        // Print progress to console
-//        File file = dockerManager.buildTARImage(dockerfileDir, imageName, "XDASH-DOCKER-IMAGES", (a) -> {
-//            System.out.println(a.getMessage());
-//        }, Architecture.X86_LINUX);
-//        System.out.println(file.getAbsolutePath());
-//    }
 }

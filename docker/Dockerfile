@@ -8,6 +8,6 @@ WORKDIR /app
 COPY . .
 # Install any necessary Python dependencies (none in this case)
 # RUN pip install --no-cache-dir -r requirements.txt
-
+RUN pip install opencv-python
 # Command to run the Python script
 CMD ["python", "test.py"]

@@ -229,6 +229,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 ready = false;
                 response = "The robot WiFi SSID has not been configured.";
             }
+            if (XdashbackendApplication.getConfigLoader().getProjectDirectory() == null || XdashbackendApplication.getConfigLoader().getProjectDirectory().isEmpty()) {
+                ready = false;
+                response = "The project directory has not been configured.";
+            }
             session.sendMessage(new TextMessage(new Message(new DockerPageReturn(gson.toJson(dataList), ready, response, XdashbackendApplication.getConfigLoader().getProjectDirectory()), message.getType()).toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
             String server = message.getMessage();
