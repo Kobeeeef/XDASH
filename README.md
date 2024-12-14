@@ -39,6 +39,9 @@ This is a crucial step for the real-time discovery of your devices and seamless 
 ### Device Service Daemon Control
 ![image](https://github.com/user-attachments/assets/37684485-4cb7-44a3-8df8-ca0f330cba5c)
 
+### Docker Pipeline
+https://github.com/user-attachments/assets/396c6dd6-3e50-4ae2-b6ee-dce1ab0b9516
+
 ### Realtime Detailed Systemd Logging
 ![image](https://github.com/user-attachments/assets/206e2ebf-a82a-465d-8d28-c39bfc447b06)
 
