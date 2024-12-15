@@ -45,6 +45,9 @@ This is a crucial step for the real-time discovery of your devices and seamless 
 ### Docker Pipeline
 https://github.com/user-attachments/assets/396c6dd6-3e50-4ae2-b6ee-dce1ab0b9516
 
+### Integrated Multi-File, Multi-Machine Syntax Editor
+https://github.com/user-attachments/assets/72b03a28-6579-48de-9efa-92aaedd70e82
+
 ### Realtime Detailed Systemd Logging
 ![image](https://github.com/user-attachments/assets/206e2ebf-a82a-465d-8d28-c39bfc447b06)
 
