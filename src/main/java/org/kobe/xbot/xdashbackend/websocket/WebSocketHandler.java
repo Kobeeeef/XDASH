@@ -258,8 +258,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     try {
                         SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
                         if (sshHostAddress != null) {
-                            App.openRemoteFileEditor(sshHostAddress, deviceFileEditorRequest.getRemoteFilePath());
-                            session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "File editor started.").setFinished(false), message.getType()).toJSON()));
+                            if(sshHostAddress.forceIsConnected()) {
+                                App.openRemoteFileEditor(sshHostAddress, deviceFileEditorRequest.getRemoteFilePath());
+                                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "File editor started.").setFinished(false), message.getType()).toJSON()));
+                            } else {
+                                failures++;
+                                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The session is not connected.").setFinished(false), message.getType()).toJSON()));
+                            }
                         } else {
                             failures++;
                             session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The server does not exist.").setFinished(false), message.getType()).toJSON()));
