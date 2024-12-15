@@ -27,7 +27,13 @@ public class Utilities {
             return null;
         }
     }
-
+    public static String getFileExtension(String filePath) {
+        int dotIndex = filePath.lastIndexOf('.');
+        if (dotIndex > 0) {
+            return filePath.substring(dotIndex + 1);
+        }
+        return "";  // No extension
+    }
     public static boolean createTar(String sourcePath, String outputTarFile, Consumer<TransferProgress> consumer) {
         try {
             ProcessBuilder pb;

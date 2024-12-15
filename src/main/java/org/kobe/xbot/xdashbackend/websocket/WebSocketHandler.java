@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.LatencyInfo;
 import org.kobe.xbot.Utilities.ResponseStatus;
+import org.kobe.xbot.xdashbackend.FileEditor.App;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
@@ -257,7 +258,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     try {
                         SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
                         if (sshHostAddress != null) {
-                            FileEditor.openRemoteFileEditor(sshHostAddress, deviceFileEditorRequest.getRemoteFilePath());
+                            App.openRemoteFileEditor(sshHostAddress, deviceFileEditorRequest.getRemoteFilePath());
                             session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "File editor started.").setFinished(false), message.getType()).toJSON()));
                         } else {
                             failures++;
