@@ -26,6 +26,7 @@ This is a crucial step for the real-time discovery of your devices and seamless 
 
 # Snapshots
 <br>
+
 ### Login Page
 ![image](https://github.com/user-attachments/assets/ad35a999-6a32-414c-bf05-e42bc50ef42a)
 
