@@ -70,7 +70,7 @@ public class EditorView extends RSyntaxTextArea implements KeyListener{
             case "Purple" : purpleTheme.apply(this);
                 break;
         }
-        this.setFont(app.editorFont);
+        this.setFont(new Font(FlatJetBrainsMonoFont.FAMILY, Font.PLAIN, fontSize));
     }
 
 

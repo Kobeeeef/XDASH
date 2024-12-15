@@ -32,7 +32,6 @@ public class App extends JFrame {
     public JMenuItem darkThemeItem, lightThemeItem, monokaiItem, eclipseItem, nightItem, redItem, blueItem, purpleItem,
             javaItem, pythonItem, cItem, jsItem, exitItem;
     public boolean darkTheme = true;
-    public Font editorFont;
     private final ChannelSftp channelSftp;
     private final String remoteFilePath;
     private final String hostname;
@@ -57,6 +56,7 @@ public class App extends JFrame {
         setVisible(true);
         init();
         addComponent();
+        setSyntaxForFileExtension(remoteFilePath);
     }
     private void saveFileWithSudo() {
         try {
@@ -76,7 +76,7 @@ public class App extends JFrame {
             ChannelExec channelExec = (ChannelExec) channelSftp.getSession().openChannel("exec");
             channelExec.setCommand("echo \"" + password + "\" | sudo -S mv " + tempRemotePath + " " + remoteFilePath);
             channelExec.setInputStream(null);
-            channelExec.setErrStream(System.err);
+            channelExec.setErrStream(null);
 
             InputStream execInput = channelExec.getInputStream();
             channelExec.connect();
@@ -87,7 +87,7 @@ public class App extends JFrame {
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
             }
-
+            reader.close();
             channelExec.disconnect();
 
             if (channelExec.getExitStatus() != 0) {
@@ -208,7 +208,6 @@ public class App extends JFrame {
     }
 
     public void init() {
-        editorFont = new Font(FlatJetBrainsMonoFont.FAMILY, Font.PLAIN, 18);
         editorView = new EditorView(this);
 
         toolPanel = new JPanel();
@@ -248,8 +247,8 @@ public class App extends JFrame {
             try {
                 darkTheme = true;
                 UIManager.setLookAndFeel(new FlatMacDarkLaf());
+                editorView.setColorScheme("Monokai");
                 SwingUtilities.updateComponentTreeUI(this);
-                editorView.setFont(editorFont);
             } catch (UnsupportedLookAndFeelException ex) {
                 throw new RuntimeException(ex);
             }
@@ -259,8 +258,8 @@ public class App extends JFrame {
             try {
                 darkTheme = false;
                 UIManager.setLookAndFeel(new FlatMacLightLaf());
+                editorView.setColorScheme("Eclipse");
                 SwingUtilities.updateComponentTreeUI(this);
-                editorView.setFont(editorFont);
             } catch (UnsupportedLookAndFeelException ex) {
                 throw new RuntimeException(ex);
             }
@@ -337,18 +336,21 @@ public class App extends JFrame {
         FlatMacDarkLaf.setup();
         FlatJetBrainsMonoFont.install();
         FlatInterFont.install();
-
+        if (session == null || !session.isConnected()) {
+            throw new RuntimeException("This session is not connected.");
+        }
         UIManager.put("defaultFont", new Font(FlatInterFont.FAMILY, Font.PLAIN, 13));
         SwingUtilities.invokeLater(() -> {
             try {
                 if (session == null || !session.isConnected()) {
-                    JOptionPane.showMessageDialog(null, "This session is not connected.", "Session is not connected!", JOptionPane.ERROR_MESSAGE);
-                    return;
+                    logger.severe("This session is not connected.");
+                     return;
                 }
                 ChannelSftp channelSftp = (ChannelSftp) session.openChannel("sftp");
                 channelSftp.connect();
                 new App(channelSftp, remoteFilePath, sshHostAddress.getHostname(), sshHostAddress.getPassword());
             } catch (Exception e) {
+                logger.severe("Failed to open remote file editor: " + e.getMessage());
                 JOptionPane.showMessageDialog(null, "Failed to open remote file editor: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
