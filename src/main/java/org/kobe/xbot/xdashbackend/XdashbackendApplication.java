@@ -1,6 +1,10 @@
 package org.kobe.xbot.xdashbackend;
 
 
+import com.formdev.flatlaf.fonts.inter.FlatInterFont;
+import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
@@ -39,7 +43,10 @@ public class XdashbackendApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(XdashbackendApplication.class, args);
-
+        FlatMacDarkLaf.setup();
+        FlatMacLightLaf.setup();
+        FlatJetBrainsMonoFont.install();
+        FlatInterFont.install();
         xJmDNS = new XJmDNS();
         xJmDNS.addServiceTypeListener(new ServiceTypeListener() {
             @Override
@@ -161,6 +168,7 @@ public class XdashbackendApplication {
             }
 
         });
+        main.setDaemon(true);
         main.start();
         try {
             System.setProperty("java.awt.headless", "false");

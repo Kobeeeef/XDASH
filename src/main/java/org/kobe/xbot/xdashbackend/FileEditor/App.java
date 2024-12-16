@@ -330,9 +330,6 @@ public class App extends JFrame {
     }
     public static void openRemoteFileEditor(SSHHostAddress sshHostAddress, String remoteFilePath) {
         Session session = sshHostAddress.getSession();
-        FlatMacDarkLaf.setup();
-        FlatJetBrainsMonoFont.install();
-        FlatInterFont.install();
         if (session == null || !session.isConnected()) {
             throw new RuntimeException("This session is not connected.");
         }

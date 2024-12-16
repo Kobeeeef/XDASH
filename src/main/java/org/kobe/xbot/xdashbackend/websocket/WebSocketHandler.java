@@ -69,12 +69,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
             XTablesViewer viewer = XdashbackendApplication.xTablesViewerRef.get();
             if (viewer != null) {
                 if (viewer.isVisible()) {
-                    viewer.setVisible(false);
+                    viewer.hideViewer();
                 } else {
-                    viewer.setVisible(true);
-                    viewer.toFront();
-                    viewer.setAlwaysOnTop(true);
-                    viewer.setAlwaysOnTop(false);
+                   viewer.showViewer();
                 }
                 session.sendMessage(new TextMessage(new Message(new StatusCode(true), "XTABLES-VIEWER-TOGGLE").toJSON()));
             } else {

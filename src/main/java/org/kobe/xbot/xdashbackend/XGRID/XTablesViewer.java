@@ -1,219 +1,112 @@
 package org.kobe.xbot.xdashbackend.XGRID;
 
 
-
+import com.formdev.flatlaf.fonts.inter.FlatInterFont;
+import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.ResponseStatus;
 import org.kobe.xbot.Utilities.Utilities;
 import org.kobe.xbot.Utilities.XTablesData;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Map;
+import java.io.InputStream;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
-@SuppressWarnings("ExtractMethodRecommender")
 public class XTablesViewer extends JFrame {
-    private final JTree treeView;
-    private final DefaultMutableTreeNode rootNode;
-    public XTablesData cache;
-    private ExecutorService threadPool = Executors.newCachedThreadPool();
-    private final long cacheFetchCooldown = 5000;
-    private boolean isCacheReady = false;
-    private final Thread cacheThread;
+    private static final XDashLogger logger = XDashLogger.getLogger();
+    public XTablesDropdownViewer dropdownViewer;
+    public JPanel toolPanel;
+    public String currentFileParentPath;
+    public JMenuBar menuBar;
+    public JMenu settingsMenu, themeItem;
+    public JMenuItem darkThemeItem, lightThemeItem,
+            exitItem;
+    private final XTablesData cache;
+    private JButton reloadButton, addButton, rebootButton;
     private final XTablesClient client;
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private JLabel statusLabel;
-    private JButton rebootButton;
-    private JButton reloadAllButton;
+    private Thread cacheThread;
+    private final Theme theme;
     public XTablesViewer(XTablesClient client) {
-        setTitle("XTables Viewer");
-        setSize(1000, 500);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Fullscreen
+        this.client = client;
+        this.cache = new XTablesData();
+        InputStream nightStream = getClass().getResourceAsStream("/themes/monokai.xml");
+        try {
+            theme = Theme.load(nightStream);
+        }  catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        setSize(900, 800);
+        setTitle("XDASH - XTABLES");
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        setLayout(new BorderLayout());
+        setLocationRelativeTo(null);
         try {
             Image icon = ImageIO.read(Objects.requireNonNull(getClass().getResource("/icon.png")));
             setIconImage(icon);
         } catch (IOException e) {
-            System.err.println("Icon image not found.");
+            logger.severe("Icon image not found in file editor.");
         }
-        // Root node and tree setup
-        rootNode = new DefaultMutableTreeNode();
-        treeView = new JTree(rootNode);
-        treeView.setRootVisible(false);
-
-        // Create a header for columns
-        String[] columnNames = {"Key", "Value"};
-
-
-        // Set the layout to display both header and tree
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(new JScrollPane(treeView), BorderLayout.CENTER);
-        add(mainPanel, BorderLayout.CENTER);
-
-        JPanel controlPanel = createControlPanel();
-        add(controlPanel, BorderLayout.SOUTH);
+        init();
+        addComponent();
+        setStatus(client.getSocketClient().isConnected ? "CONNECTED" : "DISCONNECTED");
+        cacheThread = new Thread(this::enableCache);
+        cacheThread.setDaemon(true);
+        cacheThread.start();
+        ThreadFactory daemonThreadFactory = runnable -> {
+            Thread thread = new Thread(runnable);
+            thread.setDaemon(true); // Set thread as daemon
+            return thread;
+        };
+        ScheduledExecutorService daemonScheduler = Executors.newScheduledThreadPool(1, daemonThreadFactory);
+        daemonScheduler.scheduleAtFixedRate(() -> {
+            setStatus(client.getSocketClient().isConnected ? "CONNECTED" : "DISCONNECTED");
+            if(client.getSocketClient().isConnected) {
+                rebootButton.setEnabled(true);
+                addButton.setEnabled(true);
+                reloadButton.setEnabled(true);
+            } else {
+                rebootButton.setEnabled(false);
+                addButton.setEnabled(false);
+                reloadButton.setEnabled(false);
+            }
+        }, 0, 200, TimeUnit.MILLISECONDS);
+        setVisible(false);
         try {
+
             UIManager.setLookAndFeel(new FlatMacDarkLaf());
             SwingUtilities.updateComponentTreeUI(this);
         } catch (UnsupportedLookAndFeelException ex) {
             throw new RuntimeException(ex);
         }
-        this.client = client;
-        cacheThread = new Thread(this::enableCache);
-        cacheThread.setDaemon(true);
-        cacheThread.start();
     }
 
 
-    private JPanel createControlPanel() {
-        JTextField keyField = new JTextField(15);
-        JTextField valueField = new JTextField(15);
-        statusLabel = new JLabel();
-        statusLabel.setOpaque(true);
-        statusLabel.setBackground(Color.WHITE);
-        JLabel connectionStatus = new JLabel("Status: " + (client != null ? (client.getSocketClient().isConnected ? "Connected" : "Disconnected") : "Unknown"));
-        connectionStatus.setOpaque(true);
-        connectionStatus.setBackground((client != null ? client.getSocketClient().isConnected ? Color.GREEN : Color.RED : Color.WHITE));
-        Thread thread = getThread(connectionStatus);
-        thread.start();
-        JButton updateButton = new JButton("Update Value");
-        updateButton.addActionListener(e -> {
-            String key = keyField.getText().trim();
-            String value = valueField.getText().trim();
-            if (!key.isEmpty() && Utilities.validateKey(key, false)) {
-                try {
-                    ResponseStatus status = client.putRaw(key, value).complete();
-                    keyField.setText("");
-                    valueField.setText("");
-                    if (status == ResponseStatus.OK) {
-                        statusLabel.setText("Value Updated");
-                        statusLabel.setBackground(Color.GREEN);
-                    } else {
-                        statusLabel.setText("Failed to Update Value");
-                        statusLabel.setBackground(Color.RED);
-                    }
-                } catch (Exception ei) {
-                    valueField.setText("");
-                    statusLabel.setText(ei.getMessage());
-                    statusLabel.setBackground(Color.RED);
-                }
-            } else {
-                statusLabel.setText("Invalid Key");
-                statusLabel.setBackground(Color.RED);
-            }
-        });
 
-        reloadAllButton = new JButton("Reload All");
-        reloadAllButton.addActionListener(e -> {
-            try {
-                String newRawJSON = client.getRawJSON().complete();
-                cache.updateFromRawJSON(newRawJSON);
-                refreshTree();
-                statusLabel.setText("Reloaded All Data");
-                statusLabel.setBackground(Color.GREEN);
-            } catch (Exception ei) {
-                statusLabel.setText(ei.getMessage());
-                statusLabel.setBackground(Color.RED);
-            }
-        });
-        rebootButton = new JButton("Reboot");
-        rebootButton.setEnabled(false);
-        rebootButton.addActionListener(e -> {
-            ResponseStatus responseStatus = client.rebootServer().complete();
-            if (responseStatus == ResponseStatus.OK) {
-                statusLabel.setText("Rebooting Server");
-                statusLabel.setBackground(Color.YELLOW);
-            } else {
-                statusLabel.setText("Failed to Reboot Server");
-                statusLabel.setBackground(Color.RED);
-            }
-
-        });
-        JPanel panel = new JPanel();
-        panel.add(statusLabel);
-        panel.add(new JLabel("Key:"));
-        panel.add(keyField);
-        panel.add(new JLabel("Value:"));
-        panel.add(valueField);
-        panel.add(updateButton);
-        panel.add(reloadAllButton);
-        panel.add(rebootButton);
-        panel.add(connectionStatus);
-        return panel;
-    }
-
-    private Thread getThread(JLabel connectionStatus) {
-        Thread thread = new Thread(() -> {
-            while (true) {
-                connectionStatus.setText("Status: " + (client != null ? (client.getSocketClient().isConnected ? "Connected" : "Disconnected") : "Unknown"));
-                connectionStatus.setBackground((client != null ? client.getSocketClient().isConnected ? Color.GREEN : Color.RED : Color.WHITE));
-                if(rebootButton != null) rebootButton.setEnabled(client != null && client.getSocketClient().isConnected);
-                if(reloadAllButton != null) reloadAllButton.setEnabled(client != null && client.getSocketClient().isConnected);
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        thread.setDaemon(true);
-        return thread;
-    }
-
-    private void loadData(String parentKey) {
-        rootNode.removeAllChildren(); // Clear existing nodes
-        loadNodeData(cache, parentKey, rootNode); // Populate root node
-        ((DefaultTreeModel) treeView.getModel()).reload();
-    }
-
-    private void loadNodeData(XTablesData data, String parentKey, DefaultMutableTreeNode parentNode) {
-        Map<String, XTablesData> entries = data.getTablesMap();
-        if (entries != null) {
-            for (Map.Entry<String, XTablesData> entry : entries.entrySet()) {
-                String key = entry.getKey();
-                XTablesData childData = entry.getValue();
-
-                String[] keyParts = key.split("\\.");
-                String displayKey = keyParts[keyParts.length - 1];
-
-                DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(displayKey + " : " + childData.getValue());
-                parentNode.add(childNode);
-
-                loadNodeData(childData, parentKey.isEmpty() ? key : parentKey + "." + key, childNode);
-            }
+    private void loadCache() {
+        try {
+            String rawJSON = client.getRawJSON().complete();
+            cache.updateFromRawJSON(rawJSON);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Failed to Load Cache: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
-
-    private void updateValue(String key, String value) {
-        cache.put(key, value);
-    }
-
-    private void updateAllFromJSON(String json) {
-        cache.updateFromRawJSON(json);
-    }
-
-    private void refreshTree() {
-        loadData("");
-    }
-
     private void enableCache() {
         try {
-            initializeCache();
+            loadCache();
             if (subscribeToCacheUpdates()) {
-                subscribeToZMQUpdates();
                 System.out.println("Cache is now setup and ready to use.");
             } else {
                 System.out.println("Failed to subscribe to ANY update, NON OK status returned from server.");
@@ -222,76 +115,195 @@ public class XTablesViewer extends JFrame {
             System.out.println("Failed to initialize cache or subscribe to updates. Error:\n" + e.getMessage());
         }
     }
-
     private boolean subscribeToCacheUpdates() {
         ResponseStatus responseStatus = client.subscribeUpdateEvent((updateEvent) -> {
             cache.put(updateEvent.getKey(), updateEvent.getValue());
-            updateSpecificNode(updateEvent.getKey(), updateEvent.getValue());
+            dropdownViewer.updateNode(updateEvent.getKey(), updateEvent.getValue());
         }).complete();
         if (responseStatus.equals(ResponseStatus.OK)) System.out.println("Cache is now subscribed for updates.");
-        isCacheReady = responseStatus.equals(ResponseStatus.OK);
-        return isCacheReady;
+        return responseStatus.equals(ResponseStatus.OK);
     }
-    private void subscribeToZMQUpdates() {
-        client.getSocketClient().getZMQ_SUB_SOCKET().subscribe("");
-        threadPool.execute(() -> {
-            while(!Thread.currentThread().isInterrupted()) {
-                try {
-                    String[] key_value = client.receiveNextZMQ();
-                    if(key_value.length == 2) {
-                        cache.put(key_value[0], key_value[1]);
-                        updateSpecificNode(key_value[0], key_value[1]);
-                    }
-                } catch (Exception ignored) {}
+    public void setStatus(String status) {
+        setTitle(String.format("XDASH - XTABLES - %1$s", status));
+    }
+    public void init() {
+        dropdownViewer = new XTablesDropdownViewer(this, client, cache);
+
+        toolPanel = new JPanel();
+        toolPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        menuBar = new JMenuBar();
+        settingsMenu = new JMenu("Settings", true);
+
+        themeItem = new JMenu("Theme");
+        darkThemeItem = new JMenuItem("Dark");
+        lightThemeItem = new JMenuItem("Light");
+        toolPanel.add(createControlPanel());
+
+
+        darkThemeItem.addActionListener(e -> {
+            try {
+
+                UIManager.setLookAndFeel(new FlatMacDarkLaf());
+                SwingUtilities.updateComponentTreeUI(this);
+            } catch (UnsupportedLookAndFeelException ex) {
+                throw new RuntimeException(ex);
             }
         });
 
+        lightThemeItem.addActionListener(e -> {
+            try {
+                UIManager.setLookAndFeel(new FlatMacLightLaf());
+                SwingUtilities.updateComponentTreeUI(this);
+            } catch (UnsupportedLookAndFeelException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+
+        exitItem = new JMenuItem("Close Viewer");
+        exitItem.addActionListener(e -> {
+            hide();
+        });
     }
-    private void initializeCache() {
-        String rawJSON = client.getRawJSON().complete();
-        cache = new XTablesData();
-        cache.updateFromRawJSON(rawJSON);
-        refreshTree();
+
+    private void close() {
+        try {
+            dispose();
+        } catch (Exception ec) {
+            logger.severe("Failed to close viewer: " + ec.getMessage());
+            JOptionPane.showMessageDialog(null, "Failed to close viewer: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    private void updateSpecificNode(String key, String value) {
-        DefaultMutableTreeNode currentNode = rootNode;
-        String[] keyParts = key.split("\\.");
+    public void hideViewer() {
+        this.setVisible(false);
+    }
 
-        for (int i = 0; i < keyParts.length; i++) {
-            String part = keyParts[i];
-            DefaultMutableTreeNode childNode = findChildNode(currentNode, part);
+    public void showViewer() {
+        this.setVisible(true);
+        toFront();
+        setAlwaysOnTop(true);
+        setAlwaysOnTop(false);
+        this.dropdownViewer.populateTable();
+    }
 
-            if (childNode == null) {
-                String displayValue = (i == keyParts.length - 1) ? part + " : " + value : part;
-                childNode = new DefaultMutableTreeNode(displayValue);
-                currentNode.add(childNode);
-                ((DefaultTreeModel) treeView.getModel()).nodeStructureChanged(currentNode);
+    private JPanel createControlPanel() {
+
+
+         reloadButton = new JButton("Reload Data");
+        reloadButton.addActionListener(e -> {
+            reloadButton.setEnabled(false);
+            client.getRawJSON().queue((value) -> {
+                reloadButton.setEnabled(true);
+                cache.updateFromRawJSON(value);
+                dropdownViewer.populateTable();
+            }, (ec) -> {
+                reloadButton.setEnabled(true);
+                JOptionPane.showMessageDialog(null, "Failed to reload Cache: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            });
+
+
+        });
+         addButton = new JButton("Add Data");
+        addButton.addActionListener(e -> {
+            JPanel inputPanel = new JPanel(new BorderLayout(10, 10));
+
+            // Key input field
+            JPanel keyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            keyPanel.add(new JLabel("Key:"));
+            JTextField keyField = new JTextField(20);
+            keyPanel.add(keyField);
+            inputPanel.add(keyPanel, BorderLayout.NORTH);
+
+            // RSyntaxTextArea for JSON input
+            RSyntaxTextArea valueArea = new RSyntaxTextArea(10, 40);
+            valueArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+            valueArea.setCodeFoldingEnabled(true); // Enable code folding for JSON
+            valueArea.setLineWrap(true);
+            theme.apply(valueArea);
+            // Wrap RSyntaxTextArea in an RTextScrollPane
+            RTextScrollPane scrollPane = new RTextScrollPane(valueArea);
+            scrollPane.setFoldIndicatorEnabled(true);
+            inputPanel.add(scrollPane, BorderLayout.CENTER);
+
+            // Show the dialog
+            int result = JOptionPane.showConfirmDialog(
+                    this,
+                    inputPanel,
+                    "Enter Key and JSON Value",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
+            );
+
+            // Handle the user's input
+            if (result == JOptionPane.OK_OPTION) {
+                String key = keyField.getText();
+                String value = valueArea.getText().replace("\n", "");
+                if (!key.isEmpty() && Utilities.validateKey(key, false)) {
+                    try {
+                        client.putRaw(key, value).queue((status1) -> {
+                            if (status1 != ResponseStatus.OK) {
+                                JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + status1.name(), "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        });
+
+
+                    } catch (Exception ei) {
+                        JOptionPane.showMessageDialog(null, "Exception while updating value: " + ei.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "This key is invalid.", "Error", JOptionPane.ERROR_MESSAGE);
+
+                }
             }
 
-            currentNode = childNode;
-        }
 
-        currentNode.setUserObject(getDisplayKey(key) + " : " + value);
-        ((DefaultTreeModel) treeView.getModel()).nodeChanged(currentNode);
+
+        });
+         rebootButton = new JButton("Reboot");
+        rebootButton.addActionListener(e -> {
+            rebootButton.setEnabled(false);
+            client.rebootServer().queue((value) -> {
+                rebootButton.setEnabled(true);
+                JOptionPane.showMessageDialog(null, "The server is now rebooting. Please wait.", "Server Rebooting!", JOptionPane.INFORMATION_MESSAGE);
+            }, (ec) -> {
+                rebootButton.setEnabled(true);
+                JOptionPane.showMessageDialog(null, "Failed to reboot server: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            });
+        });
+        JPanel panel = new JPanel();
+        panel.add(reloadButton);
+        panel.add(addButton);
+        panel.add(rebootButton);
+        return panel;
     }
 
-    private DefaultMutableTreeNode findChildNode(DefaultMutableTreeNode parent, String keyPart) {
-        Enumeration<TreeNode> children = parent.children();
-        while (children.hasMoreElements()) {
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-            String childKeyPart = child.getUserObject().toString().split(" : ")[0];
-            if (childKeyPart.equals(keyPart)) {
-                return child;
-            }
-        }
-        return null;
+    public void addComponent() {
+        menuBar.add(settingsMenu);
+        settingsMenu.add(themeItem);
+        settingsMenu.addSeparator();
+
+        themeItem.add(darkThemeItem);
+        themeItem.add(lightThemeItem);
+
+
+        settingsMenu.add(exitItem);
+        this.add(toolPanel, BorderLayout.NORTH);
+        this.add(dropdownViewer, BorderLayout.CENTER);
+        setJMenuBar(menuBar);
+
+        revalidate();
+        repaint();
+
+        setVisible(true);
     }
 
-    private String getDisplayKey(String key) {
-        String[] parts = key.split("\\.");
-        return parts[parts.length - 1];
-    }
+
+
+
+
+
 
 
 }

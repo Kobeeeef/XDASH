@@ -2,6 +2,8 @@ package org.kobe.xbot.xdashbackend.XGRID;
 
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import org.kobe.xbot.Client.XTablesClient;
+import org.kobe.xbot.Utilities.ResponseStatus;
+import org.kobe.xbot.Utilities.Utilities;
 import org.kobe.xbot.Utilities.XTablesData;
 
 import javax.swing.*;
@@ -21,8 +23,10 @@ public class XTablesDropdownViewer extends JPanel {
     private final XTablesData cache;
     private final JTree tree;
     private Font treeFont;
+    private final XTablesClient client;
     public XTablesDropdownViewer(JFrame parent, XTablesClient client, XTablesData cache) {
         this.cache = cache;
+        this.client = client;
         setLayout(new BorderLayout());
         treeFont = new Font(FlatJetBrainsMonoFont.FAMILY, Font.PLAIN, 18);  // Set the initial font size
 
@@ -52,11 +56,24 @@ public class XTablesDropdownViewer extends JPanel {
             public void editingStopped(ChangeEvent e) {
                 DefaultMutableTreeNode editedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
                 if (editedNode != null) {
-                    KeyValueNode kvNode = (KeyValueNode) editedNode.getUserObject();
-                    if (kvNode.isValue) {
-                        kvNode.value = tree.getCellEditor().getCellEditorValue().toString();
+                    Object userObject = editedNode.getUserObject();
+                    String key = null;
+
+                    if (userObject instanceof KeyValueNode kvNode) {
+                        key = kvNode.key.trim();
+                    } else {
+                        // Try to retrieve the key from the parent node
+                        DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) editedNode.getParent();
+                        if (parentNode != null && parentNode.getUserObject() instanceof KeyValueNode parentKvNode) {
+                            key = parentKvNode.key.trim();
+                        }
                     }
-                    onUpdate(kvNode); // Pass the full key and updated value
+
+                    if (key != null) {
+                        // If a key is found, update with the new value
+                        String value = tree.getCellEditor().getCellEditorValue().toString().trim();
+                        onUpdate(key, value); // Pass the full key and updated value
+                    }
                 }
                 populateTable(); // Refresh the tree view
             }
@@ -66,6 +83,7 @@ public class XTablesDropdownViewer extends JPanel {
                 // Handle cancel case if necessary
             }
         });
+
 
         JScrollPane scrollPane = new JScrollPane(tree);
         add(scrollPane, BorderLayout.CENTER);
@@ -104,8 +122,8 @@ public class XTablesDropdownViewer extends JPanel {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         model.setRoot(root);
 
-        tree.setRootVisible(false); // Hides the root node
-        tree.setShowsRootHandles(true); // Shows expand/collapse handles
+        tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
         model.reload(root);
         expandAllRows();
         revalidate();
@@ -118,11 +136,6 @@ public class XTablesDropdownViewer extends JPanel {
         // Start the recursive search from the root node
         updateNodeRecursive(root, key, value, model);
     }
-
-
-
-
-
 
     private void updateNodeRecursive(DefaultMutableTreeNode currentNode, String key, String value, DefaultTreeModel model) {
         String[] keyParts = key.split("\\.");
@@ -178,36 +191,7 @@ public class XTablesDropdownViewer extends JPanel {
         }
     }
 
-//    private void updateNodeRecursive(DefaultMutableTreeNode currentNode, String key, String value, DefaultTreeModel model) {
-//
-//        // Iterate through the children of the current node
-//        for (int i = 0; i < currentNode.getChildCount(); i++) {
-//            DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) currentNode.getChildAt(i);
-//            KeyValueNode kvNode = (KeyValueNode) childNode.getUserObject();
-//
-//            // If the current child node matches the target key, update its value
-//            if (kvNode.key.equals(key)) {
-//
-//                DefaultMutableTreeNode leafNode = (DefaultMutableTreeNode) childNode.getChildAt(0); // The actual value node
-//
-//                if (leafNode != null) {
-//                    KeyValueNode leafKvNode = (KeyValueNode) leafNode.getUserObject();
-//                    leafKvNode.value = value;  // Update the leaf node value
-//                    leafKvNode.isValue = true; // Ensure it's marked as a value node
-//
-//                    // Reload the updated child node (leaf node)
-//                    model.nodeChanged(leafNode); // Only reload the leaf node
-//                }
-//                break; // Once the leaf node is updated, exit the loop
-//            }
-//
-//            // Recursively check the child nodes if the key isn't found yet
-//            updateNodeRecursive(childNode, key, value, model);
-//        }
-//
-//        // If the key was not found, create and add a new node
-//
-//    }
+
 
 
     private void expandAllRows() {
@@ -246,9 +230,25 @@ public class XTablesDropdownViewer extends JPanel {
         }
     }
 
-    public void onUpdate(KeyValueNode keyValueNode) {
-        System.out.println("Full Key: " + keyValueNode.key);
-        System.out.println("Updated Value: " + keyValueNode.value);
+    public void onUpdate(String key, String value) {
+        if (!key.isEmpty() && Utilities.validateKey(key, false)) {
+            try {
+                client.putRaw(key, value).queue((status1) -> {
+                    if (status1 != ResponseStatus.OK) {
+                        JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + status1.name(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }, (err) -> {
+                    JOptionPane.showMessageDialog(null, "Exception while updating value: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+
+                });
+
+
+            } catch (Exception ei) {
+                JOptionPane.showMessageDialog(null, "Exception while updating value: " + ei.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "This key is invalid.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
