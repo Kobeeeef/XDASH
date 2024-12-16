@@ -24,9 +24,6 @@ public class App extends JFrame {
     public JPanel toolPanel;
     public JButton closeFileButton;
     public JButton saveButton;
-    public String os = System.getProperty("os.name").toLowerCase();
-    public String currentFileParentPath;
-    public ProcessBuilder pb;
     public JMenuBar menuBar;
     public JMenu settingsMenu, themeItem, colorSchemeItem, languageItem;
     public JMenuItem darkThemeItem, lightThemeItem, monokaiItem, eclipseItem, nightItem, redItem, blueItem, purpleItem,
@@ -58,7 +55,7 @@ public class App extends JFrame {
         addComponent();
         setSyntaxForFileExtension(remoteFilePath);
     }
-    private void saveFileWithSudo() {
+    public void saveFileWithSudo() {
         try {
             // Save edited content to a temporary file
             File tempFile = File.createTempFile("edited_file", ".tmp");

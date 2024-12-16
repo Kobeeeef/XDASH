@@ -2,6 +2,7 @@ package org.kobe.xbot.xdashbackend.XGRID;
 
 
 
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -64,7 +65,12 @@ public class XTablesViewer extends JFrame {
 
         JPanel controlPanel = createControlPanel();
         add(controlPanel, BorderLayout.SOUTH);
-
+        try {
+            UIManager.setLookAndFeel(new FlatMacDarkLaf());
+            SwingUtilities.updateComponentTreeUI(this);
+        } catch (UnsupportedLookAndFeelException ex) {
+            throw new RuntimeException(ex);
+        }
         this.client = client;
         cacheThread = new Thread(this::enableCache);
         cacheThread.setDaemon(true);

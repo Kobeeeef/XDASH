@@ -93,6 +93,8 @@ public class EditorView extends RSyntaxTextArea implements KeyListener{
                 if (fontSize > MIN_FONT_SIZE) {
                     fontSize--;
                 }
+            } else if (e.getKeyCode() == KeyEvent.VK_S) {
+                app.saveFileWithSudo();
             }
             this.setFont(new Font(FlatJetBrainsMonoFont.FAMILY, Font.PLAIN, fontSize));
         }

@@ -468,7 +468,7 @@ public class SocketClient {
                     throw new RuntimeException("Nothing received back from server when sending: " + message);
                 String[] tokens = requestInfo.getTokens();
                 future.complete(String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length)));
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 future.completeExceptionally(e);
             }
         });

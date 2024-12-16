@@ -90,6 +90,7 @@ public class RequestAction<T> {
                         return null;
                     });
         } catch (IOException e) {
+            onFailure.accept(e);
             logger.severe(e.getMessage());
         }
     }

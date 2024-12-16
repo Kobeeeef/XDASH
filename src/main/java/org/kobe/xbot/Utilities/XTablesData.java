@@ -5,10 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class XTablesData {
     private static final XTablesLogger logger = XTablesLogger.getLogger();
@@ -161,7 +158,37 @@ public class XTablesData {
 
         return current.data != null && current.data.remove(keys[keys.length - 1]) != null;
     }
+    /**
+     * Retrieves all key-value pairs in dot notation from the current data structure.
+     *
+     * @return A map containing all key-value pairs in dot notation.
+     */
+    public Map<String, String> getKeyValuePairs() {
+        Map<String, String> keyValuePairs = new HashMap<>();
+        collectKeyValuePairs("", this, keyValuePairs);
+        return keyValuePairs;
+    }
 
+    /**
+     * Helper method to recursively collect key-value pairs in dot notation.
+     *
+     * @param prefix The current key prefix in dot notation.
+     * @param node   The current XTablesData node.
+     * @param result The map to store key-value pairs.
+     */
+    private void collectKeyValuePairs(String prefix, XTablesData node, Map<String, String> result) {
+        if (node.value != null) {
+            result.put(prefix, node.value);
+        }
+        if (node.data != null) {
+            for (Map.Entry<String, XTablesData> entry : node.data.entrySet()) {
+                String key = entry.getKey();
+                XTablesData childNode = entry.getValue();
+                String newPrefix = prefix.isEmpty() ? key : prefix + "." + key;
+                collectKeyValuePairs(newPrefix, childNode, result);
+            }
+        }
+    }
     public String toJSON() {
         return gson.toJson(this.data);
     }
