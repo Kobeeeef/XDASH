@@ -15,7 +15,7 @@ Download the latest release of XDASH from the link below:
 To run XDASH, open a terminal and execute the following command:
 
 ```sh
-java -Djava.net.preferIPv4Stack=true -jar XDASH.jar
+java -Djava.net.preferIPv4Stack=true -Djava.awt.headless=false -jar XDASH.jar
 ```
 
 # XCASTER - NOTICE
