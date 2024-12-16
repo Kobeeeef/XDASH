@@ -72,6 +72,9 @@ https://github.com/user-attachments/assets/72b03a28-6579-48de-9efa-92aaedd70e82
 ### Realtime XTABLES Terminal & Visual Viewer
 ![image](https://github.com/user-attachments/assets/a6a37325-8e60-48ef-8189-fa5c3a711d3c)
 
+### Visual Viewer
+https://github.com/user-attachments/assets/699e3b53-4d48-4d57-b5e8-03d010a07c11
+
 ### Realtime XTABLES Statistics
 ![image](https://github.com/user-attachments/assets/56624a4f-15a3-45a5-bea8-c68b8223c02b)
 
