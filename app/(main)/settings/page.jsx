@@ -509,7 +509,7 @@ const Dashboard = () => {
 
                                     <div className={'text-lg my-2'}>{option?.ssid}</div>
                                 </div>
-                            )} className={'w-full'} placeholder={'Select Robot'}
+                            )} className={'w-full'} placeholder={'Select Internet'}
                                       value={newData?.WIFI_SSID}
                                       onChange={(e) => setNewData(prev => ({
                                           ...prev,

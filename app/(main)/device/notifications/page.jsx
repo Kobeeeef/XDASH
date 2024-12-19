@@ -12,15 +12,12 @@ import { Toast } from 'primereact/toast';
 import { useSearchParams } from 'next/navigation';
 import { Dialog } from 'primereact/dialog';
 import CustomMessage from '../../../../components/CustomMessage';
-import { Message } from 'primereact/message';
-import { DataScroller } from 'primereact/datascroller';
-import { VirtualScroller } from 'primereact/virtualscroller';
 import { classNames } from 'primereact/utils';
 import { Skeleton } from 'primereact/skeleton';
 import { DataView } from 'primereact/dataview';
-import XBOTLoader from '../../../../components/XBOTLoader';
 import { Button } from 'primereact/button';
 import utilities from '../../../../utilities/utilities';
+import { JSONTree } from 'react-json-tree';
 
 
 const Dashboard = () => {
@@ -36,9 +33,11 @@ const Dashboard = () => {
         } = useContext(WebsocketContext);
         const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
         const [data, setData] = useState({});
+    const [viewDialogVisible, setViewDialogVisible] = useState(false);
         const [warningDialogVisible, setWarningDialogVisible] = useState(false);
         const [logs, setLogs] = useState([]);
         const [loading, setLoading] = useState(true);
+        const [selectedJSON, setSelectedJSON] = useState({})
         useEffect(() => {
             setServer(serverParam);
         }, [serverParam]);
@@ -86,6 +85,7 @@ const Dashboard = () => {
                 })
             }, (m) => m.type === 'DEVICE-LOGS').then((e) => {
                 setLoading(false);
+                console.log(e.message)
                 setLogs(e.message);
             }).catch((e) => {
                 toast.current.show({
@@ -126,7 +126,23 @@ const Dashboard = () => {
                         XCASTER. Please check your network connection, verify the machine is on and try again later.
                     </p>
                 </Dialog>
-
+                <Dialog
+                    modal={true}
+                    visible={viewDialogVisible}
+                    style={{ width: '50vw' }}
+                    onHide={() => {
+                        if (!viewDialogVisible) return;
+                        setViewDialogVisible(false);
+                    }}
+                    closable={false}
+                    draggable={true}
+                    resizable={false}
+                    footer={() => (
+                        <Button className={"w-full"} label="Close" onClick={() => setViewDialogVisible(false)}/>
+                    )}
+                >
+                    <JSONTree hideRoot={true}  theme={"google"} data={selectedJSON}/>
+                </Dialog>
                 <div className="col-12 lg:col-6 sm:col-4 xl:col-3">
                     <div className="card mb-0">
                         <div className="flex justify-content-between mb-3">
@@ -216,6 +232,10 @@ const Dashboard = () => {
                                         <div key={index} className={'col-12'}>
                                             <CustomMessage __REALTIME_TIMESTAMP={product?.__REALTIME_TIMESTAMP}
                                                            priority={product?.PRIORITY}
+                                                           onClick={() => {
+                                                               setSelectedJSON(product)
+                                                               setViewDialogVisible(true)
+                                                           }}
                                                            text={utilities.truncateString(product?.MESSAGE, 100)}
                                                            header={product?._COMM || product?._SYSTEMD_UNIT || product?.system || product?._CMDLINE || product?.SYSLOG_IDENTIFIER || 'unknown source'} />
                                         </div>

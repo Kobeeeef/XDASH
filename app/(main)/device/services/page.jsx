@@ -16,6 +16,7 @@ import { useSearchParams } from 'next/navigation';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import Loader from '../../../../components/XBOTLoader';
+import TimeoutsDialog from '../../../../components/TimeoutsDialog';
 
 
 const Dashboard = () => {
@@ -28,7 +29,10 @@ const Dashboard = () => {
     const {
         isConnected,
         lastConnectionUpdate,
-        sendMessageAndWaitForCondition
+        sendMessageAndWaitForCondition,
+        sendMessageAndWaitForConditionWithManage,
+        getTimeoutManagerById,
+        timeoutsRef
     } = useContext(WebsocketContext);
     const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
     const [data, setData] = useState({});
@@ -80,13 +84,13 @@ const Dashboard = () => {
             return;
         }
         setRestartLoading(true);
-        sendMessageAndWaitForCondition({
+        sendMessageAndWaitForConditionWithManage("DEVICE-SERVICE-RESTART", {
             type: 'DEVICE-SERVICE-RESTART',
             message: JSON.stringify({
                 server: server,
                 serviceID: service
             })
-        }, (m) => m.type === 'DEVICE-SERVICE-RESTART', 10000).then((e) => {
+        }, (m) => m.type === 'DEVICE-SERVICE-RESTART', 30000).then((e) => {
             setRestartLoading(false);
             toast.current.show({
                 severity: 'success',
@@ -112,10 +116,10 @@ const Dashboard = () => {
             const startTime = new Date();
             setLoading(true);
             setServices([])
-            sendMessageAndWaitForCondition({
+            sendMessageAndWaitForConditionWithManage('DEVICE-SERVICES-DATA', {
                 type: 'DEVICE-SERVICES-DATA',
                 message: server
-            }, (m) => m.type === 'DEVICE-SERVICES-DATA').then((e) => {
+            }, (m) => m.type === 'DEVICE-SERVICES-DATA', 15000).then((e) => {
                 const endTime = new Date();
                 const elapsedTime = endTime - startTime;
                 const waitTime = Math.max(2000 - elapsedTime, 0);
@@ -138,6 +142,7 @@ const Dashboard = () => {
 
     return (
         <div className="grid fadeIn">
+            <TimeoutsDialog timeoutsRef={timeoutsRef} updateInterval={10} />
             <Toast ref={toast} />
             <Dialog
                 header={`Machine Discovery Failed`}

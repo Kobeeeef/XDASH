@@ -5,14 +5,8 @@ import { formatTimeAgo } from '../utilities/timeago';
 import TimeAgo from './TimeAgo';
 
 
-const CustomMessage = ({ header, text, priority, link, __REALTIME_TIMESTAMP }) => {
-    const router = useRouter();
+const CustomMessage = ({ header, text, priority, onClick, __REALTIME_TIMESTAMP }) => {
 
-    const handleClick = () => {
-        if (link) {
-            router.push(link);
-        }
-    };
 
     const getSeverityIcon = () => {
         if (priority <= 1) return 'pi pi-exclamation-triangle';
@@ -45,7 +39,7 @@ const CustomMessage = ({ header, text, priority, link, __REALTIME_TIMESTAMP }) =
     return (
         <div
             className={`p-inline-message p-component p-inline-message-${getSeverityType()} my-2`}
-            onClick={handleClick}
+            onClick={onClick}
             style={{
                 cursor: 'pointer',
                 padding: '1rem',

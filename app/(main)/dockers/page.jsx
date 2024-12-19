@@ -34,8 +34,8 @@ const Dashboard = () => {
         lastConnectionUpdate,
         sendMessageAndWaitForCondition,
         sendMessageAndWaitForConditionWithManage,
-        getTimeoutManagerById,
-        timeoutsRef
+            getTimeoutManagerById,
+            timeoutsRef
     } = useContext(WebsocketContext);
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [devices, setDevices] = useState([]);
@@ -131,8 +131,10 @@ const Dashboard = () => {
 
     useEffect(() => {
         if (ready !== null && !ready) {
-            if (!readyLock)
+            if (!readyLock) {
+                playErrorNotificationSound()
                 setReadyDialogVisible(true);
+            }
         }
     }, [ready, readyLock]);
 

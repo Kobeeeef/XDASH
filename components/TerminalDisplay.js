@@ -10,11 +10,11 @@ const TerminalDisplay = ({ messages, prompt = 'XDASH $ ', maxHeight = '300px', m
             style={{
                 maxHeight,
                 maxWidth,
-                overflowY: 'auto',      // Ensures vertical scrolling when content exceeds maxHeight
-                overflowX: 'hidden',    // Prevents horizontal overflow
-                wordWrap: 'break-word',  // Allows words to break and wrap at the container width
-                whiteSpace: 'pre-wrap',  // Maintains the whitespace structure but allows wrapping
-                wordBreak: 'break-word', // Ensures long words break at boundaries
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                wordWrap: 'break-word',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
             }}
         >
             {(messages?.length === 0 && placeholder ? [placeholder] : messages).map((message, idx) => (

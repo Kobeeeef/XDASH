@@ -9,7 +9,6 @@ import TimeAgo from '@/components/TimeAgo';
 import { Toast } from 'primereact/toast';
 
 import { useSearchParams } from 'next/navigation';
-import { InputText } from 'primereact/inputtext';
 
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -17,6 +16,8 @@ import LogComponent from '../../../utilities/Ansi';
 import { SplitButton } from 'primereact/splitbutton';
 import { AutoComplete } from 'primereact/autocomplete';
 import linuxCommands from '../../../utilities/linuxCommands';
+import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
+import TimeoutsDialog from '../../../components/TimeoutsDialog';
 
 
 const Dashboard = () => {
@@ -29,6 +30,8 @@ const Dashboard = () => {
         isConnected,
         lastConnectionUpdate,
         sendMessageAndWaitForCondition,
+        sendMessageAndWaitForConditionWithManage,
+        timeoutsRef,
         sendMessage,
         socket
     } = useContext(WebsocketContext);
@@ -47,6 +50,51 @@ const Dashboard = () => {
     useEffect(() => {
         setServer(serverParam);
     }, [serverParam]);
+    function fileEditor(path) {
+        setLoading(true);
+
+        sendMessageAndWaitForConditionWithManage("DEVICES-FILE-EDITOR", {
+            type: 'DEVICES-FILE-EDITOR',
+            message: JSON.stringify({
+                servers: [server],
+                remoteFilePath: path
+            })
+        }, (m) => {
+            if (m.type === 'DEVICES-FILE-EDITOR') {
+                const msg = JSON.parse(m.message);
+                if (msg?.finished) {
+                    if(msg?.success === true) {
+                        playSuccessNotificationSound()
+                    } else if (msg?.success === false) {
+                        playErrorNotificationSound()
+                    }
+                    return true;
+                }
+                if(msg?.message) {
+                    setLogs((a) => {
+                        return [...a, msg.message || `Unknown message received...`];
+                    });
+                }
+                return false;
+            }
+
+        }, 15000)
+            .then(() => {
+                setLoading(false);
+            })
+            .catch((e) => {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Exception Occurred!',
+                    detail: e?.message || 'Unknown Exception...'
+                });
+                setLogs((a) => {
+                    return [...a, e?.message || `Unknown exception...`];
+                });
+
+                setLoading(false);
+            });
+    }
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
@@ -117,8 +165,24 @@ const Dashboard = () => {
     }, [socket.current]);
 
     function sendCommand() {
-        if (input.trim().toLowerCase() === 'clear') {
+        let trimmedLowercaseInput = input.trim().toLowerCase()
+        if (trimmedLowercaseInput === 'clear') {
             setLogs([]);
+            setInput('');
+            return;
+        } else if (trimmedLowercaseInput.startsWith("nano") || trimmedLowercaseInput.startsWith("vim")|| trimmedLowercaseInput.startsWith("vi")|| trimmedLowercaseInput.startsWith("emacs")|| trimmedLowercaseInput.startsWith("gedit")|| trimmedLowercaseInput.startsWith("micro")|| trimmedLowercaseInput.startsWith("pico")) {
+            let split = input.split(" ")
+
+            if (split[1]) {
+                setLogs((a) => {
+                    return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input,'\u001B[92m$ ' +'Using XDASH file editor for this action...'];
+                });
+                fileEditor(split[1])
+            } else {
+                setLogs((a) => {
+                    return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input,'\u001B[92m$ ' +'No directory found in command.'];
+                });
+            }
             setInput('');
             return;
         } else if (!sudo && input.trim().toLowerCase().startsWith('exit')) {
@@ -166,6 +230,7 @@ const Dashboard = () => {
     };
     return (
         <div className="grid fadeIn">
+            <TimeoutsDialog timeoutsRef={timeoutsRef}/>
             <Toast ref={toast} />
             <Dialog
                 header={`Machine Discovery Failed`}
@@ -365,6 +430,9 @@ const Dashboard = () => {
                                 event.preventDefault();
                                 sendControl('CTRL_D');
                                 setFirst(true)
+                            }else if (event.ctrlKey && event.key === 'z') {
+                                event.preventDefault();
+                                sendControl('CTRL_Z');
                             }
                         }} />
                         <Button disabled={!isConnected || !input || data?.status !== 'CONNECTED'} loading={loading}
