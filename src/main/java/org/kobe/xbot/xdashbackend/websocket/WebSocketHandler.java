@@ -11,7 +11,10 @@ import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
-import org.kobe.xbot.xdashbackend.utilities.*;
+import org.kobe.xbot.xdashbackend.utilities.DockerManager;
+import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
+import org.kobe.xbot.xdashbackend.utilities.NetworkManager;
+import org.kobe.xbot.xdashbackend.utilities.Utilities;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -71,7 +74,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 if (viewer.isVisible()) {
                     viewer.hideViewer();
                 } else {
-                   viewer.showViewer();
+                    viewer.showViewer();
                 }
                 session.sendMessage(new TextMessage(new Message(new StatusCode(true), "XTABLES-VIEWER-TOGGLE").toJSON()));
             } else {
@@ -242,11 +245,11 @@ public class WebSocketHandler extends TextWebSocketHandler {
             try {
                 DeviceFileEditorRequest deviceFileEditorRequest = gson.fromJson(msg, DeviceFileEditorRequest.class);
                 String[] servers = deviceFileEditorRequest.getServers();
-                if(servers == null) {
+                if (servers == null) {
                     session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The server is not in arguments."), message.getType()).toJSON()));
                     return;
                 }
-                if(deviceFileEditorRequest.getRemoteFilePath() == null) {
+                if (deviceFileEditorRequest.getRemoteFilePath() == null) {
                     session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The remote file path is not in arguments."), message.getType()).toJSON()));
                     return;
                 }
@@ -255,7 +258,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     try {
                         SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
                         if (sshHostAddress != null) {
-                            if(sshHostAddress.forceIsConnected()) {
+                            if (sshHostAddress.forceIsConnected()) {
                                 App.openRemoteFileEditor(sshHostAddress, deviceFileEditorRequest.getRemoteFilePath());
                                 session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "File editor started.").setFinished(false), message.getType()).toJSON()));
                             } else {
@@ -608,6 +611,29 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(String.format("%1$s/%2$s machines were redeployed successfully.", servers.length - failures, servers.length), null, servers.length, failures == 0, true), "DEVICES-REDEPLOY").toJSON()));
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REDEPLOY").toJSON()));
+            }
+        } else if (message.getType().equals("DOCKER-IMPORT-ALT-BASE")) {
+            long startTime = System.nanoTime();
+            Integer timeout = XdashbackendApplication.getConfigLoader().getDockerAltBaseImageImportTimeout();
+            String URL = XdashbackendApplication.getConfigLoader().getDockerAltBaseImageURL();
+            if (timeout == null) {
+                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn("Timeout config is null.", 0, true).setSuccess(false), message.getType()).toJSON()));
+                return;
+            }
+            if (URL == null) {
+                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn("URL config is null.", 0, true).setSuccess(false), message.getType()).toJSON()));
+                return;
+            }
+            try {
+                DockerManager.loadDockerImage(URL, timeout, (msg, progress) -> {
+                    try {
+                        session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(msg, progress, false).setSuccess(true), message.getType()).toJSON()));
+                    } catch (IOException ignored) {
+                    }
+                });
+                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(String.format("Imported base image in %1$s.", Utilities.formatTime(System.nanoTime(), true)), 100.0, true).setSuccess(true), message.getType()).toJSON()));
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(String.format("Exception while importing (%1$s): %2$s", Utilities.formatTime(System.nanoTime(), true), e.getMessage()), 0.0, true).setSuccess(false), message.getType()).toJSON()));
             }
         } else if (message.getType().equals("DEVICES-DOCKER-IMPORT")) {
             String msg = message.getMessage();

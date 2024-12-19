@@ -1,5 +1,7 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
+import org.kobe.xbot.xdashbackend.entities.FormattedByteResult;
+import org.kobe.xbot.xdashbackend.entities.FormattedTimeResult;
 import org.kobe.xbot.xdashbackend.entities.TransferProgress;
 
 import java.io.BufferedReader;
@@ -27,6 +29,11 @@ public class Utilities {
             return null;
         }
     }
+    public static double roundToDecimalPlaces(double value, int decimalPlaces) {
+        double scale = Math.pow(10, decimalPlaces);
+        return Math.round(value * scale) / scale;
+    }
+
     public static String getFileExtension(String filePath) {
         int dotIndex = filePath.lastIndexOf('.');
         if (dotIndex > 0) {
@@ -34,6 +41,116 @@ public class Utilities {
         }
         return "";  // No extension
     }
+    public static FormattedByteResult formatBytes(int bytes, boolean longFormat) {
+        // Define byte size units
+        String[] units = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
+
+        // Find the index of the unit based on byte size
+        int unitIndex = 0;
+        double value = bytes;
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024;
+            unitIndex++;
+        }
+
+        // Round the value to the nearest integer
+        int roundedValue = (int) Math.round(value);
+
+        // Get the unit
+        String unit = units[unitIndex];
+
+        // If long format is requested, return full unit name
+        if (longFormat) {
+            switch (unit) {
+                case "KB":
+                    unit = "Kilobytes";
+                    break;
+                case "MB":
+                    unit = "Megabytes";
+                    break;
+                case "GB":
+                    unit = "Gigabytes";
+                    break;
+                case "TB":
+                    unit = "Terabytes";
+                    break;
+                case "PB":
+                    unit = "Petabytes";
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Return an instance of FormattedByteResult
+        return new FormattedByteResult(roundedValue, unit);
+    }
+    public static FormattedTimeResult formatTime(long ns, boolean longFormat) {
+        // Define time units
+        String[] units = {"ns", "μs", "ms", "s", "min", "h", "d", "w", "mo", "y"};
+        long[] unitFactors = {
+                1,                          // ns
+                1000,                       // μs
+                1000000,                    // ms
+                1000000000,                 // s
+                60000000000L,               // min
+                3600000000000L,             // h
+                86400000000000L,            // d (1 day = 24 hours * 60 min * 60 sec * 10^9 ns)
+                604800000000000L,           // w (1 week = 7 days)
+                2592000000000000L,          // mo (1 month = 30 days)
+                31536000000000000L          // y (1 year = 365 days)
+        };
+
+        int unitIndex = 0;
+        long value = ns;
+
+        // Convert ns to the most appropriate unit
+        while (value >= unitFactors[unitIndex] && unitIndex < units.length - 1) {
+            value /= unitFactors[unitIndex + 1]; // Divide by the factor for the next unit
+            unitIndex++;
+        }
+
+        // If long format is requested, return full unit name
+        String unit = units[unitIndex];
+        if (longFormat) {
+            switch (unit) {
+                case "μs":
+                    unit = "Microseconds";
+                    break;
+                case "ms":
+                    unit = "Milliseconds";
+                    break;
+                case "s":
+                    unit = "Seconds";
+                    break;
+                case "min":
+                    unit = "Minutes";
+                    break;
+                case "h":
+                    unit = "Hours";
+                    break;
+                case "d":
+                    unit = "Days";
+                    break;
+                case "w":
+                    unit = "Weeks";
+                    break;
+                case "mo":
+                    unit = "Months";
+                    break;
+                case "y":
+                    unit = "Years";
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Return the formatted result
+        return new FormattedTimeResult(value, unit, longFormat);
+    }
+
+
     public static boolean createTar(String sourcePath, String outputTarFile, Consumer<TransferProgress> consumer) {
         try {
             ProcessBuilder pb;

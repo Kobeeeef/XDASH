@@ -3,12 +3,13 @@ package org.kobe.xbot.xdashbackend.utilities;
 import org.kobe.xbot.xdashbackend.entities.Architecture;
 import org.kobe.xbot.xdashbackend.entities.DockerProgress;
 import org.kobe.xbot.xdashbackend.entities.DockerStep;
+import org.kobe.xbot.xdashbackend.entities.FormattedByteResult;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class DockerManager {
@@ -73,4 +74,71 @@ public class DockerManager {
     public static File buildTARImage(String dockerfileDirPath, String imageName, String tarDirectory, Consumer<DockerProgress> progressConsumer, Architecture architecture) {
         return buildAndSaveImageAsTarWithBuildx(dockerfileDirPath, imageName + ":latest", (tarDirectory + "/" + imageName + ".tar").toLowerCase(), progressConsumer, architecture);
     }
+
+    public static void loadDockerImage(String imageUrl, int timeoutMs, BiConsumer<String, Double> progressConsumer) throws IOException, InterruptedException {
+        // Connect to the URL
+        progressConsumer.accept("Starting process to load Docker image from: " + imageUrl, 0.0);
+        URL url = new URL(imageUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+
+        // Set connection and read timeouts
+        connection.setConnectTimeout(timeoutMs); // Connect timeout in milliseconds
+        connection.setReadTimeout(timeoutMs); // Read timeout in milliseconds
+
+        connection.connect();
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            throw new IOException("Failed to connect to URL: " + imageUrl + " - Response code: " + responseCode);
+        }
+        progressConsumer.accept("Successfully connected to the URL: " + imageUrl, 0.0);
+
+        int contentLength = connection.getContentLength();
+        if (contentLength == -1) {
+            throw new IOException("Unable to determine content length from URL: " + imageUrl);
+        }
+        FormattedByteResult formattedByteResult = Utilities.formatBytes(contentLength, true);
+        progressConsumer.accept("Retrieved content length: " + formattedByteResult, 0.0);
+
+        progressConsumer.accept("Preparing to execute Docker load command...", 0.0);
+        ProcessBuilder processBuilder = new ProcessBuilder("docker", "load");
+        Process process = processBuilder.start();
+
+        try (InputStream inputStream = connection.getInputStream();
+             OutputStream outputStream = process.getOutputStream()) {
+
+            byte[] buffer = new byte[1024 * 8];
+            int bytesRead;
+            long totalBytesRead = 0;
+            long lastReportedBytes = 0;
+            long stepSize = contentLength / 105; // Report every 1% of progress
+
+            // Stream data from the URL to Docker
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+
+                // Update progress at defined intervals
+                if (totalBytesRead - lastReportedBytes >= stepSize) {
+                    double percentage = (totalBytesRead / (double) contentLength) * 100;
+                    progressConsumer.accept(String.format("Transferring data to Docker: %.2f%% complete", percentage), Utilities.roundToDecimalPlaces(percentage, 3));
+                    lastReportedBytes = totalBytesRead;
+                }
+            }
+            progressConsumer.accept("Data transfer to Docker completed", 99.0);
+        }
+
+        // Wait for the process to complete
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            try (InputStream errorStream = process.getErrorStream()) {
+                String errorMessage = new String(errorStream.readAllBytes());
+                throw new IOException("Docker load command failed with error: " + errorMessage);
+            }
+        }
+
+        progressConsumer.accept("Docker image loaded successfully into the system.", 100.0);
+    }
+
 }

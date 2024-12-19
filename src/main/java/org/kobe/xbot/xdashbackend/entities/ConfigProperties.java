@@ -9,6 +9,7 @@ public class ConfigProperties {
     private String SERVERS_PASSWORD;
     private String SERVERS_USERNAME;
     private String SERVERS_CONNECT_TIMEOUT;
+    private String DOCKER_ALT_IMPORT_TIMEOUT;
     private String SERVERS_RETRY_TIMEOUT;
     private String SERVER_PASSWORD;
     private String ROBORIO_HOSTNAME;
@@ -17,6 +18,7 @@ public class ConfigProperties {
     private String ROBORIO_ADDRESS;
     private String WIFI_SSID;
     private String PROJECT_DIRECTORY;
+    private String ALT_BASE_IMAGE_URL;
     private String DOCKER_IMAGES_DIRECTORY;
     private String ROBOT_WIFI_SSID;
     private String[] SERVICES;
@@ -24,6 +26,24 @@ public class ConfigProperties {
     public ConfigProperties(LocalDateTime LAST_UPDATED, LocalDateTime LAST_RELOADED) {
         this.LAST_UPDATED = LAST_UPDATED.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         this.LAST_RELOADED = LAST_RELOADED.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public String getDOCKER_ALT_IMPORT_TIMEOUT() {
+        return DOCKER_ALT_IMPORT_TIMEOUT;
+    }
+
+    public ConfigProperties setDOCKER_ALT_IMPORT_TIMEOUT(String DOCKER_ALT_IMPORT_TIMEOUT) {
+        this.DOCKER_ALT_IMPORT_TIMEOUT = DOCKER_ALT_IMPORT_TIMEOUT;
+        return this;
+    }
+
+    public String getALT_BASE_IMAGE_URL() {
+        return ALT_BASE_IMAGE_URL;
+    }
+
+    public ConfigProperties setALT_BASE_IMAGE_URL(String ALT_BASE_IMAGE_URL) {
+        this.ALT_BASE_IMAGE_URL = ALT_BASE_IMAGE_URL;
+        return this;
     }
 
     public String getPROJECT_DIRECTORY() {

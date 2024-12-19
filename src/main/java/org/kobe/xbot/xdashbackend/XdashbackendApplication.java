@@ -18,8 +18,11 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.jmdns.ServiceTypeListener;
+import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +45,8 @@ public class XdashbackendApplication {
     }
 
     public static void main(String[] args) {
+        System.setProperty("java.awt.headless", "false");
+        System.setProperty("java.net.preferIPv4Stack", "true");
         SpringApplication.run(XdashbackendApplication.class, args);
         FlatMacDarkLaf.setup();
         FlatMacLightLaf.setup();
@@ -171,7 +176,7 @@ public class XdashbackendApplication {
         main.setDaemon(true);
         main.start();
         try {
-            System.setProperty("java.awt.headless", "false");
+
             Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
         } catch (Exception e) {
             logger.warning("Failed to open web browser");

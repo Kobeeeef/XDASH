@@ -21,7 +21,7 @@ public class ConfigLoader {
     public static final String DEFAULT_SERVERS_PASSWORD = "I<3Robots!";
     public static final String DEFAULT_SERVERS_USER = "xbot";
     private static final String DEFAULT_DOCKER_IMAGES_DIRECTORY = "xdash-docker-images";
-
+    private static final String DEFAULT_DOCKER_IMAGE_ALT_BASE_URL = "https://github.com/Kobeeeef/XDASH/releases/download/v1-docker-images/alt-arm64-base-image.tar";
     public static final String DEFAULT_SERVER_PASSWORD = "I<3Robotics!";
     public static final String DEFAULT_ROBORIO_HOSTNAME = "roboRIO-488-FRC";
     public static final String DEFAULT_ROBORIO_USERNAME = "admin";
@@ -100,6 +100,8 @@ public class ConfigLoader {
         properties.setProperty("roboRIO.server", DEFAULT_ROBORIO_SERVER);
         properties.setProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
         properties.setProperty("services", DEFAULT_SERVICES);
+        properties.setProperty("docker.altBaseImageImportTimeout", String.valueOf(DEFAULT_CONNECT_TIMEOUT));
+        properties.setProperty("docker.altBaseImageURL", DEFAULT_DOCKER_IMAGE_ALT_BASE_URL);
         properties.setProperty("docker.imagesDirectory", DEFAULT_DOCKER_IMAGES_DIRECTORY);
         logger.info("Default properties set.");
     }
@@ -202,6 +204,12 @@ public class ConfigLoader {
     public String getDockerImagesDirectory() {
         return getProperty("docker.imagesDirectory", DEFAULT_DOCKER_IMAGES_DIRECTORY);
     }
+    public String getDockerAltBaseImageURL() {
+        return getProperty("docker.altBaseImageURL", DEFAULT_DOCKER_IMAGE_ALT_BASE_URL);
+    }
+    public Integer getDockerAltBaseImageImportTimeout() {
+        return getPropertyInteger("docker.altBaseImageImportTimeout", DEFAULT_CONNECT_TIMEOUT);
+    }
     public ConfigProperties getConfigProperties() {
         return new ConfigProperties(lastUpdated, lastReloaded)
                 .setSERVERS_PASSWORD(getServersPassword())
@@ -211,6 +219,8 @@ public class ConfigLoader {
                 .setSERVER_PASSWORD(getServerPassword())
                 .setROBORIO_HOSTNAME(getRoboRIOHostname())
                 .setROBORIO_USERNAME(getRoboRIOUsername())
+                .setDOCKER_ALT_IMPORT_TIMEOUT(String.valueOf(getDockerAltBaseImageImportTimeout()))
+                .setALT_BASE_IMAGE_URL(getDockerAltBaseImageURL())
                 .setPROJECT_DIRECTORY(getProjectDirectory())
                 .setROBORIO_SERVER(getRoboRIOServer())
                 .setDOCKER_IMAGES_DIRECTORY(getDockerImagesDirectory())
@@ -232,6 +242,11 @@ public class ConfigLoader {
         } else {
             properties.remove("project.directory");
         }
+        if (configProperties.getALT_BASE_IMAGE_URL() != null && !configProperties.getALT_BASE_IMAGE_URL().isEmpty()) {
+            properties.setProperty("docker.altBaseImageURL", configProperties.getALT_BASE_IMAGE_URL());
+        } else {
+            properties.setProperty("docker.altBaseImageURL", DEFAULT_DOCKER_IMAGE_ALT_BASE_URL);
+        }
         if (configProperties.getDOCKER_IMAGES_DIRECTORY() != null && !configProperties.getDOCKER_IMAGES_DIRECTORY().isEmpty()) {
             properties.setProperty("docker.imagesDirectory", configProperties.getDOCKER_IMAGES_DIRECTORY());
         } else {
@@ -252,6 +267,9 @@ public class ConfigLoader {
         }
         if (configProperties.getSERVERS_RETRY_TIMEOUT() != null) {
             properties.setProperty("servers.retryTimeout", configProperties.getSERVERS_RETRY_TIMEOUT());
+        }
+        if (configProperties.getDOCKER_ALT_IMPORT_TIMEOUT() != null) {
+            properties.setProperty("docker.altBaseImageImportTimeout", configProperties.getDOCKER_ALT_IMPORT_TIMEOUT());
         }
         if (configProperties.getSERVER_PASSWORD() != null) {
             properties.setProperty("server.password", configProperties.getSERVER_PASSWORD());
