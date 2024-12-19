@@ -141,7 +141,7 @@ const Dashboard = () => {
                         <Button className={"w-full"} label="Close" onClick={() => setViewDialogVisible(false)}/>
                     )}
                 >
-                    <JSONTree hideRoot={true}  theme={"google"} data={selectedJSON}/>
+                    <JSONTree hideRoot={true}  theme={"google"} data={selectedJSON ?? {}}/>
                 </Dialog>
                 <div className="col-12 lg:col-6 sm:col-4 xl:col-3">
                     <div className="card mb-0">
