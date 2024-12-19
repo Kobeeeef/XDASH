@@ -176,7 +176,6 @@ public class XdashbackendApplication {
         main.setDaemon(true);
         main.start();
         try {
-
             Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
         } catch (Exception e) {
             logger.warning("Failed to open web browser");
