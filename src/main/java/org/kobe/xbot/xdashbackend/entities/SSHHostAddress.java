@@ -13,6 +13,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class SSHHostAddress {
@@ -691,45 +692,96 @@ public class SSHHostAddress {
         }
     }
 
-    public boolean uploadFileUsingLocalSFTP(File localFile, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
+    public void uploadDockerImage(
+            File image,
+            String containerName,
+            DockerFlashType type,
+            Consumer<DockerImportReturn> updates)
+    {
 
-        ChannelSftp channel = null;
+        String imageName = image.getName().toLowerCase().replace(".tar", ""); // Assuming the image name is the file name
+        containerName = containerName.toLowerCase();
+        String remoteFilePath = "/tmp/" + image.getName(); // Path to upload the Docker image on the remote server
 
         try {
-            // Open SFTP channel
-            JSch jsch = new JSch();
-            Session session = jsch.getSession(username, host, 22);
-            session.setPassword(password);
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
-
-            channel = (ChannelSftp) session.openChannel("sftp");
-            channel.connect();
-
-            // Get the size of the file
-            long fileSize = localFile.length();
-
-            // Upload the file using the SFTP put method
-            try (FileInputStream fis = new FileInputStream(localFile)) {
-                channel.put(fis, remoteFilePath, new ProgressMonitor(progressConsumer, fileSize));
+            // Check if Docker is installed
+            updates.accept(new DockerImportReturn("Checking if Docker is installed...", server, true, false));
+            if (!isDockerInstalled(session, updates)) {
+                updates.accept(new DockerImportReturn("Docker is not installed. Please install docker.io manually and try again.", server, true, true));
+                return;
+            } else {
+                updates.accept(new DockerImportReturn("Docker is already installed.", server, true, false));
             }
 
-            // Success
-            logger.info("File upload completed successfully.");
-            if (progressConsumer != null)
-                progressConsumer.accept(new TransferProgress("File upload completed successfully.", 100, fileSize, fileSize));
+            // Step 1: Upload the Docker image file using SFTP
+            updates.accept(new DockerImportReturn("Uploading Docker image file...", server, true, false));
+            AtomicReference<Double> lastPercentage = new AtomicReference<>(0.0);
+            boolean uploadSuccess = uploadFileUsingLocalSFTP(
+                    image.getAbsolutePath(),
+                    remoteFilePath,
+                    username,
+                    password,
+                    address,
+                    progress -> {
+                        double currentPercentage = progress.getPercentage();
+                        double lastLoggedPercentage = lastPercentage.get();
 
-            return true;
+                        if (currentPercentage - lastLoggedPercentage >= 0.8) { // Only update if the difference is 0.5% or more
+                            updates.accept(new DockerImportReturn(
+                                    String.format(
+                                            "Uploading file: %.2f%% complete (%d/%d bytes)",
+                                            currentPercentage,
+                                            progress.getCurrentBytes(),
+                                            progress.getTotalBytes()
+                                    ),
+                                    server,
+                                    true,
+                                    false
+                            ));
+                            lastPercentage.set(currentPercentage); // Update the last logged percentage
+                        }
+                    }
+            );
 
-        } catch (JSchException | SftpException | IOException e) {
-            logger.severe("Error during SFTP upload: " + e.getMessage());
-            if (progressConsumer != null)
-                progressConsumer.accept(new TransferProgress("Error during SFTP upload: " + e.getMessage(), 0, 0, 0));
-            return false;
-        } finally {
-            if (channel != null) {
-                channel.exit();
+
+            if (!uploadSuccess) {
+                updates.accept(new DockerImportReturn("Failed to upload Docker image file.", server, true, true));
+                return;
             }
+            updates.accept(new DockerImportReturn("File uploaded successfully.", server, true, false));
+
+            // Step 2: Remove existing containers and images
+            if (type.equals(DockerFlashType.LIGHT)) {
+                executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
+                executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+            } else {
+                executeCommandDocker(session, "sudo -S docker rm -f $(sudo docker ps -q -a)", updates);
+                executeCommandDocker(session, "sudo -S docker rmi -f $(sudo docker images -a -q)", updates);
+            }
+
+            // Step 3: Load the Docker image
+            updates.accept(new DockerImportReturn("Loading Docker image...", server, true, false));
+            String loadCommand = "sudo -S docker load --input " + remoteFilePath;
+            boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
+
+            if (!loadSuccess) {
+                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, true, true));
+                return;
+            }
+            updates.accept(new DockerImportReturn("Docker image loaded successfully.", server, true, false));
+
+            // Step 4: Run a new container
+            String runCommand = "sudo -S docker run -d --name " + containerName + " " + imageName;
+            boolean runSuccess = executeCommandDocker(session, runCommand, updates);
+
+            if (runSuccess) {
+                updates.accept(new DockerImportReturn("Container started successfully.", server, true, false));
+            } else {
+                updates.accept(new DockerImportReturn("Failed to start container.", server, true, true));
+            }
+
+        } catch (Exception e) {
+            updates.accept(new DockerImportReturn("Error: " + e.getMessage(), server, false, false));
         }
     }
 
@@ -848,86 +900,6 @@ public class SSHHostAddress {
         }
     }
 
-    public void uploadDockerImage(File image, String containerName, DockerFlashType type, Consumer<DockerImportReturn> updates) {
-        String imageName = image.getName().toLowerCase().replace(".tar", ""); // Assuming the image name is the file name
-        containerName = containerName.toLowerCase();
-        try {
-            // Check if Docker is installed
-            updates.accept(new DockerImportReturn("Checking if Docker is installed...", server, true, false));
-            if (!isDockerInstalled(session, updates)) {
-                updates.accept(new DockerImportReturn("Docker is not installed. Please install docker.io manually and try again.", server, true, true));
-                return;
-            } else {
-                updates.accept(new DockerImportReturn("Docker is already installed.", server, true, false));
-            }
-
-
-
-            if(type.equals(DockerFlashType.LIGHT)) {
-                // Step 1: Remove existing container with the same name
-                executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
-                // Step 2: Remove existing image with the same name
-                executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
-            } else {
-                // Step 1: Remove all existing containers
-                executeCommandDocker(session, "sudo -S docker rm -f $(docker ps -q -a)", updates);
-                // Step 2: Remove all existing images
-                executeCommandDocker(session, "sudo -S docker rmi -f $(docker images -a -q)", updates);
-            }
-
-            // Step 3: Load the new image
-            updates.accept(new DockerImportReturn("Starting image upload...", server, true, false));
-            try (FileInputStream fileInputStream = new FileInputStream(image)) {
-                ChannelExec channel = (ChannelExec) session.openChannel("exec");
-                channel.setCommand("sudo -S docker load");
-                channel.setErrStream(System.err);
-
-                OutputStream outputStream = channel.getOutputStream();
-                InputStream responseStream = channel.getInputStream();
-
-                channel.connect();
-
-                // Step 1: Send the sudo password
-                outputStream.write((password + "\n").getBytes());
-                outputStream.flush();
-
-                // Step 2: Write the image file to the Docker command's input stream
-                byte[] buffer = new byte[128 * 1024];
-                int bytesRead;
-                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                outputStream.flush();
-                outputStream.close();
-                int times = 0;
-                // Step 3: Wait for the command to finish
-                while (!channel.isClosed() && times < 15) {
-                    Thread.sleep(1000);
-                    updates.accept(new DockerImportReturn(String.format("Waiting for image data to finish sending (%1$s/15)...", times), server, true, false));
-                    times++;
-                }
-
-                int exitStatus = channel.getExitStatus();
-                if (exitStatus == 0) {
-                    updates.accept(new DockerImportReturn("Image uploaded successfully. Proceeding to start container...", server, true, false));
-                } else {
-                    updates.accept(new DockerImportReturn("Failed to upload the image. Exit status: " + exitStatus, server, false, false));
-                    return;
-                }
-                channel.disconnect();
-            }
-            // Step 4: Run a new container with the given name and image name
-            String runCommand = "sudo -S docker run -d --name " + containerName + " " + imageName;
-            boolean success = executeCommandDocker(session, runCommand, updates);
-            if (success)
-                updates.accept(new DockerImportReturn("Container command finished successfully.", server, true, false));
-            else
-                updates.accept(new DockerImportReturn("Container command finished with bad status code.", server, false, false));
-        } catch (IOException | JSchException | InterruptedException e) {
-            updates.accept(new DockerImportReturn(e.getMessage(), server, false, false));
-            e.printStackTrace();
-        }
-    }
 
     private boolean isDockerInstalled(Session session, Consumer<DockerImportReturn> updates) throws JSchException, IOException {
         try {
