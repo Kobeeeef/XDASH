@@ -15,6 +15,8 @@ import org.kobe.xbot.xdashbackend.utilities.DockerManager;
 import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
 import org.kobe.xbot.xdashbackend.utilities.NetworkManager;
 import org.kobe.xbot.xdashbackend.utilities.Utilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -34,6 +36,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private static final Gson gson = new Gson();
     private static final XDashLogger logger = XDashLogger.getLogger();
     private static final Set<WebSocketSession> sessions = Collections.synchronizedSet(new HashSet<>());
+    private static final Logger log = LoggerFactory.getLogger(WebSocketHandler.class);
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -484,11 +487,29 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
                 SSHHostAddress sshHostAddress = new SSHHostAddress(deviceAddData.getHostname(), deviceAddData.getUsername(), deviceAddData.getPassword(), deviceAddData.getAddress(), server);
                 SSHHostAddress previous = XdashbackendApplication.getResolvedXCASTERServices().put(server, sshHostAddress);
-                if (previous != null)
+                if (previous == null) {
                     session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "Machine registered at: " + server), "DEVICE-ADD").toJSON()));
-                else
+                    List<String> machines = new ArrayList<>(XdashbackendApplication.getConfigLoader().getPropertyList("servers.constant"));
+                    machines.add(msg);
+                    XdashbackendApplication.getConfigLoader().setPropertyList("servers.constant", machines);
+                    XdashbackendApplication.getConfigLoader().save();
+                } else {
+                    try {
+                        List<String> machines = new ArrayList<>(XdashbackendApplication.getConfigLoader().getPropertyList("servers.constant"));
+                        for (int i = 0; i < machines.size(); i++) {
+                            DeviceAddData existingData = gson.fromJson(machines.get(i), DeviceAddData.class);
+                            if (existingData.getHostname().equals(deviceAddData.getHostname())) {
+                                machines.set(i, msg);
+                                break;
+                            }
+                        }
+                        XdashbackendApplication.getConfigLoader().setPropertyList("servers.constant", machines);
+                        XdashbackendApplication.getConfigLoader().save();
+                    } catch (Exception e) {
+                        logger.severe("Error while saving servers.constant: " + e.getMessage());
+                    }
                     session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, "Updated value at: " + server), "DEVICE-ADD").toJSON()));
-
+                }
             } catch (Exception e) {
                 session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "Failed to run: " + e.getMessage()), "DEVICE-ADD").toJSON()));
             }

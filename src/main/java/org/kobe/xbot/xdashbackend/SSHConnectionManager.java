@@ -3,12 +3,14 @@ package org.kobe.xbot.xdashbackend;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.kobe.xbot.xdashbackend.entities.DeviceAddData;
 import org.kobe.xbot.xdashbackend.entities.DevicesReconnectReturn;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +42,14 @@ public class SSHConnectionManager {
         } catch (Exception e) {
             logger.fatal("There was an error while adding RIO to SSH manager: " + e.getMessage());
         }
+
+        List<DeviceAddData> serversConstant = config.getServersConstant();
+        for(DeviceAddData deviceAddData : serversConstant) {
+            String server = deviceAddData.getHostname() + ".local";
+            XdashbackendApplication.getResolvedXCASTERServices().put(server, new SSHHostAddress(deviceAddData.getHostname(), deviceAddData.getUsername(),
+                    deviceAddData.getPassword(), deviceAddData.getAddress(), server));
+        }
+
         executor.submit(() -> {
             while (running.get()) {
                 try {

@@ -1,20 +1,29 @@
 package org.kobe.xbot.xdashbackend;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.entities.ConfigProperties;
+import org.kobe.xbot.xdashbackend.entities.DeviceAddData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class ConfigLoader {
+    private static final Logger log = LoggerFactory.getLogger(ConfigLoader.class);
     private final Properties properties = new Properties();
     private final String fileName = "xdash.properties";
     private final XTablesLogger logger = XTablesLogger.getLogger();
-
+    private static final Gson gson = new Gson();
     //------------- DEFAULT VALUES -------------
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
     public static final long DEFAULT_RETRY_TIMEOUT = 4000;
@@ -75,17 +84,31 @@ public class ConfigLoader {
     }
 
     public List<String> getPropertyList(String key) {
-        String value = this.getProperty(key);
+        String value = properties.getProperty(key);
         if (value == null || value.isEmpty()) return Collections.emptyList();
-        return Arrays.asList(value.split(","));
+
+        try {
+            // Deserialize JSON array to List
+            Type listType = new TypeToken<List<String>>() {
+            }.getType();
+            return gson.fromJson(value, listType);
+        } catch (Exception e) {
+            logger.fatal("Error parsing property list for key: " + key + ": " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public void setPropertyList(String key, List<String> list) {
         if (list == null || list.isEmpty()) {
             properties.remove(key);
         } else {
-            String value = String.join(",", list);
-            properties.setProperty(key, value);
+            try {
+                // Serialize List as JSON array
+                String value = gson.toJson(list);
+                properties.setProperty(key, value);
+            } catch (Exception e) {
+                logger.fatal("Error serializing property list for key: " + key + ": " + e.getMessage());
+            }
         }
     }
 
@@ -192,24 +215,31 @@ public class ConfigLoader {
     public String getRoboRIOAddress() {
         return getProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
     }
+
     public String getRobotWifiSSID() {
         return getProperty("wifi.robot");
     }
+
     public String getInternetWifiSSID() {
         return getProperty("wifi.internet");
     }
+
     public String getProjectDirectory() {
         return getProperty("project.directory");
     }
+
     public String getDockerImagesDirectory() {
         return getProperty("docker.imagesDirectory", DEFAULT_DOCKER_IMAGES_DIRECTORY);
     }
+
     public String getDockerAltBaseImageURL() {
         return getProperty("docker.altBaseImageURL", DEFAULT_DOCKER_IMAGE_ALT_BASE_URL);
     }
+
     public Integer getDockerAltBaseImageImportTimeout() {
         return getPropertyInteger("docker.altBaseImageImportTimeout", DEFAULT_CONNECT_TIMEOUT);
     }
+
     public ConfigProperties getConfigProperties() {
         return new ConfigProperties(lastUpdated, lastReloaded)
                 .setSERVERS_PASSWORD(getServersPassword())
@@ -259,7 +289,7 @@ public class ConfigLoader {
         }
         if (configProperties.getWIFI_SSID() != null && !configProperties.getWIFI_SSID().isEmpty()) {
             properties.setProperty("wifi.internet", configProperties.getWIFI_SSID());
-        }else {
+        } else {
             properties.remove("wifi.internet");
         }
         if (configProperties.getSERVERS_CONNECT_TIMEOUT() != null) {
@@ -300,6 +330,23 @@ public class ConfigLoader {
 
     public long getRetryTimeout() {
         return getPropertyLong("servers.retryTimeout", DEFAULT_RETRY_TIMEOUT);
+    }
+
+    public List<DeviceAddData> getServersConstant() {
+        List<String> value = getPropertyList("servers.constant");
+
+        if (value == null) return Collections.emptyList();
+
+        return value.stream().map(m -> {
+            try {
+                return gson.fromJson(m, DeviceAddData.class);
+            } catch (JsonSyntaxException e) {
+                logger.warning("Failed to parse from servers.constant, Invalid data: " + e.getMessage());
+                return null;
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
+
+
     }
 
     public List<String> getServices() {
