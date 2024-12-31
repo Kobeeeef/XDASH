@@ -1,5 +1,6 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
+import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.FormattedByteResult;
 import org.kobe.xbot.xdashbackend.entities.FormattedTimeResult;
 import org.kobe.xbot.xdashbackend.entities.TransferProgress;
@@ -8,10 +9,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class Utilities {
@@ -150,7 +153,23 @@ public class Utilities {
         return new FormattedTimeResult(value, unit, longFormat);
     }
 
+    public static String formatError(Throwable throwable) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Error: ").append(throwable.getMessage()).append("\n");
 
+        if (throwable.getCause() != null) {
+            sb.append("Cause: ").append(throwable.getCause()).append("\n");
+        }
+
+        sb.append("Stack Trace:\n");
+        for (StackTraceElement element : throwable.getStackTrace()) {
+            sb.append("\tat ").append(element.toString()).append("\n");
+        }
+
+        sb.append("Exception Type: ").append(throwable.getClass().getName()).append("\n");
+
+        return sb.toString();
+    }
     public static boolean createTar(String sourcePath, String outputTarFile, Consumer<TransferProgress> consumer) {
         try {
             ProcessBuilder pb;

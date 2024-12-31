@@ -37,6 +37,11 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private static final XDashLogger logger = XDashLogger.getLogger();
     private static final Set<WebSocketSession> sessions = Collections.synchronizedSet(new HashSet<>());
     private static final Logger log = LoggerFactory.getLogger(WebSocketHandler.class);
+    private static BroadcastService broadcastService;
+
+    public WebSocketHandler() {
+        broadcastService = new BroadcastService(sessions);
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -211,8 +216,32 @@ public class WebSocketHandler extends TextWebSocketHandler {
         } else if (message.getType().equals("NETWORK-STOP-SUBNET-SCAN")) {
             session.sendMessage(new TextMessage(new Message(new SubnetScanData("Stopping subnet scanner.", NetworkDiscovery.isScanning(), null, null, null, "STOPPING"), "NETWORK-SUBNET-SCAN").toJSON()));
             NetworkDiscovery.stopScanSubnet();
-        } else if (message.getType().equals("DEVICES-DATA")) {
+        } else if (message.getType().equals("XCASTER-START-SUBNET-SCAN")) {
+            String msg = message.getMessage();
+            try {
 
+                XCASTERSubnetScan serviceInfo = gson.fromJson(msg, XCASTERSubnetScan.class);
+                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Starting subnet scanner.", NetworkDiscovery.isXCASTERScanning(), null, null, serviceInfo.getSubnet(), "STARTING"), "XCASTER-SUBNET-SCAN").toJSON()));
+                if (serviceInfo.getSubnet() == null || serviceInfo.getSubnet().isEmpty() || serviceInfo.getSubnet().isBlank()) {
+                    session.sendMessage(new TextMessage(new Message(new SubnetScanData("Missing subnet properties.", NetworkDiscovery.isXCASTERScanning(), null, null, null, "FAILED"), "XCASTER-SUBNET-SCAN").toJSON()));
+                    return;
+                }
+                NetworkDiscovery.scanForXCASTERSubnet(serviceInfo.getSubnet(), serviceInfo.getLow(), serviceInfo.getHigh(), serviceInfo.getThreads(), serviceInfo.getPort());
+
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(new Message(new SubnetScanData("Exception: " + e.getMessage(), NetworkDiscovery.isXCASTERScanning(), null, null, null, "FAILED"), "XCASTER-SUBNET-SCAN").toJSON()));
+            }
+        } else if (message.getType().equals("XCASTER-STOP-SUBNET-SCAN")) {
+            session.sendMessage(new TextMessage(new Message(new SubnetScanData("Stopping subnet scanner.", NetworkDiscovery.isXCASTERScanning(), null, null, null, "STOPPING"), "XCASTER-SUBNET-SCAN").toJSON()));
+            NetworkDiscovery.stopXCASTERScanSubnet();
+        } else if (message.getType().equals("NETWORK-SUBNET-GET")) {
+            String subnet = NetworkDiscovery.getSubnetBase();
+            if (subnet != null) {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(true, subnet), message.getType()).toJSON()));
+            } else {
+                session.sendMessage(new TextMessage(new Message(new StatusMessageCode(false, "The subnet could not be found!"), message.getType()).toJSON()));
+            }
+        } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICES-DATA-LIMITED")) {
@@ -932,6 +961,21 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
+    }
+
+    public static void broadcastNotification(Notification notification) {
+        synchronized (sessions) {
+            for (WebSocketSession session : sessions) {
+                try {
+                    session.sendMessage(new TextMessage(new Message(notification, "NOTIFICATION").toJSON()));
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
+    public static BroadcastService getBroadcastService() {
+        return broadcastService;
     }
 }
 

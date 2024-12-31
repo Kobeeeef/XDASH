@@ -1,10 +1,17 @@
 package org.kobe.xbot.xdashbackend.entities;
 
 public class DeviceAddData {
-    private String hostname;
-    private String address;
-    private String username;
-    private String password;
+    private final String hostname;
+    private final String address;
+    private final String username;
+    private final String password;
+
+    public DeviceAddData(String hostname, String address, String username, String password) {
+        this.hostname = hostname;
+        this.address = address;
+        this.username = username;
+        this.password = password;
+    }
 
     public String getHostname() {
         return hostname;
@@ -21,4 +28,5 @@ public class DeviceAddData {
     public String getPassword() {
         return password;
     }
+
 }

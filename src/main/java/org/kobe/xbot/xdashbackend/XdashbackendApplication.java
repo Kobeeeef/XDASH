@@ -8,10 +8,13 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.kobe.xbot.Client.XTablesClient;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
+import org.kobe.xbot.xdashbackend.entities.Notification;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.entities.TransientServiceInfo;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.kobe.xbot.xdashbackend.utilities.Utilities;
 import org.kobe.xbot.xdashbackend.utilities.XJmDNS;
+import org.kobe.xbot.xdashbackend.websocket.WebSocketHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -20,7 +23,9 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.jmdns.ServiceTypeListener;
 import java.awt.*;
+import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,7 +48,7 @@ public class XdashbackendApplication {
         return xJmDNS;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
         System.setProperty("java.awt.headless", "false");
         System.setProperty("java.net.preferIPv4Stack", "true");
         SpringApplication.run(XdashbackendApplication.class, args);
@@ -51,6 +56,20 @@ public class XdashbackendApplication {
         FlatMacLightLaf.setup();
         FlatJetBrainsMonoFont.install();
         FlatInterFont.install();
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            try {
+                logger.fatal("UNCAUGHT EXCEPTION: " + Utilities.formatError(throwable));
+                WebSocketHandler.broadcastNotification(new Notification(Notification.NotificationType.fatal)
+                        .setDetail(throwable.getMessage())
+                        .setCause(throwable.getCause().toString())
+                        .setExceptionType(throwable.getClass().getName())
+                        .setStackTrace(Arrays.stream(throwable.getStackTrace())
+                                .map(StackTraceElement::toString)
+                                .toArray(String[]::new))
+
+                        .setSummary("Uncaught Exception: " + thread.getName()));
+            } catch (Exception ignored) {}
+        });
         xJmDNS = new XJmDNS();
         xJmDNS.addServiceTypeListener(new ServiceTypeListener() {
             @Override
