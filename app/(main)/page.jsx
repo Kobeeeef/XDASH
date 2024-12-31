@@ -475,6 +475,12 @@ const Dashboard = () => {
                                 onClick={() => {
                                     setAddDeviceDialogVisible(true)
                                 }} />
+                            <Button
+                                icon="pi pi-search" text loading={loading} disabled={!isConnected}
+                                onClick={() => {
+                                    setLoading(true)
+                                    router.replace('/network/XCASTER');
+                                }} />
                         </>);
                     }} removableSort value={isConnected ? devicesData : []}
                         emptyMessage={Loader({ message: isConnected ? 'Searching for machines running XCASTER' : 'Connecting to backend' })}

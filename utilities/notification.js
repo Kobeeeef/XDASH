@@ -8,7 +8,7 @@ const loadAudio = (audio) => {
 let notificationSound = null;
 let errorNotificationSound = null;
 let successNotificationSound = null;
-
+let fatalNotificationSound = null;
 // Load all audio files
 const loadAllSounds = () => {
     notificationSound = new Audio('/audio/ding.mp3');
@@ -17,6 +17,8 @@ const loadAllSounds = () => {
     loadAudio(errorNotificationSound);
     successNotificationSound = new Audio('/audio/success.mp3');
     loadAudio(successNotificationSound);
+    fatalNotificationSound = new Audio('/audio/fatal.mp3');
+    loadAudio(fatalNotificationSound);
 };
 
 // Play functions
@@ -35,6 +37,13 @@ const playErrorNotificationSound = () => {
         console.error('Audio play was prevented:', error); // Handle autoplay restrictions
     });
 };
+const playFatalNotificationSound = () => {
+    if (!fatalNotificationSound) fatalNotificationSound = new Audio('/audio/fatal.mp3');
+    fatalNotificationSound.currentTime = 0; // Reset playback position
+    fatalNotificationSound.play().catch(error => {
+        console.error('Audio play was prevented:', error); // Handle autoplay restrictions
+    });
+};
 
 const playSuccessNotificationSound = () => {
     if (!successNotificationSound) successNotificationSound = new Audio('/audio/success.mp3');
@@ -45,4 +54,4 @@ const playSuccessNotificationSound = () => {
 };
 
 // Export load and play methods
-export { loadAllSounds, playNotificationSound, playErrorNotificationSound, playSuccessNotificationSound };
+export { loadAllSounds, playNotificationSound, playErrorNotificationSound, playSuccessNotificationSound, playFatalNotificationSound };

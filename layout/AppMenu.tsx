@@ -21,7 +21,9 @@ const AppMenu = () => {
                     label: 'mDNS',
                     icon: 'pi pi-globe',
                     to: '/network/mDNS'
-                }, { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' }]
+                },
+                    { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' },
+                    { label: 'XCASTER', icon: 'pi pi-megaphone', to: '/network/XCASTER' }]
             },
 
             ]
