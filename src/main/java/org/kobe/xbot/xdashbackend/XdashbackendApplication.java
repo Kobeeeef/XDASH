@@ -56,20 +56,6 @@ public class XdashbackendApplication {
         FlatMacLightLaf.setup();
         FlatJetBrainsMonoFont.install();
         FlatInterFont.install();
-        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            try {
-                logger.fatal("UNCAUGHT EXCEPTION: " + Utilities.formatError(throwable));
-                WebSocketHandler.broadcastNotification(new Notification(Notification.NotificationType.fatal)
-                        .setDetail(throwable.getMessage())
-                        .setCause(throwable.getCause().toString())
-                        .setExceptionType(throwable.getClass().getName())
-                        .setStackTrace(Arrays.stream(throwable.getStackTrace())
-                                .map(StackTraceElement::toString)
-                                .toArray(String[]::new))
-
-                        .setSummary("Uncaught Exception: " + thread.getName()));
-            } catch (Exception ignored) {}
-        });
         xJmDNS = new XJmDNS();
         xJmDNS.addServiceTypeListener(new ServiceTypeListener() {
             @Override
@@ -193,13 +179,26 @@ public class XdashbackendApplication {
         });
         main.setDaemon(true);
         main.start();
-        XTablesLogger.setLoggingLevel(Level.OFF);
         try {
             Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
         } catch (Exception e) {
             logger.warning("Failed to open web browser");
             logger.warning("Open the website here: http://localhost:8080/");
         }
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            try {
+                logger.fatal("UNCAUGHT EXCEPTION: " + Utilities.formatError(throwable));
+                WebSocketHandler.broadcastNotification(new Notification(Notification.NotificationType.fatal)
+                        .setDetail(throwable.getMessage())
+                        .setCause(throwable.getCause().toString())
+                        .setExceptionType(throwable.getClass().getName())
+                        .setStackTrace(Arrays.stream(throwable.getStackTrace())
+                                .map(StackTraceElement::toString)
+                                .toArray(String[]::new))
+
+                        .setSummary("Uncaught Exception: " + thread.getName()));
+            } catch (Exception ignored) {}
+        });
     }
 
     public static Map<String, SSHHostAddress> getResolvedXCASTERServices() {
