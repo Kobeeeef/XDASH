@@ -696,6 +696,7 @@ public class SSHHostAddress {
             File image,
             String containerName,
             DockerFlashType type,
+            File composeFile,
             Consumer<DockerImportReturn> updates)
     {
 
@@ -726,10 +727,10 @@ public class SSHHostAddress {
                         double currentPercentage = progress.getPercentage();
                         double lastLoggedPercentage = lastPercentage.get();
 
-                        if (currentPercentage - lastLoggedPercentage >= 0.8) { // Only update if the difference is 0.5% or more
+                        if (currentPercentage - lastLoggedPercentage >= 0.8) {
                             updates.accept(new DockerImportReturn(
                                     String.format(
-                                            "Uploading file: %.2f%% complete (%d/%d bytes)",
+                                            "Uploading image file: %.2f%% complete (%d/%d bytes)",
                                             currentPercentage,
                                             progress.getCurrentBytes(),
                                             progress.getTotalBytes()
@@ -751,33 +752,90 @@ public class SSHHostAddress {
             updates.accept(new DockerImportReturn("File uploaded successfully.", server, true, false));
 
             // Step 2: Remove existing containers and images
-            if (type.equals(DockerFlashType.LIGHT)) {
-                executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
-                executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+            if(composeFile == null) {
+                if (type.equals(DockerFlashType.LIGHT)) {
+                    executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
+                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+                } else {
+                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a)", updates);
+                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q)", updates);
+                }
             } else {
-                executeCommandDocker(session, "sudo -S docker rm -f $(sudo docker ps -q -a)", updates);
-                executeCommandDocker(session, "sudo -S docker rmi -f $(sudo docker images -a -q)", updates);
-            }
+                if (type.equals(DockerFlashType.LIGHT)) {
+                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+                } else {
+                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q)", updates);
+                }
+                String remoteComposeFilePath = "/tmp/" + composeFile.getName();
+                AtomicReference<Double> lastComposePercentage = new AtomicReference<>(0.0);
+                boolean composeUploadSuccess = uploadFileUsingLocalSFTP(
+                        composeFile.getAbsolutePath(),
+                        remoteComposeFilePath,
+                        username,
+                        password,
+                        address,
+                        progress -> {
+                            double currentPercentage = progress.getPercentage();
+                            double lastLoggedPercentage = lastComposePercentage.get();
 
+                            if (currentPercentage - lastLoggedPercentage >= 0.8) {
+                                updates.accept(new DockerImportReturn(
+                                        String.format(
+                                                "Uploading compose file: %.2f%% complete (%d/%d bytes)",
+                                                currentPercentage,
+                                                progress.getCurrentBytes(),
+                                                progress.getTotalBytes()
+                                        ),
+                                        server,
+                                        true,
+                                        false
+                                ));
+                                lastComposePercentage.set(currentPercentage); // Update the last logged percentage
+                            }
+                        }
+                );
+                if (!composeUploadSuccess) {
+                    updates.accept(new DockerImportReturn("Failed to upload Docker compose file.", server, true, true));
+                    return;
+                }
+                updates.accept(new DockerImportReturn("Compose file uploaded successfully.", server, true, false));
+                boolean runSuccess = executeCommandDocker(session, "sudo -S docker-compose -f "+ remoteComposeFilePath + " down -t 0", updates);
+                if (!runSuccess) {
+                    updates.accept(new DockerImportReturn("Failed to shutdown previous docker compose. Continuing regardless...", server, false, false));
+                }
+
+            }
             // Step 3: Load the Docker image
             updates.accept(new DockerImportReturn("Loading Docker image...", server, true, false));
             String loadCommand = "sudo -S docker load --input " + remoteFilePath;
             boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
 
             if (!loadSuccess) {
-                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, true, true));
+                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, false, true));
                 return;
             }
             updates.accept(new DockerImportReturn("Docker image loaded successfully.", server, true, false));
+            if (composeFile == null) {
+                // Step 4: Run a new container
+                String runCommand = "sudo -S docker run -d --name " + containerName + " " + imageName;
+                boolean runSuccess = executeCommandDocker(session, runCommand, updates);
 
-            // Step 4: Run a new container
-            String runCommand = "sudo -S docker run -d --name " + containerName + " " + imageName;
-            boolean runSuccess = executeCommandDocker(session, runCommand, updates);
-
-            if (runSuccess) {
-                updates.accept(new DockerImportReturn("Container started successfully.", server, true, false));
+                if (runSuccess) {
+                    updates.accept(new DockerImportReturn("Container started successfully.", server, true, false));
+                } else {
+                    updates.accept(new DockerImportReturn("Failed to start container.", server, true, true));
+                }
             } else {
-                updates.accept(new DockerImportReturn("Failed to start container.", server, true, true));
+                // Step 4: Run a new compose
+                String remoteComposeFilePath = "/tmp/" + composeFile.getName();
+                String runCommand = "sudo -S docker-compose -f "+ remoteComposeFilePath + " up -d";
+                boolean runSuccess = executeCommandDocker(session, runCommand, updates);
+
+                if (runSuccess) {
+                    updates.accept(new DockerImportReturn("Docker Compose started successfully.", server, true, false));
+                } else {
+                    updates.accept(new DockerImportReturn("Failed to start docker compose.", server, true, true));
+                }
             }
 
         } catch (Exception e) {
@@ -924,8 +982,18 @@ public class SSHHostAddress {
 
 
         if (command.startsWith("sudo")) {
-            outputStream.write((password + "\n").getBytes());
-            outputStream.flush();
+            int length = command.split("sudo").length;
+            for (int i = 0; i < length; i++) {
+                outputStream.write((password + "\n").getBytes());
+                outputStream.flush();
+                if(length > 1) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+
         }
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(responseStream))) {

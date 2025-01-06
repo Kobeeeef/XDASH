@@ -25,6 +25,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import javax.jmdns.ServiceInfo;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -263,7 +267,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 ready = false;
                 response = "The project directory has not been configured.";
             }
-            session.sendMessage(new TextMessage(new Message(new DockerPageReturn(gson.toJson(dataList), ready, response, XdashbackendApplication.getConfigLoader().getProjectDirectory()), message.getType()).toJSON()));
+            session.sendMessage(new TextMessage(new Message(new DockerPageReturn(gson.toJson(dataList), ready, response, XdashbackendApplication.getConfigLoader().getProjectDirectory(), XdashbackendApplication.getConfigLoader().getDockerComposeFileDirectory()), message.getType()).toJSON()));
         } else if (message.getType().equals("DEVICE-DATA")) {
             String server = message.getMessage();
             SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
@@ -423,6 +427,36 @@ public class WebSocketHandler extends TextWebSocketHandler {
             } else {
                 session.sendMessage(new TextMessage(new Message(new CommandReturn(null, "DISCONNECTED", false, true), "DEVICE-REBOOT").toJSON()));
             }
+        } else if (message.getType().equals("DOCKER-COMPOSE-FILE-GET")) {
+            try {
+                String filePath = XdashbackendApplication.getConfigLoader().getDockerComposeFileDirectory();
+
+                if (filePath != null && !filePath.isEmpty() && !filePath.isBlank()) {
+                    Path path = Paths.get(filePath);
+                    long fileSize = Files.size(path);
+
+                    long maxFileSize = 50 * 1024;
+                    if (fileSize > maxFileSize) {
+                        session.sendMessage(new TextMessage(
+                                new Message(new StatusMessageCode(false, "File size exceeds the 50 KB limit."), message.getType()).toJSON()
+                        ));
+                    } else {
+                        String fileContent = Files.readString(path, StandardCharsets.UTF_8);
+                        session.sendMessage(new TextMessage(
+                                new Message(new StatusMessageCode(true, fileContent), message.getType()).toJSON()
+                        ));
+                    }
+                } else {
+                    session.sendMessage(new TextMessage(
+                            new Message(new StatusMessageCode(false, "File path is invalid or null!"), message.getType()).toJSON()
+                    ));
+                }
+            } catch (Exception e) {
+                session.sendMessage(new TextMessage(
+                        new Message(new StatusMessageCode(false, "Exception: " + e.getMessage()), message.getType()).toJSON()
+                ));
+            }
+
         } else if (message.getType().equals("DOCKER-BUILD")) {
             String msg = message.getMessage();
             if (msg != null) {
@@ -733,12 +767,26 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid image found.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
+                File composeFile = null;
+                if(devicesTransferFiles.isUseCompose()) {
+                    String composeFilePath = XdashbackendApplication.getConfigLoader().getDockerComposeFileDirectory();
+                    if(composeFilePath != null && !composeFilePath.isEmpty() && !composeFilePath.isBlank()) {
+                        composeFile = new File(composeFilePath);
+                        if (composeFile == null || !composeFile.exists() || !composeFile.isFile()) {
+                            session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid compose file found.", null, false, true), message.getType()).toJSON()));
+                            return;
+                        }
+                    } else {
+                        session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid compose file found (NULL or EMPTY).", null, false, true), message.getType()).toJSON()));
+                        return;
+                    }
+                }
                 int failures = 0;
                 for (String server : servers) {
                     SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
                     if (sshHostAddress != null) {
                         if (sshHostAddress.forceIsConnected()) {
-                            sshHostAddress.uploadDockerImage(imageFile, containerName, flashType, (v) -> {
+                            sshHostAddress.uploadDockerImage(imageFile, containerName, flashType, composeFile, (v) -> {
                                 try {
                                     session.sendMessage(new TextMessage(new Message(v, message.getType()).toJSON()));
                                 } catch (Exception ignored) {

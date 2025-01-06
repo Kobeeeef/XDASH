@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.entities.ConfigProperties;
 import org.kobe.xbot.xdashbackend.entities.DeviceAddData;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +20,9 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class ConfigLoader {
-    private static final Logger log = LoggerFactory.getLogger(ConfigLoader.class);
     private final Properties properties = new Properties();
     private final String fileName = "xdash.properties";
-    private final XTablesLogger logger = XTablesLogger.getLogger();
+    private final XDashLogger logger = XDashLogger.getLogger(ConfigLoader.class);
     private static final Gson gson = new Gson();
     //------------- DEFAULT VALUES -------------
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
@@ -227,6 +227,9 @@ public class ConfigLoader {
     public String getProjectDirectory() {
         return getProperty("project.directory");
     }
+    public String getDockerComposeFileDirectory() {
+        return getProperty("docker.compose.file.directory");
+    }
 
     public String getDockerImagesDirectory() {
         return getProperty("docker.imagesDirectory", DEFAULT_DOCKER_IMAGES_DIRECTORY);
@@ -253,6 +256,7 @@ public class ConfigLoader {
                 .setALT_BASE_IMAGE_URL(getDockerAltBaseImageURL())
                 .setPROJECT_DIRECTORY(getProjectDirectory())
                 .setROBORIO_SERVER(getRoboRIOServer())
+                .setDOCKER_COMPOSE_FILE_DIRECTORY(getDockerComposeFileDirectory())
                 .setDOCKER_IMAGES_DIRECTORY(getDockerImagesDirectory())
                 .setWIFI_SSID(getInternetWifiSSID())
                 .setROBOT_WIFI_SSID(getRobotWifiSSID())
@@ -271,6 +275,11 @@ public class ConfigLoader {
             properties.setProperty("project.directory", configProperties.getPROJECT_DIRECTORY());
         } else {
             properties.remove("project.directory");
+        }
+        if (configProperties.getDOCKER_COMPOSE_FILE_DIRECTORY() != null && !configProperties.getDOCKER_COMPOSE_FILE_DIRECTORY().isEmpty()) {
+            properties.setProperty("docker.compose.file.directory", configProperties.getDOCKER_COMPOSE_FILE_DIRECTORY());
+        } else {
+            properties.remove("docker.compose.file.directory");
         }
         if (configProperties.getALT_BASE_IMAGE_URL() != null && !configProperties.getALT_BASE_IMAGE_URL().isEmpty()) {
             properties.setProperty("docker.altBaseImageURL", configProperties.getALT_BASE_IMAGE_URL());

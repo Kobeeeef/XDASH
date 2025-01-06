@@ -6,9 +6,14 @@ public class DockerImportRequest {
     private String imageName;
     private String architecture;
     private String flashType;
+    private boolean useCompose;
 
     public String getFlashType() {
         return flashType;
+    }
+
+    public boolean isUseCompose() {
+        return useCompose;
     }
 
     public String[] getServers() {

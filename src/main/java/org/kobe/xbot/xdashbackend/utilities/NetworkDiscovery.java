@@ -121,13 +121,14 @@ public class NetworkDiscovery {
                     XCASTERServiceInfo xcaster = getXCASTERFromServerWithTimeout(host);
                     if (!Thread.currentThread().isInterrupted()) {
                         if (xcaster != null) {
-                            WebSocketHandler.getBroadcastService().queueBroadcast(new SubnetScanData("The device was found at " + xcaster.getAddress(), xcasterScanRunning.get(), xcaster.getAddress(), xcaster.getHostname(), subnet, "FOUND").setUsername(xcaster.getUsername()).setPassword(xcaster.getPassword()), "XCASTER-SUBNET-SCAN");
-                            if (XdashbackendApplication.getResolvedXCASTERServices().values().stream().noneMatch(m -> m.getAddress().equals(xcaster.getAddress()))) {
-                                SSHHostAddress sshHostAddress = new SSHHostAddress(xcaster.getHostname(), xcaster.getUsername(), xcaster.getPassword(), xcaster.getAddress(), xcaster.getServer());
+                            String address = subnet + "." + hostId;
+                            WebSocketHandler.getBroadcastService().queueBroadcast(new SubnetScanData("The device was found at " + address, xcasterScanRunning.get(), address, xcaster.getHostname(), subnet, "FOUND").setUsername(xcaster.getUsername()).setPassword(xcaster.getPassword()), "XCASTER-SUBNET-SCAN");
+                            if (XdashbackendApplication.getResolvedXCASTERServices().values().stream().noneMatch(m -> m.getAddress().equals(address))) {
+                                SSHHostAddress sshHostAddress = new SSHHostAddress(xcaster.getHostname(), xcaster.getUsername(), xcaster.getPassword(), address, xcaster.getServer());
                                SSHHostAddress previous = XdashbackendApplication.getResolvedXCASTERServices().put(xcaster.getServer(), sshHostAddress);
                                 if (previous == null) {
                                     List<String> machines = new ArrayList<>(XdashbackendApplication.getConfigLoader().getPropertyList("servers.constant"));
-                                    machines.add(gson.toJson(new DeviceAddData(xcaster.getHostname(), xcaster.getAddress(), xcaster.getUsername(), xcaster.getPassword())));
+                                    machines.add(gson.toJson(new DeviceAddData(xcaster.getHostname(), address, xcaster.getUsername(), xcaster.getPassword())));
                                     XdashbackendApplication.getConfigLoader().setPropertyList("servers.constant", machines);
                                     XdashbackendApplication.getConfigLoader().save();
                                 } else {
@@ -136,7 +137,7 @@ public class NetworkDiscovery {
                                         for (int j = 0; j < machines.size(); j++) {
                                             DeviceAddData existingData = gson.fromJson(machines.get(j), DeviceAddData.class);
                                             if (existingData.getHostname().equals(xcaster.getHostname())) {
-                                                machines.set(j, gson.toJson(new DeviceAddData(xcaster.getHostname(), xcaster.getAddress(), xcaster.getUsername(), xcaster.getPassword())));
+                                                machines.set(j, gson.toJson(new DeviceAddData(xcaster.getHostname(), address, xcaster.getUsername(), xcaster.getPassword())));
                                                 break;
                                             }
                                         }

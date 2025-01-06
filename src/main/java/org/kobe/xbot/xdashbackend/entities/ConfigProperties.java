@@ -20,6 +20,17 @@ public class ConfigProperties {
     private String PROJECT_DIRECTORY;
     private String ALT_BASE_IMAGE_URL;
     private String DOCKER_IMAGES_DIRECTORY;
+    private String DOCKER_COMPOSE_FILE_DIRECTORY;
+
+    public String getDOCKER_COMPOSE_FILE_DIRECTORY() {
+        return DOCKER_COMPOSE_FILE_DIRECTORY;
+    }
+
+    public ConfigProperties setDOCKER_COMPOSE_FILE_DIRECTORY(String DOCKER_COMPOSE_FILE_DIRECTORY) {
+        this.DOCKER_COMPOSE_FILE_DIRECTORY = DOCKER_COMPOSE_FILE_DIRECTORY;
+        return this;
+    }
+
     private String ROBOT_WIFI_SSID;
     private String[] SERVICES;
 

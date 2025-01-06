@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  xdash-service:
+    image: xdash-docker-image
+    container_name: xdash-container
+    ports:
+      - "8080:80"
+    environment:
+      - ENV_VAR_NAME=value
+    restart: always

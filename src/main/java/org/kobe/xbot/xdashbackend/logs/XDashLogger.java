@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class XDashLogger extends Logger {
-    private static final String loggerName = "XTablesLogger";
+    private static final String loggerName = "XDashLogger";
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(XDashLogger.class);
     private static Level defaultLevel = Level.ALL;
     private static XDashLogger instance = null;
@@ -29,14 +29,22 @@ public class XDashLogger extends Logger {
 
     public static XDashLogger getLogger() {
         if (instance == null) {
-            XDashLogger logger = new XDashLogger(loggerName, null);
-            logger.setLevel(defaultLevel);
-            ConsoleHandler consoleHandler = new ConsoleHandler();
-            consoleHandler.setFormatter(new XDashLogger.XTablesFormatter());
-            logger.addHandler(consoleHandler);
-            instance = logger;
+            instance = getLogger(loggerName);
         }
         return instance;
+    }
+
+    public static XDashLogger getLogger(Class<?> clazz) {
+        return getLogger(clazz.getName());
+    }
+
+    public static XDashLogger getLogger(String name) {
+        XDashLogger logger = new XDashLogger(name, null);
+        logger.setLevel(defaultLevel);
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new XDashFormatter());
+        logger.addHandler(consoleHandler);
+        return logger;
     }
 
     @Override
@@ -72,7 +80,7 @@ public class XDashLogger extends Logger {
                 , color, level.getName(), className, RESET, msg, System.lineSeparator());
     }
 
-    private static class XTablesFormatter extends java.util.logging.Formatter {
+    private static class XDashFormatter extends java.util.logging.Formatter {
         @Override
         public String format(java.util.logging.LogRecord record) {
             StringBuilder builder = new StringBuilder();

@@ -195,7 +195,6 @@ public class XdashbackendApplication {
                         .setStackTrace(Arrays.stream(throwable.getStackTrace())
                                 .map(StackTraceElement::toString)
                                 .toArray(String[]::new))
-
                         .setSummary("Uncaught Exception: " + thread.getName()));
             } catch (Exception ignored) {}
         });
