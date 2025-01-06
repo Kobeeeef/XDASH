@@ -11,7 +11,7 @@ const TimeoutsDialog = ({ timeoutsRef, updateInterval=100 }) => {
     useEffect(() => {
         // Function to update the timeouts state
         const updateTimeouts = () => {
-            const currentTimeouts = Object.entries(timeoutsRef.current || {}).map(([id, timeoutManager]) => ({
+            const currentTimeouts = Object.entries(timeoutsRef?.current || {}).map(([id, timeoutManager]) => ({
                 id,
                 timeLeft: timeoutManager.getTimeLeft(),
             }));

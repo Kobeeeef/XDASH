@@ -20,7 +20,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputNumber } from 'primereact/inputnumber';
 import { Chips } from 'primereact/chips';
 import { Dropdown } from 'primereact/dropdown';
-import { isValidPath } from '../../../utilities/utilities';
+import { isValidFile, isValidPath } from '../../../utilities/utilities';
 
 
 const Dashboard = () => {
@@ -473,6 +473,14 @@ const Dashboard = () => {
                                        onChange={(e) => setNewData(prev => ({
                                            ...prev,
                                            DOCKER_IMAGES_DIRECTORY: e.target.value
+                                       }))} />
+                            <Divider align="center">
+                                <Badge value="Docker Compose File Directory"></Badge>
+                            </Divider>
+                            <InputText invalid={!isValidFile(newData?.DOCKER_COMPOSE_FILE_DIRECTORY, "yml")} className={'w-full'} placeholder={'File Directory'} value={newData?.DOCKER_COMPOSE_FILE_DIRECTORY}
+                                       onChange={(e) => setNewData(prev => ({
+                                           ...prev,
+                                           DOCKER_COMPOSE_FILE_DIRECTORY: e.target.value
                                        }))} />
                         </TabPanel>
                         <TabPanel disabled={!isConnected || loading} className={'w-full'} header="XTABLES"

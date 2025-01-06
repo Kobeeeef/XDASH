@@ -4,8 +4,8 @@
 
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
-import { WebsocketContext } from '../../../layout/context/websocketcontext';
-import TimeAgo from '../../../components/TimeAgo';
+import { WebsocketContext } from '../../../../layout/context/websocketcontext';
+import TimeAgo from '../../../../components/TimeAgo';
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { MultiSelect } from 'primereact/multiselect';
@@ -13,16 +13,16 @@ import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
+import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../../utilities/notification';
 import { TabPanel, TabView } from 'primereact/tabview';
-import TerminalDisplay from '../../../components/TerminalDisplay';
+import TerminalDisplay from '../../../../components/TerminalDisplay';
 import { Tag } from 'primereact/tag';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dropdown } from 'primereact/dropdown';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-import { countdown } from '../../../utilities/utilities';
+import { countdown } from '../../../../utilities/utilities';
 import { ToggleButton } from 'primereact/togglebutton';
-import TimeoutsDialog from '../../../components/TimeoutsDialog';
+import TimeoutsDialog from '../../../../components/TimeoutsDialog';
 import { useRouter } from 'next/navigation';
 
 
@@ -73,6 +73,7 @@ const Dashboard = () => {
     const [transferData, setTransferData] = useState({});
     const [transferIndex, setTransferIndex] = useState(0);
     const [projectDirectory, setProjectDirectory] = useState(null);
+    const [composeDirectory, setComposeDirectory] = useState(null);
     const [finalSummary, setFinalSummary] = useState([]);
     useEffect(() => {
         isMounted.current = true; // Set the mounted flag
@@ -99,6 +100,7 @@ const Dashboard = () => {
                                 message?.message?.ready ?? false
                             );
                             setProjectDirectory(message?.message?.docker_images_directory);
+                            setComposeDirectory(message?.message?.docker_compose_directory)
                             setResponse(message?.message?.message);
 
                             isRequestInProgress = false;
@@ -165,7 +167,8 @@ const Dashboard = () => {
                 containerName: additionalArguments?.CONTAINER_NAME,
                 imageName: additionalArguments?.IMAGE_NAME,
                 architecture: additionalArguments?.ARCHITECTURE,
-                flashType: additionalArguments?.FLASH_TYPE
+                flashType: additionalArguments?.FLASH_TYPE,
+                useCompose: true
             })
         }, (m) => {
             if (m?.type === 'DEVICES-DOCKER-IMPORT') {
@@ -741,9 +744,10 @@ const Dashboard = () => {
                                     <div className={'grid'}>
                                         <div className={'col-6'}>
                                             <div className="flex flex-column gap-2">
-                                                <label htmlFor="Project_DIRECTORY" className={'text-sm'}>Project Directory</label>
-                                            <InputText value={projectDirectory} disabled={true} className={'w-full'}
-                                                       placeholder={'There is no project directory configured.'} />
+                                                <label htmlFor="Project_DIRECTORY" className={'text-sm'}>Project
+                                                    Directory</label>
+                                                <InputText value={projectDirectory} readOnly={true} className={'w-full'}
+                                                           placeholder={'There is no project directory configured.'} />
                                             </div>
                                         </div>
                                         <div className={'col-6'}>
@@ -780,62 +784,53 @@ const Dashboard = () => {
                                                           }} valueTemplate={archTemplate}
                                                           itemTemplate={archTemplate}
                                                           options={['X86_LINUX', 'ARM64_LINUX', 'ARM_V7_LINUX', 'ARM_V6_LINUX', 'ARM_V6_LINUX', 'POWERPC_LINUX', 'S390X_LINUX', 'ARM64_WINDOWS', 'X86_WINDOWS', 'ARM_V7_WINDOWS', 'X86_MACOS', 'ARM64_MACOS']}
-                                                              disabled={!isConnected || loading} className={'w-full'}
-                                                              placeholder={'There is no architecture configured.'} />
-                                                </div>
-                                            </div>
-                                            <div className={'col-12 lg:col-6'}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="FLASH_TYPE" className={'text-sm'}>Flash Type</label>
-                                                    <ToggleButton disabled={!isConnected || loading}
-                                                                  onLabel={'Hard Flash'}
-                                                                  offLabel={'Light Flash'}
-                                                                  checked={additionalArguments?.FLASH_TYPE === 'HARD'}
-                                                                  onChange={(e) => {
-                                                                      if (!confirmChanges) return checkConfirmChangesArgs();
-                                                                      setAdditionalArguments((prev) => {
-                                                                          return ({
-                                                                              ...prev,
-                                                                              FLASH_TYPE: e.value ? 'HARD' : 'LIGHT'
-                                                                          });
-                                                                      });
-                                                                  }} />
-                                                </div>
-                                            </div>
-                                            <div className={'col-12 lg:col-6'}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="CONTAINER_NAME"
-                                                           className={'text-sm'}>Container</label>
-                                                    <InputText id={'CONTAINER_NAME'} onChange={(e) => {
-                                                        if (!confirmChanges) return checkConfirmChangesArgs();
-                                                        setAdditionalArguments((prev) => {
-                                                            return ({
-                                                                ...prev,
-                                                                CONTAINER_NAME: e.target.value
-                                                            });
-                                                        });
-                                                    }} value={additionalArguments?.CONTAINER_NAME}
-                                                               disabled={!isConnected || loading} className={'w-full'}
-                                                               placeholder={'There is no container name configured.'} />
-                                                </div>
-                                            </div>
-                                            <div className={'col-12 lg:col-6 '}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image</label>
-                                                    <InputText id={'IMAGE_NAME'} onChange={(e) => {
-                                                        if (!confirmChanges) return checkConfirmChangesArgs();
-                                                        setAdditionalArguments((prev) => {
-                                                            return ({
-                                                                ...prev,
-                                                                IMAGE_NAME: e.target.value
-                                                            });
-                                                        });
-                                                    }} value={additionalArguments?.IMAGE_NAME}
-                                                               disabled={!isConnected || loading} className={'w-full'}
-                                                               placeholder={'There is no image name configured.'} />
-                                                </div>
+                                                          disabled={!isConnected || loading} className={'w-full'}
+                                                          placeholder={'There is no architecture configured.'} />
                                             </div>
                                         </div>
+                                        <div className={'col-12 lg:col-6'}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="FLASH_TYPE" className={'text-sm'}>Flash Type</label>
+                                                <ToggleButton disabled={!isConnected || loading}
+                                                              onLabel={'Hard Flash'}
+                                                              offLabel={'Light Flash'}
+                                                              checked={additionalArguments?.FLASH_TYPE === 'HARD'}
+                                                              onChange={(e) => {
+                                                                  if (!confirmChanges) return checkConfirmChangesArgs();
+                                                                  setAdditionalArguments((prev) => {
+                                                                      return ({
+                                                                          ...prev,
+                                                                          FLASH_TYPE: e.value ? 'HARD' : 'LIGHT'
+                                                                      });
+                                                                  });
+                                                              }} />
+                                            </div>
+                                        </div>
+                                        <div className={'col-12 lg:col-6 '}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image</label>
+                                                <InputText id={'IMAGE_NAME'} onChange={(e) => {
+                                                    if (!confirmChanges) return checkConfirmChangesArgs();
+                                                    setAdditionalArguments((prev) => {
+                                                        return ({
+                                                            ...prev,
+                                                            IMAGE_NAME: e.target.value
+                                                        });
+                                                    });
+                                                }} value={additionalArguments?.IMAGE_NAME}
+                                                           disabled={!isConnected || loading} className={'w-full'}
+                                                           placeholder={'There is no image name configured.'} />
+                                            </div>
+                                        </div>
+                                        <div className={'col-12 lg:col-6'}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="Docker_compose_DIRECTORY" className={'text-sm'}>Compose
+                                                    File Directory</label>
+                                                <InputText readOnly={true} value={composeDirectory} className={'w-full'}
+                                                           placeholder={'There is no project directory configured.'} />
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </AccordionTab>
                             </Accordion>

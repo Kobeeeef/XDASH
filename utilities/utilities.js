@@ -21,6 +21,21 @@ function isValidPath(path) {
     // If it's neither a valid Windows nor Unix path
     return false;
 }
+function isValidFile(path, extension) {
+    const windowsPathPattern = /^[A-Za-z]:[\\\/]([^\\\/:*?"<>|\r\n]+[\\\/])*([^\\\/:*?"<>|\r\n]+)$/;  // C:\path\to\file
+    const unixPathPattern = /^(\.\/|\.\.\/|\/|[A-Za-z0-9_-]+\/?)([A-Za-z0-9_-]+\/?)*([^\/:*?"<>|\r\n]+)$/;  // /home/user/file or ./file
+
+    // Validate the path
+    const isWindowsPath = windowsPathPattern.test(path);
+    const isUnixPath = unixPathPattern.test(path);
+    if (!isWindowsPath && !isUnixPath) {
+        return false;
+    }
+
+    // Validate the file extension
+    const extensionPattern = new RegExp(`\\.${extension.replace('.', '\\.')}$`, 'i'); // Case-insensitive check
+    return extensionPattern.test(path);
+}
 function countdown(seconds, onTick, onComplete) {
     let timeLeft = seconds;
     onTick(timeLeft);
@@ -35,6 +50,7 @@ function countdown(seconds, onTick, onComplete) {
         }
     }, 1000);
 }
+module.exports.isValidFile = isValidFile;
 module.exports.countdown = countdown;
 module.exports.truncateString = truncateString;
 module.exports.isValidPath = isValidPath;

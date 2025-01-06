@@ -232,14 +232,16 @@ const Dashboard = () => {
                                             </div>
                                             <div className={'col-12 lg:col-6'}>
                                                 <label className="font-bold block mb-2">Threads</label>
-                                                <InputNumber min={1} max={50} disabled={loading || !isConnected || running}
+                                                <InputNumber min={1} max={50}
+                                                             disabled={loading || !isConnected || running}
                                                              className={'w-full'}
                                                              onValueChange={(e) => setThreads(e.value)} value={threads}
                                                              showButtons buttonLayout="horizontal" />
                                             </div>
                                             <div className={'col-12 lg:col-6'}>
                                                 <label className="font-bold block mb-2">Port</label>
-                                                <InputNumber min={1023} max={65535} disabled={loading || !isConnected || running}
+                                                <InputNumber min={1023} max={65535}
+                                                             disabled={loading || !isConnected || running}
                                                              className={'w-full'}
                                                              onValueChange={(e) => setPort(e.value)} useGrouping={false}
                                                              value={port} buttonLayout="horizontal" />
@@ -249,18 +251,19 @@ const Dashboard = () => {
                                                 <div className={'justify-content-center'}>
                                                     <label className="font-bold block mb-2">Scan Range</label>
                                                     <div className="p-inputgroup flex-1">
-                                                        <InputText readOnly={true} disabled={loading || !isConnected || running}
+                                                        <InputText readOnly={true}
+                                                                   disabled={loading || !isConnected || running}
                                                                    value={minMax[0] ?? 0} className="w-full" />
-                                                        <InputText readOnly={true} disabled={loading || !isConnected || running}
+                                                        <InputText readOnly={true}
+                                                                   disabled={loading || !isConnected || running}
                                                                    value={minMax[1] ?? 0} className="w-full" />
                                                     </div>
-                                                    <Slider disabled={loading || !isConnected || running} min={1} max={500}
+                                                    <Slider disabled={loading || !isConnected || running} min={1}
+                                                            max={500}
                                                             range={true} value={minMax}
                                                             onChange={(e) => setMinMax(e.value)}
                                                             className="w-full" />
                                                 </div>
-
-
                                             </div>
                                         </div>
 
