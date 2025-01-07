@@ -1,6 +1,7 @@
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Button } from 'primereact/button';
 import { useEffect, useState } from 'react';
+import { Dialog } from 'primereact/dialog';
 
 export function GlobalErrorHandler({ children }) {
     const [fatalErrorDialogVisible, setFatalErrorDialogVisible] = useState(false);
@@ -44,7 +45,7 @@ export function GlobalErrorHandler({ children }) {
     return (
         <>
             {children}
-            <ConfirmDialog
+            <Dialog
                 closable={false}
                 visible={fatalErrorDialogVisible}
                 onHide={() => setFatalErrorDialogVisible(false)}

@@ -65,7 +65,7 @@ const Dashboard = () => {
                                 (response) => response.type === 'XTABLES-DATA-PUT'
                             )
                                 .then((response) => {
-                                    let value = response.message.code;
+                                    let value = response.message.success;
                                     TerminalService.emit('response', 'Server responded with: ' + value);
                                 })
                                 .catch((error) => {
@@ -90,7 +90,7 @@ const Dashboard = () => {
                             (response) => response.type === 'XTABLES-DATA-GET'
                         )
                             .then((response) => {
-                                let value = response.message.code;
+                                let value = response.message.raw;
                                 TerminalService.emit('response', 'Server responded with: ' + value);
                             })
                             .catch((error) => {
@@ -122,6 +122,26 @@ const Dashboard = () => {
                             });
                     }
                     break;
+                case 'deleteall':
+
+                    TerminalService.emit('response', 'Sending delete request...');
+
+                    sendMessageAndWaitForCondition(
+                        {
+                            type: 'XTABLES-DATA-DELETE',
+                            message: ""
+                        },
+                        (response) => response.type === 'XTABLES-DATA-DELETE'
+                    )
+                        .then((response) => {
+                            let value = response.message.success;
+                            TerminalService.emit('response', 'Server responded with: ' + value);
+                        })
+                        .catch((error) => {
+                            TerminalService.emit('response', 'Failed to delete data: ' + error);
+                        });
+
+                    break;
                 case 'reboot':
                     confirmDialog({
                         message: 'Are you sure you want to reboot?',
@@ -138,7 +158,7 @@ const Dashboard = () => {
                                 (response) => response.type === 'XTABLES-REBOOT'
                             )
                                 .then((response) => {
-                                    let value = response.message.code;
+                                    let value = response.message.success;
                                     TerminalService.emit('response', 'Server responded with: ' + value);
                                 })
                                 .catch((error) => {
@@ -178,16 +198,17 @@ const Dashboard = () => {
         const fetchData = async () => {
             while (isActive && isConnected) {
                 try {
+
                     const message = await sendMessageAndWaitForCondition(
                         { type: 'XTABLES-DATA-VIEW' },
-                        (m) => m.type === 'XTABLES-DATA-VIEW'
+                        (m) => m?.type === 'XTABLES-DATA-VIEW'
                     );
-
+                    console.log(message);
                     setStatusData((a) => {
-                        if (message.message.connected !== a?.connected) {
+                        if (message?.message?.connected !== a?.connected) {
                             setLastStatusUpdate(new Date());
                         }
-                        if(message.message.size !== a?.size) {
+                        if (message.message.size !== a?.size) {
                             setLastDataSizeUpdate(new Date());
                         }
                         return message.message;
@@ -284,7 +305,8 @@ const Dashboard = () => {
             </div>
             <div className="col-12">
                 <div className="card mb-0">
-                    <ToggleButton className={'w-full'} disabled={viewerLoading || !statusData?.connected} checked={statusData?.isViewerOpen}
+                    <ToggleButton className={'w-full'} disabled={viewerLoading || !statusData?.connected}
+                                  checked={statusData?.isViewerOpen}
                                   onClick={() => {
                                       setViewerLoading(true);
                                       sendMessageAndWaitForCondition({ type: 'XTABLES-VIEWER-TOGGLE' }, (m) => m.type === 'XTABLES-DATA')

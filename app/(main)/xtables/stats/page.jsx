@@ -24,7 +24,6 @@ const Dashboard = () => {
                         { type: 'XTABLES-STATISTICS' },
                         (m) => m.type === 'XTABLES-STATISTICS'
                     );
-
                     setInfoData((a) => {
                         if (message.message.connected !== a?.connected) {
                             setLastStatusUpdate(new Date());
@@ -174,8 +173,8 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Network Latency</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? infoData?.networkLatencyMS : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
-                                {isConnected ? (infoData?.connected ? infoData?.networkLatencyMS || 'Unknown' : 'Disconnected') : 'Disconnected'}
+                                className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? infoData?.roundTripLatencyMS / 2 : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
+                                {isConnected ? (infoData?.connected ? infoData?.roundTripLatencyMS / 2 || 'Unknown' : 'Disconnected') : 'Disconnected'}
                             </div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
@@ -192,8 +191,8 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Total Messages</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? infoData?.info?.totalMessages : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
-                                {isConnected ? (infoData?.connected ? infoData?.info?.totalMessages?.toLocaleString() ?? 'Unknown' : 'Disconnected') : 'Disconnected'}
+                                className={'text-900 font-medium text-xl ' + (isConnected ? (infoData?.connected ? "" : 'text-red-600 animate-pulse') : 'text-red-600 animate-pulse')}>
+                                {isConnected ? (infoData?.connected ? (infoData?.info?.totalPublishMessages + infoData?.info?.totalPullMessages + infoData?.info?.totalReplyMessages)?.toLocaleString() ?? 'Unknown' : 'Disconnected') : 'Disconnected'}
                             </div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"

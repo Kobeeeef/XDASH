@@ -32,7 +32,7 @@ const Dashboard = () => {
     const [lastLogUpdate, setLastLogUpdate] = useState(new Date());
     const [loadingStates, setLoadingStates] = useState({});
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
-    const [xtableStatus, setXtableStatus] = useState(false);
+    const [xtableStatus, setXtableStatus] = useState("UNKNOWN");
     const [devicesData, setDevicesData] = useState([]);
     const [lastXTablesStatusUpdate, setLastXTablesStatusUpdate] = useState(new Date());
     const [lastDevicesUpdate, setLastDevicesUpdate] = useState(new Date());
@@ -45,7 +45,6 @@ const Dashboard = () => {
     const [stopRequest, setStopRequest] = useState(false);
     const [loading, setLoading] = useState(false);
     const [timeoutIDs, setTimeoutIDs] = useState([]);
-    const [, setLock] = useState(false);
     const [, setLock2] = useState(false);
 
     const [addDeviceHostnameInput, setAddDeviceHostnameInput] = useState(null)
@@ -60,18 +59,10 @@ const Dashboard = () => {
             if (isConnected) {
                 sendMessageAndWaitForCondition({ type: 'DEVICES-DATA' }, (m) => m.type === 'DEVICES-DATA')
                     .then((message) => {
-                        setXtableStatus((a) => {
-                            if (message?.message?.xtablesConnectedStatus !== a) {
-                                setLastXTablesStatusUpdate(new Date());
-                                setLock(a => {
-                                    if(a) {
-                                        if (!message?.message?.xtablesConnectedStatus) playErrorNotificationSound(); else playSuccessNotificationSound();
-                                    }
-                                    return true;
-                                })
-                            }
-                            return message.message?.xtablesConnectedStatus;
-                        });
+
+                        setXtableStatus(
+                             message?.message?.xtablesConnectedStatus || "UNKNOWN"
+                        );
                         setLogs((a) => {
                             if (a.toString() !== message?.message?.logs?.toString()) setLastLogUpdate(new Date());
                             return message?.message?.logs ?? [];
@@ -332,7 +323,7 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
                             <div
-                                className="text-900 font-medium text-xl">{isConnected ? (xtableStatus ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
+                                className="text-900 font-medium text-xl">{isConnected ? (xtableStatus) : 'Disconnected'}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
                              style={{ width: '2.5rem', height: '2.5rem' }}>
