@@ -7,13 +7,18 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { WebsocketContext } from '../../../../layout/context/websocketcontext';
 import TimeAgo from '../../../../components/TimeAgo';
 import { Stepper } from 'primereact/stepper';
+import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { MultiSelect } from 'primereact/multiselect';
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../../utilities/notification';
+import {
+    playErrorNotificationSound,
+    playFatalNotificationSound,
+    playSuccessNotificationSound
+} from '../../../../utilities/notification';
 import { TabPanel, TabView } from 'primereact/tabview';
 import TerminalDisplay from '../../../../components/TerminalDisplay';
 import { Tag } from 'primereact/tag';
@@ -24,18 +29,18 @@ import { countdown } from '../../../../utilities/utilities';
 import { ToggleButton } from 'primereact/togglebutton';
 import TimeoutsDialog from '../../../../components/TimeoutsDialog';
 import { useRouter } from 'next/navigation';
-
+import SyntaxHighlighter from 'react-syntax-highlighter';
 
 const Dashboard = () => {
     const toast = useRef(null);
-    const router = useRouter()
+    const router = useRouter();
     const {
         isConnected,
         lastConnectionUpdate,
         sendMessageAndWaitForCondition,
         sendMessageAndWaitForConditionWithManage,
-            getTimeoutManagerById,
-            timeoutsRef
+        getTimeoutManagerById,
+        timeoutsRef
     } = useContext(WebsocketContext);
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [devices, setDevices] = useState([]);
@@ -62,6 +67,9 @@ const Dashboard = () => {
     const [ready, setReady] = useState(null);
     const [readyLock, setReadyLock] = useState(false);
     const [response, setResponse] = useState(null);
+    const [composePreviewDialogVisible, setComposePreviewDialogVisible] = useState(false);
+    const [composePreview, setComposePreview] = useState(null);
+    const [additionalArgumentsIndex, setAdditionalArgumentsIndex] = useState(-1)
     const [additionalArguments, setAdditionalArguments] = useState({
         CONTAINER_NAME: 'xdash-docker-pipeline',
         IMAGE_NAME: 'xdash-docker-image',
@@ -100,7 +108,7 @@ const Dashboard = () => {
                                 message?.message?.ready ?? false
                             );
                             setProjectDirectory(message?.message?.docker_images_directory);
-                            setComposeDirectory(message?.message?.docker_compose_directory)
+                            setComposeDirectory(message?.message?.docker_compose_directory);
                             setResponse(message?.message?.message);
 
                             isRequestInProgress = false;
@@ -135,7 +143,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (ready !== null && !ready) {
             if (!readyLock) {
-                playErrorNotificationSound()
+                playErrorNotificationSound();
                 setReadyDialogVisible(true);
             }
         }
@@ -148,19 +156,70 @@ const Dashboard = () => {
         }, vFunc, 20000);
     }
 
+    async function preview_compose() {
+        try {
+            let response = await sendMessageAndWaitForCondition({
+                type: 'DOCKER-COMPOSE-FILE-GET'
+            }, (m) => m?.type === 'DOCKER-COMPOSE-FILE-GET', 5000);
+            if (response?.message?.success) {
+                if (response?.message?.message) {
+                    setComposePreviewDialogVisible(true);
+                    setComposePreview(response.message.message);
+                } else {
+                    toast.current.show({
+                        severity: 'warn',
+                        summary: 'Compose Preview Falsy!',
+                        detail: 'The server returned a falsy message.'
+                    });
+                    setComposePreviewDialogVisible(false);
+                    setComposePreview(null);
+                }
+            } else {
+                toast.current.show({
+                    severity: 'warn',
+                    summary: 'Compose Preview Failed!',
+                    detail: response?.message?.message || 'The server returned a false success.'
+                });
+                setComposePreviewDialogVisible(false);
+                setComposePreview(null);
+            }
+        } catch (e) {
+            toast.current.show({
+                severity: 'warn',
+                summary: 'Compose Preview Failed!',
+                detail: e?.message ?? 'There was a exception while getting the compose preview.'
+            });
+            setComposePreviewDialogVisible(false);
+            setComposePreview(null);
+        }
+    }
+
     function finish() {
         setFinished(true);
+        setComposePreviewDialogVisible(false)
         setLoading(false);
         stepperRef.current.setActiveStep(5);
     }
 
-    function transfer_import() {
+    async function transfer_import() {
         setFinished(false);
         setTransferData({});
         setTransferMessages({});
         setTransferIndex(0);
         stepperRef.current.setActiveStep(4);
         setLoading(true);
+
+
+        setTransferIndex(selectedDevices.length);
+        setTransferData((prev) => ({
+            ...prev,
+            messages: [
+                'Fetching compose preview...',
+                ...(prev?.messages ?? [])
+            ]
+        }));
+        await preview_compose();
+
         sendMessageAndWaitForConditionWithManage('DEVICES-DOCKER-IMPORT', {
             type: 'DEVICES-DOCKER-IMPORT', message: JSON.stringify({
                 servers: selectedDevices.map(m => m.server),
@@ -172,8 +231,8 @@ const Dashboard = () => {
             })
         }, (m) => {
             if (m?.type === 'DEVICES-DOCKER-IMPORT') {
-                let manager = getTimeoutManagerById("DEVICES-DOCKER-IMPORT")
-                if(manager) manager.extendTimeout(30000);
+                let manager = getTimeoutManagerById('DEVICES-DOCKER-IMPORT');
+                if (manager) manager.extendTimeout(30000);
                 const msg = JSON.parse(m?.message);
                 if (msg?.server) {
                     setTransferMessages((prev) => {
@@ -222,7 +281,7 @@ const Dashboard = () => {
                 playSuccessNotificationSound();
                 finish();
             } else {
-                playErrorNotificationSound();
+                playFatalNotificationSound();
             }
         }).catch((e) => {
             setTransferData((prev) => ({
@@ -232,7 +291,7 @@ const Dashboard = () => {
                     ...(prev?.messages ?? [])
                 ]
             }));
-            playErrorNotificationSound();
+            playFatalNotificationSound();
             setLoading(false);
         });
     }
@@ -247,8 +306,8 @@ const Dashboard = () => {
             type: 'DEVICES-RECONNECT', message: JSON.stringify(selectedDevices)
         }, (m) => {
             if (m?.type === 'DEVICES-RECONNECT') {
-                let manager = getTimeoutManagerById("DEVICES-RECONNECT")
-                if(manager) manager.extendTimeout(10000);
+                let manager = getTimeoutManagerById('DEVICES-RECONNECT');
+                if (manager) manager.extendTimeout(10000);
                 const msg = JSON.parse(m?.message);
                 if (msg?.sshHostAddress) {
                     const device = JSON.parse(msg?.sshHostAddress);
@@ -297,7 +356,7 @@ const Dashboard = () => {
                 }, transfer_import);
             } else {
                 setLoading(false);
-                playErrorNotificationSound();
+                playFatalNotificationSound();
             }
         }).catch((e) => {
             setReconnectionData((prev) => ({
@@ -309,7 +368,7 @@ const Dashboard = () => {
                 DEVICES_RECONNECTION_SUCCESS: false
             }));
             setReconnectionIndex(selectedDevices.length);
-            playErrorNotificationSound();
+            playFatalNotificationSound();
             setLoading(false);
         });
     }
@@ -327,8 +386,8 @@ const Dashboard = () => {
             })
         }, (m) => {
             if (m.type === 'DOCKER-BUILD') {
-                let manager = getTimeoutManagerById("DOCKER-BUILD")
-                if(manager) manager.extendTimeout(30000);
+                let manager = getTimeoutManagerById('DOCKER-BUILD');
+                if (manager) manager.extendTimeout(30000);
                 const msg = JSON.parse(m.message);
                 if (msg.step === 'STARTING') {
                     setBuildIndex(0);
@@ -383,7 +442,7 @@ const Dashboard = () => {
         }, 120000).then((msg) => {
 
             if (msg?.message.success === false) {
-                playErrorNotificationSound();
+                playFatalNotificationSound();
                 setLoading(false);
             } else if (msg?.message.success === true) {
                 setLoading(true);
@@ -393,18 +452,20 @@ const Dashboard = () => {
                     ...prev,
                     ROBOT_CONNECTION_MESSAGES: ['Attempting to connect back to robot WiFi now...']
                 }));
-                if(!additionalArguments?.USE_NETWORKING) {
+                if (!additionalArguments?.USE_NETWORKING) {
                     toast.current.show({
                         severity: 'info',
                         summary: 'Network Skipped!',
+                        life: 6000,
                         detail: 'The robot wifi connection was skipped.'
                     });
                     toast.current.show({
                         severity: 'info',
                         summary: 'Reconnection Skipped!',
+                        life: 6000,
                         detail: 'The machine reconnection was skipped.'
                     });
-                    return transfer_import()
+                    return transfer_import();
                 }
                 connect_wifi('ROBOT', (m) => {
                     if (m.type === 'WIFI-CONNECT') {
@@ -426,7 +487,7 @@ const Dashboard = () => {
                     .then((msg) => {
 
                         if (msg?.message?.success === false) {
-                            playErrorNotificationSound();
+                            playFatalNotificationSound();
                             setLoading(false);
                         } else if (msg?.message?.success === true) {
                             playSuccessNotificationSound();
@@ -449,11 +510,13 @@ const Dashboard = () => {
                             ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
                         });
                     });
+                    playFatalNotificationSound()
                     setLoading(false);
                 });
             }
         }).catch((e) => {
             setLoading(false);
+            playFatalNotificationSound()
             setBuildStatus((prev) => {
                 const array = prev?.ERRORS ?? [];
                 array.unshift(e?.message || 'Unknown Exception while building...');
@@ -472,6 +535,7 @@ const Dashboard = () => {
         setFinished(false);
         setFinalSummary([]);
         setTransferIndex(0);
+        setAdditionalArgumentsIndex(-1)
         stepperRef.current.setActiveStep(0);
         if (!ready) {
             toast.current.show({
@@ -500,19 +564,29 @@ const Dashboard = () => {
             playErrorNotificationSound();
             return;
         }
+        if (!composeDirectory) {
+            toast.current.show({
+                severity: 'error',
+                summary: 'Pipeline Setup Incomplete!',
+                detail: 'There is no docker compose file configured.'
+            });
+            playErrorNotificationSound();
+            return;
+        }
 
         setLoading(true);
         setSetup((prev) => ({
             ...prev,
             INTERNET_CONNECTION_MESSAGES: ['Attempting to connect to internet WiFi now...']
         }));
-        if(!additionalArguments?.USE_NETWORKING) {
+        if (!additionalArguments?.USE_NETWORKING) {
             toast.current.show({
                 severity: 'info',
+                life: 6000,
                 summary: 'Network Skipped!',
                 detail: 'The internet wifi connection was skipped.'
             });
-            return build()
+            return build();
         }
         connect_wifi('INTERNET', (m) => {
             if (m.type === 'WIFI-CONNECT') {
@@ -534,7 +608,7 @@ const Dashboard = () => {
             .then((msg) => {
 
                 if (msg?.message?.success === false) {
-                    playErrorNotificationSound();
+                    playFatalNotificationSound();
                     setLoading(false);
                 } else if (msg?.message?.success === true) {
                     playSuccessNotificationSound();
@@ -558,7 +632,7 @@ const Dashboard = () => {
                     INTERNET_CONNECTION_MESSAGES: prev.INTERNET_CONNECTION_MESSAGES
                 });
             });
-            playErrorNotificationSound();
+            playFatalNotificationSound();
             setLoading(false);
         });
 
@@ -566,7 +640,7 @@ const Dashboard = () => {
 
     function checkConfirmChangesArgs() {
         if (!confirmChanges) {
-            playErrorNotificationSound()
+            playErrorNotificationSound();
             confirmDialog({
                 group: 'headless',
                 breakpoints: { '1100px': '75vw', '960px': '100vw' },
@@ -580,6 +654,12 @@ const Dashboard = () => {
         <div className="grid fadeIn">
             <Toast ref={toast} />
             <TimeoutsDialog timeoutsRef={timeoutsRef} updateInterval={10} />
+            <Dialog position={"left"} modal={false} header={'Compose Preview'} closeOnEscape={true} style={{ width: '50%' }}
+                    visible={composePreviewDialogVisible} onHide={() => setComposePreviewDialogVisible(false)}>
+                <SyntaxHighlighter showLineNumbers={true} wrapLines={true} style={vs2015}>
+                    {composePreview}
+                </SyntaxHighlighter>
+            </Dialog>
             <ConfirmDialog
                 group="headless"
                 content={({ headerRef, contentRef, footerRef, hide, message }) => (
@@ -738,7 +818,7 @@ const Dashboard = () => {
                                          placeholder="Select Machines" itemTemplate={template} className="w-full" />
                         </div>
                         <div className={'col-12'}>
-                            <Accordion>
+                            <Accordion activeIndex={additionalArgumentsIndex} onTabChange={(e) => setAdditionalArgumentsIndex(e.index)}>
                                 <AccordionTab disabled={loading || !isConnected}
                                               header="Additional Arguments">
                                     <div className={'grid'}>
@@ -746,7 +826,8 @@ const Dashboard = () => {
                                             <div className="flex flex-column gap-2">
                                                 <label htmlFor="Project_DIRECTORY" className={'text-sm'}>Project
                                                     Directory</label>
-                                                <InputText value={projectDirectory} readOnly={true} className={'w-full'}
+                                                <InputText disabled={!isConnected || loading} value={projectDirectory}
+                                                           readOnly={true} className={'w-full'}
                                                            placeholder={'There is no project directory configured.'} />
                                             </div>
                                         </div>
@@ -826,8 +907,18 @@ const Dashboard = () => {
                                             <div className="flex flex-column gap-2">
                                                 <label htmlFor="Docker_compose_DIRECTORY" className={'text-sm'}>Compose
                                                     File Directory</label>
-                                                <InputText readOnly={true} value={composeDirectory} className={'w-full'}
-                                                           placeholder={'There is no project directory configured.'} />
+                                                <div className="p-inputgroup flex-1">
+                                                    <InputText disabled={!isConnected || loading} readOnly={true}
+                                                               value={composeDirectory} className={'w-full'}
+                                                               placeholder={'There is no docker compose file configured.'} />
+                                                    <Button onClick={() => {
+                                                        setLoading(true);
+                                                        preview_compose().then(() => setLoading(false))
+                                                            .catch(() => setLoading(false))
+                                                            .finally(() => setLoading(false))
+                                                    }} icon="pi pi-search" disabled={!isConnected || !composeDirectory}
+                                                            loading={loading} />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
