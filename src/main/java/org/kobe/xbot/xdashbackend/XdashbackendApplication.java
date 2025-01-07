@@ -5,7 +5,7 @@ import com.formdev.flatlaf.fonts.inter.FlatInterFont;
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
-import org.kobe.xbot.Client.XTablesClient;
+import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.entities.Notification;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;

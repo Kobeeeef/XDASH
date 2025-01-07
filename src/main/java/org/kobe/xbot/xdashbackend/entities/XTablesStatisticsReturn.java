@@ -2,20 +2,27 @@ package org.kobe.xbot.xdashbackend.entities;
 
 import com.google.gson.Gson;
 import org.kobe.xbot.Utilities.LatencyInfo;
+import org.kobe.xbot.Utilities.SystemStatistics;
 
 public class XTablesStatisticsReturn extends DataReturn {
     private static final Gson gson = new Gson();
     private final boolean connected;
     private final String info;
-    private final Double networkLatencyMS;
-    private final Double roundTripLatencyMS;
+    private Double roundTripLatencyMS;
 
-    public XTablesStatisticsReturn(boolean connected, LatencyInfo info) {
+    public XTablesStatisticsReturn(boolean connected, SystemStatistics info) {
         this.connected = connected;
-        this.info = info == null ? null : gson.toJson(info.getSystemStatistics());
-        this.networkLatencyMS = info == null ? null : info.getNetworkLatencyMS();
-        this.roundTripLatencyMS = info == null ? null : info.getRoundTripLatencyMS();
+        this.info = info == null ? null : gson.toJson(info);
 
+    }
+
+    public Double getRoundTripLatencyMS() {
+        return roundTripLatencyMS;
+    }
+
+    public XTablesStatisticsReturn setRoundTripLatencyMS(Double roundTripLatencyMS) {
+        this.roundTripLatencyMS = roundTripLatencyMS;
+        return this;
     }
 
     public boolean isConnected() {

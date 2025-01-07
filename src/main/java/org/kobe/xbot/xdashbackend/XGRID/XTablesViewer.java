@@ -9,9 +9,10 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
-import org.kobe.xbot.Client.XTablesClient;
+import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.ResponseStatus;
 import org.kobe.xbot.Utilities.Utilities;
+import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
@@ -60,7 +61,7 @@ public class XTablesViewer extends JFrame {
         }
         init();
         addComponent();
-        setStatus(client.getSocketClient().isConnected ? "CONNECTED" : "DISCONNECTED");
+        setStatus(client.getSocketMonitor().getSimplifiedMessage());
         cacheThread = new Thread(this::enableCache);
         cacheThread.setDaemon(true);
         cacheThread.start();
@@ -71,8 +72,8 @@ public class XTablesViewer extends JFrame {
         };
         ScheduledExecutorService daemonScheduler = Executors.newScheduledThreadPool(1, daemonThreadFactory);
         daemonScheduler.scheduleAtFixedRate(() -> {
-            setStatus(client.getSocketClient().isConnected ? "CONNECTED" : "DISCONNECTED");
-            if(client.getSocketClient().isConnected) {
+            setStatus(client.getSocketMonitor().getSimplifiedMessage());
+            if(client.getSocketMonitor().isConnected("REQUEST")) {
                 rebootButton.setEnabled(true);
                 addButton.setEnabled(true);
                 reloadButton.setEnabled(true);
@@ -96,7 +97,7 @@ public class XTablesViewer extends JFrame {
 
     private void loadCache() {
         try {
-            String rawJSON = client.getRawJSON().complete();
+            String rawJSON = client.getRawJson();
             cache.updateFromRawJSON(rawJSON);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Failed to Load Cache: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -116,12 +117,12 @@ public class XTablesViewer extends JFrame {
         }
     }
     private boolean subscribeToCacheUpdates() {
-        ResponseStatus responseStatus = client.subscribeUpdateEvent((updateEvent) -> {
-            cache.put(updateEvent.getKey(), updateEvent.getValue());
-            dropdownViewer.updateNode(updateEvent.getKey(), updateEvent.getValue());
-        }).complete();
-        if (responseStatus.equals(ResponseStatus.OK)) System.out.println("Cache is now subscribed for updates.");
-        return responseStatus.equals(ResponseStatus.OK);
+        boolean responseStatus = client.subscribe((updateEvent) -> {
+            cache.put(updateEvent.getKey(), updateEvent.getValue().toByteArray(), updateEvent.getType());
+            dropdownViewer.updateNode(updateEvent.getKey(), XTablesByteUtils.autoFromBytesToJsonString(updateEvent.getValue().toByteArray(), updateEvent.getType()));
+        });
+        if (responseStatus) System.out.println("Cache is now subscribed for updates.");
+        return responseStatus;
     }
     public void setStatus(String status) {
         setTitle(String.format("XDASH - XTABLES - %1$s", status));
@@ -194,14 +195,15 @@ public class XTablesViewer extends JFrame {
          reloadButton = new JButton("Reload Data");
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
-            client.getRawJSON().queue((value) -> {
+            try {
+                String json = client.getRawJson();
                 reloadButton.setEnabled(true);
-                cache.updateFromRawJSON(value);
+                cache.updateFromRawJSON(json);
                 dropdownViewer.populateTable();
-            }, (ec) -> {
+            } catch (Exception ec) {
                 reloadButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "Failed to reload Cache: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            });
+            }
 
 
         });
@@ -242,15 +244,13 @@ public class XTablesViewer extends JFrame {
                 String value = valueArea.getText().replace("\n", "");
                 if (!key.isEmpty() && Utilities.validateKey(key, false)) {
                     try {
-                        client.putRaw(key, value).queue((status1) -> {
-                            if (status1 != ResponseStatus.OK) {
-                                JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + status1.name(), "Error", JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
+                        boolean success = client.putBytes(key, XTablesByteUtils.autoStringJsonToBytes(value));
+                        if (!success) {
+                            JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + success, "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception err) {
+                        JOptionPane.showMessageDialog(null, "Exception while updating value: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 
-
-                    } catch (Exception ei) {
-                        JOptionPane.showMessageDialog(null, "Exception while updating value: " + ei.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
                     JOptionPane.showMessageDialog(null, "This key is invalid.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -264,13 +264,14 @@ public class XTablesViewer extends JFrame {
          rebootButton = new JButton("Reboot");
         rebootButton.addActionListener(e -> {
             rebootButton.setEnabled(false);
-            client.rebootServer().queue((value) -> {
+            try {
+                client.reboot();
                 rebootButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "The server is now rebooting. Please wait.", "Server Rebooting!", JOptionPane.INFORMATION_MESSAGE);
-            }, (ec) -> {
+            } catch (Exception ec) {
                 rebootButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "Failed to reboot server: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            });
+            }
         });
         JPanel panel = new JPanel();
         panel.add(reloadButton);

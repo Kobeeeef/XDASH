@@ -1,16 +1,16 @@
 package org.kobe.xbot.xdashbackend.entities;
 
 public class XTablesStatusReturn extends DataReturn {
-    private final boolean connected;
+    private final boolean pushConnected;
+    private final boolean reqConnected;
+    private final boolean subConnected;
     private final int clients;
 
-    public XTablesStatusReturn(boolean connected, int clients) {
-        this.connected = connected;
+    public XTablesStatusReturn(boolean pushConnected, boolean reqConnected, boolean subConnected, int clients) {
+        this.pushConnected = pushConnected;
+        this.reqConnected = reqConnected;
+        this.subConnected = subConnected;
         this.clients = clients;
-    }
-
-    public boolean isConnected() {
-        return connected;
     }
 
     public int getClients() {

@@ -4,9 +4,9 @@ import java.util.List;
 
 public class MainPageDataReturn {
     private final String devices;
-    private final boolean xtablesConnectedStatus;
+    private final String xtablesConnectedStatus;
     private final List<String> logs;
-    public MainPageDataReturn(String devices, boolean xtablesConnectedStatus, List<String> logs) {
+    public MainPageDataReturn(String devices, String xtablesConnectedStatus, List<String> logs) {
         this.devices = devices;
         this.xtablesConnectedStatus = xtablesConnectedStatus;
         this.logs = logs;
@@ -20,7 +20,7 @@ public class MainPageDataReturn {
         return logs;
     }
 
-    public boolean isXtablesConnectedStatus() {
+    public String isXtablesConnectedStatus() {
         return xtablesConnectedStatus;
     }
 }

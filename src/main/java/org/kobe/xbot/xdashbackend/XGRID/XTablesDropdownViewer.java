@@ -1,9 +1,9 @@
 package org.kobe.xbot.xdashbackend.XGRID;
 
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
-import org.kobe.xbot.Client.XTablesClient;
-import org.kobe.xbot.Utilities.ResponseStatus;
+import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.Utilities;
+import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
 
 import javax.swing.*;
@@ -24,6 +24,7 @@ public class XTablesDropdownViewer extends JPanel {
     private final JTree tree;
     private Font treeFont;
     private final XTablesClient client;
+
     public XTablesDropdownViewer(JFrame parent, XTablesClient client, XTablesData cache) {
         this.cache = cache;
         this.client = client;
@@ -96,7 +97,7 @@ public class XTablesDropdownViewer extends JPanel {
                         deriveFont(1);
                     } else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
                         deriveFont(-1);
-                    }else if (e.getKeyCode() == KeyEvent.VK_R) {
+                    } else if (e.getKeyCode() == KeyEvent.VK_R) {
                         treeFont = new Font(FlatJetBrainsMonoFont.FAMILY, Font.PLAIN, 18);
                         tree.setFont(treeFont);
                     }
@@ -107,12 +108,14 @@ public class XTablesDropdownViewer extends JPanel {
         tree.setFont(treeFont);
         populateTable();
     }
+
     public void deriveFont(float size) {
         float newSize = treeFont.getSize() + size;
-        if(newSize < 8 || newSize > 72) return;
+        if (newSize < 8 || newSize > 72) return;
         treeFont = treeFont.deriveFont(newSize);
         tree.setFont(treeFont);
     }
+
     public void populateTable() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
 
@@ -129,6 +132,7 @@ public class XTablesDropdownViewer extends JPanel {
         revalidate();
         repaint();
     }
+
     public void updateNode(String key, String value) {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
@@ -192,8 +196,6 @@ public class XTablesDropdownViewer extends JPanel {
     }
 
 
-
-
     private void expandAllRows() {
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.expandRow(i);
@@ -204,7 +206,7 @@ public class XTablesDropdownViewer extends JPanel {
         if (data == null) return;
 
         Map<String, XTablesData> subTables = data.getTablesMap();
-        String value = data.getValue();
+        String value = XTablesByteUtils.autoFromBytesToJsonString(data.getValue(), data.getType());
 
         // Add value node if it exists
         if (value != null && !value.isEmpty()) {
@@ -233,14 +235,15 @@ public class XTablesDropdownViewer extends JPanel {
     public void onUpdate(String key, String value) {
         if (!key.isEmpty() && Utilities.validateKey(key, false)) {
             try {
-                client.putRaw(key, value).queue((status1) -> {
-                    if (status1 != ResponseStatus.OK) {
-                        JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + status1.name(), "Error", JOptionPane.ERROR_MESSAGE);
+                try {
+                    boolean success = client.putBytes(key, XTablesByteUtils.autoStringJsonToBytes(value));
+                    if (!success) {
+                        JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + success, "Error", JOptionPane.ERROR_MESSAGE);
                     }
-                }, (err) -> {
+                } catch (Exception err) {
                     JOptionPane.showMessageDialog(null, "Exception while updating value: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 
-                });
+                }
 
 
             } catch (Exception ei) {

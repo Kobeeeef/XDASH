@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.function.BiConsumer;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,17 +19,24 @@ public class XTablesLogger extends Logger {
     private static final String YELLOW = "\u001B[33m";
     private static final String BLUE = "\u001B[34m";
     private static final String PURPLE = "\u001B[35m"; // For fatal level
-
+    private static BiConsumer<Level, String> handler;
     // Define a custom FATAL logging level
-    public static final Level FATAL = new Level("FATAL", Level.SEVERE.intValue() + 1) {};
+    public static final Level FATAL = new Level("FATAL", Level.SEVERE.intValue() + 1) {
+    };
 
     protected XTablesLogger(String name, String resourceBundleName) {
         super(name, resourceBundleName);
     }
 
     public static XTablesLogger getLogger() {
+        return getLogger(loggerName);
+    }
+    public static XTablesLogger getLogger(Class<?> clazz) {
+        return getLogger(clazz.getName());
+    }
+    public static XTablesLogger getLogger(String className) {
         if (instance == null) {
-            XTablesLogger logger = new XTablesLogger(loggerName, null);
+            XTablesLogger logger = new XTablesLogger(className, null);
             logger.setLevel(defaultLevel);
             ConsoleHandler consoleHandler = new ConsoleHandler();
             consoleHandler.setFormatter(new XTablesFormatter());
@@ -41,6 +49,22 @@ public class XTablesLogger extends Logger {
     // Method to log fatal messages
     public void fatal(String msg) {
         log(FATAL, msg);
+    }
+
+    /**
+     * Log a message, with no arguments.
+     * <p>
+     * If the logger is currently enabled for the given message
+     * level then the given message is forwarded to all the
+     * registered output Handler objects.
+     *
+     * @param level One of the message level identifiers, e.g., SEVERE
+     * @param msg   The string message (or a key in the message catalog)
+     */
+    @Override
+    public void log(Level level, String msg) {
+        super.log(level, msg);
+        if (handler != null) handler.accept(level, msg);
     }
 
     // Custom formatter for XTablesLogger
@@ -96,6 +120,10 @@ public class XTablesLogger extends Logger {
             return BLUE;
         }
         return "";
+    }
+
+    public static void setHandler(BiConsumer<Level, String> messageHandler) {
+        handler = messageHandler;
     }
 
     public static void setLoggingLevel(Level level) {

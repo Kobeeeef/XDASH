@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.kobe.xbot</groupId>
     <artifactId>XDASH</artifactId>
-    <version>3.0.2-SNAPSHOT</version>
+    <version>3.0.2.5-SNAPSHOT</version>
     <name>xdashbackend</name>
     <description>xdashbackend</description>
     <url/>
@@ -34,6 +34,11 @@
             <groupId>org.zeromq</groupId>
             <artifactId>jeromq</artifactId>
             <version>0.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>4.29.2</version>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>

@@ -12,28 +12,34 @@ import java.lang.management.ThreadMXBean;
 import java.util.List;
 
 public class SystemStatistics {
-    private final long freeMemoryMB;
-    private final long usedMemoryMB;
-    private final long maxMemoryMB;
-    private final double processCpuLoadPercentage;
-    private final int availableProcessors;
-    private final long totalThreads;
-    private final long nanoTime;
-    private final String health;
-    private final double powerUsageWatts;
-    private final int totalClients;
+    private  long freeMemoryMB;
+    private  long usedMemoryMB;
+    private  long maxMemoryMB;
+    private  double processCpuLoadPercentage;
+    private  int availableProcessors;
+    private  long totalThreads;
+    private  long nanoTime;
+    private  String health;
+    private  double powerUsageWatts;
+    private  int totalClients;
     private XTableStatus status;
-    private int totalMessages;
-    private String ip;
-    private final String processId;
-    private final String javaVersion;
-    private final String javaVendor;
-    private final String jvmName;
+    private int totalPullMessages;
+    private int totalReplyMessages;
+    private int totalPublishMessages;
+    private double pullPs;
+    private double replyPs;
+    private double publishPs;
+    private int maxIterationsPerSecond;
+    private  String ip;
+    private  String processId;
+    private  String langVersion;
+    private  String langVendor;
+    private  String jvmName;
     private String hostname;
-    private int framesForwarded;
     private List<ClientData> clientDataList;
     private String version;
     private final String type = "JAVA";
+    private  long nextClientRegistryUpdate;
 
     private static final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
     private static final OperatingSystemMXBean osMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
@@ -43,48 +49,22 @@ public class SystemStatistics {
     private static final HardwareAbstractionLayer hal = systemInfo.getHardware();
     private static final CentralProcessor processor = hal.getProcessor();
     private static final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-//    private static final AtomicReference<long[]> prevTicks = new AtomicReference<>();
-//    private static final AtomicLong lastUpdateTime = new AtomicLong();
-//    private static final AtomicReference<Double> lastPowerUsageWatts = new AtomicReference<>(0.0);
-
-    public SystemStatistics(int totalClients) {
-        this.nanoTime = System.nanoTime();
-        this.totalClients = totalClients;
-        this.maxMemoryMB = osMXBean.getTotalPhysicalMemorySize() / (1024 * 1024);
-        this.freeMemoryMB = osMXBean.getFreePhysicalMemorySize() / (1024 * 1024);
-        this.usedMemoryMB = maxMemoryMB - freeMemoryMB;
-        this.processCpuLoadPercentage = osMXBean.getSystemCpuLoad() * 100;
-        this.availableProcessors = osMXBean.getAvailableProcessors();
-        this.powerUsageWatts = 0;
-        this.totalThreads = threadMXBean.getThreadCount();
-        this.processId = runtimeMXBean.getName().split("@")[0];
-        this.javaVersion = System.getProperty("java.version");
-        this.javaVendor = System.getProperty("java.vendor");
-        this.jvmName = System.getProperty("java.vm.name");
-        this.ip = Utilities.getLocalIPAddress();
-        if (usedMemoryMB <= maxMemoryMB * 0.5 && processCpuLoadPercentage < 50) {
-            this.health = HealthStatus.GOOD.name();
-        } else if (usedMemoryMB <= maxMemoryMB * 0.6 && processCpuLoadPercentage < 70) {
-            this.health = HealthStatus.OKAY.name();
-        } else if (usedMemoryMB <= maxMemoryMB * 0.7 && processCpuLoadPercentage < 85) {
-            this.health = HealthStatus.STRESSED.name();
-        } else if (usedMemoryMB <= maxMemoryMB * 0.85 && processCpuLoadPercentage < 95) {
-            this.health = HealthStatus.OVERLOAD.name();
-        } else {
-            this.health = HealthStatus.CRITICAL.name();
-        }
 
 
+
+    public int getMaxIterationsPerSecond() {
+        return maxIterationsPerSecond;
+    }
+
+    public SystemStatistics setMaxIterationsPerSecond(int maxIterationsPerSecond) {
+        this.maxIterationsPerSecond = maxIterationsPerSecond;
+        return this;
     }
 
     public enum HealthStatus {
         GOOD, OKAY, STRESSED, OVERLOAD, CRITICAL, UNKNOWN
     }
 
-    public SystemStatistics setFramesForwarded(int framesForwarded) {
-        this.framesForwarded = framesForwarded;
-        return this;
-    }
 
     public SystemStatistics setHostname(String hostname) {
         this.hostname = hostname;
@@ -100,12 +80,30 @@ public class SystemStatistics {
         return this;
     }
 
-    public int getTotalMessages() {
-        return totalMessages;
+    public int getTotalPublishMessages() {
+        return totalPublishMessages;
     }
 
-    public SystemStatistics setTotalMessages(int totalMessages) {
-        this.totalMessages = totalMessages;
+    public SystemStatistics setTotalPublishMessages(int totalPublishMessages) {
+        this.totalPublishMessages = totalPublishMessages;
+        return this;
+    }
+
+    public int getTotalReplyMessages() {
+        return totalReplyMessages;
+    }
+
+    public SystemStatistics setTotalReplyMessages(int totalReplyMessages) {
+        this.totalReplyMessages = totalReplyMessages;
+        return this;
+    }
+
+    public int getTotalPullMessages() {
+        return totalPullMessages;
+    }
+
+    public SystemStatistics setTotalPullMessages(int totalPullMessages) {
+        this.totalPullMessages = totalPullMessages;
         return this;
     }
 
@@ -154,40 +152,6 @@ public class SystemStatistics {
     public long getTotalThreads() {
         return totalThreads;
     }
-
-//    public double getEstimatedPowerConsumption() {
-//        long currentTime = System.currentTimeMillis();
-//
-//        // If this is the first call, initialize prevTicks and lastUpdateTime
-//        if (prevTicks.get() == null) {
-//            prevTicks.set(processor.getSystemCpuLoadTicks());
-//            lastUpdateTime.set(currentTime);
-//            lastPowerUsageWatts.set(0.0); // Initial value since we don't have enough data yet
-//            return lastPowerUsageWatts.get();
-//        }
-//
-//        // Check if at least 1 second has passed since the last update
-//        if (currentTime - lastUpdateTime.get() < 100000) {
-//            return lastPowerUsageWatts.get(); // Return the last known value
-//        }
-//
-//        // Get CPU load between ticks for estimation
-//        long[] currentTicks = processor.getSystemCpuLoadTicks();
-//        double cpuLoadBetweenTicks = processor.getSystemCpuLoadBetweenTicks(prevTicks.get());
-//
-//        // Update prevTicks and lastUpdateTime
-//        prevTicks.set(currentTicks);
-//        lastUpdateTime.set(currentTime);
-//
-//        // Estimation of power consumption
-//        double maxFreqGHz = processor.getMaxFreq() / 1_000_000_000.0;
-//        int logicalProcessorCount = processor.getLogicalProcessorCount();
-//        // CPU Load Between Ticks x Max Frequency in GHz x Logical Processor Count x 10
-//        double estimatedPower = cpuLoadBetweenTicks * maxFreqGHz * logicalProcessorCount * 10;
-//        lastPowerUsageWatts.set(estimatedPower);
-//
-//        return estimatedPower;
-//    }
 
 
 }

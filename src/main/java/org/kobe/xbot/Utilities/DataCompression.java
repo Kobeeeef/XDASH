@@ -48,6 +48,12 @@ public class DataCompression {
         return new String(decompressedData);
     }
 
+    public static byte[] compressString(String raw) {
+        return compress(raw == null ? XTablesByteUtils.fromString("null") : raw.getBytes());
+    }
+    public static byte[] compressBytes(byte[] raw) {
+        return compress(raw);
+    }
     /**
      * Gets the average compression speed threshold in milliseconds.
      *
@@ -90,7 +96,7 @@ public class DataCompression {
         }
     }
 
-    private static byte[] decompress(byte[] compressedData) {
+    public static byte[] decompress(byte[] compressedData) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Inflater inflater = new Inflater();

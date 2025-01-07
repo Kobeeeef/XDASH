@@ -1,9 +1,10 @@
 package org.kobe.xbot.xdashbackend.websocket;
 
 import com.google.gson.Gson;
-import org.kobe.xbot.Client.XTablesClient;
+import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.LatencyInfo;
 import org.kobe.xbot.Utilities.ResponseStatus;
+import org.kobe.xbot.Utilities.SystemStatistics;
 import org.kobe.xbot.xdashbackend.FileEditor.App;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
@@ -64,18 +65,20 @@ public class WebSocketHandler extends TextWebSocketHandler {
         XTablesClient xTablesClient = XdashbackendApplication.clientRef.get();
         Message message = gson.fromJson(payload, Message.class);
         if (message.getType().equals("XTABLES-STATUS")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
-                LatencyInfo info = xTablesClient == null ? null : xTablesClient.ping_latency().complete();
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
+                SystemStatistics info = xTablesClient.getServerStatistics();
 
-                int totalClients = xTablesClient == null ? 0 : info == null ? 0 : info.getSystemStatistics().getTotalClients();
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(xTablesClient != null && xTablesClient.getSocketClient().isConnected, totalClients), "XTABLES-STATUS").toJSON()));
-            } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(false, 0), "XTABLES-STATUS").toJSON()));
+                int totalClients = info == null ? 0 : info.getClientDataList().size();
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(xTablesClient.getSocketMonitor().isConnected("PUSH"), xTablesClient.getSocketMonitor().isConnected("REQUEST"), xTablesClient.getSocketMonitor().isConnected("SUBSCRIBE"), 0), "XTABLES-STATUS").toJSON()));
+            } else if (xTablesClient!= null) {
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusReturn(xTablesClient.getSocketMonitor().isConnected("PUSH"), false, xTablesClient.getSocketMonitor().isConnected("SUBSCRIBE"), 0), "XTABLES-STATUS").toJSON()));
             }
         } else if (message.getType().equals("XTABLES-STATISTICS")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
-                LatencyInfo info = xTablesClient.ping_latency().complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesStatisticsReturn(true, info), "XTABLES-STATISTICS").toJSON()));
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
+                long startTime = System.nanoTime();
+                SystemStatistics info = xTablesClient.getServerStatistics();
+                long elapsedTime = System.nanoTime() - startTime;
+                session.sendMessage(new TextMessage(new Message(new XTablesStatisticsReturn(true, info).setRoundTripLatencyMS(elapsedTime / 1_000_000.0d), "XTABLES-STATISTICS").toJSON()));
             } else {
                 session.sendMessage(new TextMessage(new Message(new XTablesStatisticsReturn(false, null), "XTABLES-STATISTICS").toJSON()));
 
@@ -93,54 +96,56 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new StatusCode(false), "XTABLES-VIEWER-TOGGLE").toJSON()));
             }
         } else if (message.getType().equals("XTABLES-DATA")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
-                String json = xTablesClient.getRawJSON().complete();
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
+                String json = xTablesClient.getRawJson();
                 session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(true, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json), "XTABLES-DATA").toJSON()));
             } else {
                 session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(false, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), null), "XTABLES-DATA").toJSON()));
 
             }
         } else if (message.getType().equals("XTABLES-DATA-VIEW")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
-                String json = xTablesClient.getRawJSON().complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(true, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json.equals("null") || json.equals("{}") ? 0 : Utilities.estimateStringSize(json)), "XTABLES-DATA-VIEW").toJSON()));
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
+                String json = xTablesClient.getRawJson();
+                System.out.println(0);
+                session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(true, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json == null || json.equals("null") || json.equals("{}") ? 0 : Utilities.estimateStringSize(json)), "XTABLES-DATA-VIEW").toJSON()));
+                System.out.println(1);
             } else {
                 session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(false, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), 0), "XTABLES-DATA-VIEW").toJSON()));
-
             }
         } else if (message.getType().equals("XTABLES-DATA-PUT")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("PUSH")) {
                 KeyValuePair keyValuePair = gson.fromJson(message.getMessage(), KeyValuePair.class);
-                ResponseStatus status = xTablesClient.putRaw(keyValuePair.getKey(), keyValuePair.getValue()).complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(true, status.name()), "XTABLES-DATA-PUT").toJSON()));
+                boolean status = xTablesClient.putString(keyValuePair.getKey(), keyValuePair.getValue());
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(true, status), "XTABLES-DATA-PUT").toJSON()));
             } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-DATA-PUT").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, false), "XTABLES-DATA-PUT").toJSON()));
 
             }
         } else if (message.getType().equals("XTABLES-DATA-GET")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
                 String key = message.getMessage();
-                String raw = xTablesClient.getRaw(key).complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(true, raw), "XTABLES-DATA-GET").toJSON()));
+                byte[] raw = xTablesClient.getUnknownBytes(key);
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusGetReturn(true, new String(raw)), "XTABLES-DATA-GET").toJSON()));
             } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-DATA-GET").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusGetReturn(false, "NOT CONNECTED"), "XTABLES-DATA-GET").toJSON()));
 
             }
         } else if (message.getType().equals("XTABLES-DATA-DELETE")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
                 String key = message.getMessage();
-                ResponseStatus status = xTablesClient.delete(key).complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(true, status.name()), "XTABLES-DATA-DELETE").toJSON()));
+                boolean status;
+                if(key == null || key.isBlank() || key.isEmpty()) status = xTablesClient.delete(); else status = xTablesClient.delete(key);
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(true, status), "XTABLES-DATA-DELETE").toJSON()));
             } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-DATA-DELETE").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, false), "XTABLES-DATA-DELETE").toJSON()));
 
             }
         } else if (message.getType().equals("XTABLES-REBOOT")) {
-            if (xTablesClient != null && xTablesClient.getSocketClient().isConnected) {
-                ResponseStatus status = xTablesClient.rebootServer().complete();
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(true, status.name()), "XTABLES-REBOOT").toJSON()));
+            if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
+                boolean status = xTablesClient.reboot();
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(true, status), "XTABLES-REBOOT").toJSON()));
             } else {
-                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, "NOT CONNECTED"), "XTABLES-REBOOT").toJSON()));
+                session.sendMessage(new TextMessage(new Message(new XTablesStatusCodeReturn(false, false), "XTABLES-REBOOT").toJSON()));
 
             }
         } else if (message.getType().equals("CONFIG-RELOAD")) {
@@ -247,10 +252,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
             }
         } else if (message.getType().equals("DEVICES-DATA")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
-            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
+            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null ? xTablesClient.getSocketMonitor().getSimplifiedMessage() : "DISCONNECTED", LogSave.getInstance().getLogs()), "DEVICES-DATA").toJSON()));
         } else if (message.getType().equals("DEVICES-DATA-LIMITED")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
-            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null && xTablesClient.getSocketClient().isConnected, null), "DEVICES-DATA-LIMITED").toJSON()));
+            session.sendMessage(new TextMessage(new Message(new MainPageDataReturn(gson.toJson(dataList), xTablesClient != null ? xTablesClient.getSocketMonitor().getSimplifiedMessage() : "DISCONNECTED", null), "DEVICES-DATA-LIMITED").toJSON()));
         } else if (message.getType().equals("DOCKER-PAGE")) {
             List<SSHHostAddress> dataList = XdashbackendApplication.getResolvedXCASTERServices().values().stream().toList();
             boolean ready = true;
@@ -768,9 +773,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     return;
                 }
                 File composeFile = null;
-                if(devicesTransferFiles.isUseCompose()) {
+                if (devicesTransferFiles.isUseCompose()) {
                     String composeFilePath = XdashbackendApplication.getConfigLoader().getDockerComposeFileDirectory();
-                    if(composeFilePath != null && !composeFilePath.isEmpty() && !composeFilePath.isBlank()) {
+                    if (composeFilePath != null && !composeFilePath.isEmpty() && !composeFilePath.isBlank()) {
                         composeFile = new File(composeFilePath);
                         if (composeFile == null || !composeFile.exists() || !composeFile.isFile()) {
                             session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid compose file found.", null, false, true), message.getType()).toJSON()));
