@@ -761,11 +761,7 @@ public class SSHHostAddress {
                     executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q)", updates);
                 }
             } else {
-                if (type.equals(DockerFlashType.LIGHT)) {
-                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
-                } else {
-                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q)", updates);
-                }
+
                 String remoteComposeFilePath = "/tmp/" + composeFile.getName();
                 AtomicReference<Double> lastComposePercentage = new AtomicReference<>(0.0);
                 boolean composeUploadSuccess = uploadFileUsingLocalSFTP(
@@ -803,7 +799,11 @@ public class SSHHostAddress {
                 if (!runSuccess) {
                     updates.accept(new DockerImportReturn("Failed to shutdown previous docker compose. Continuing regardless...", server, false, false));
                 }
-
+                if (type.equals(DockerFlashType.LIGHT)) {
+                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+                } else {
+                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q)", updates);
+                }
             }
             // Step 3: Load the Docker image
             updates.accept(new DockerImportReturn("Loading Docker image...", server, true, false));

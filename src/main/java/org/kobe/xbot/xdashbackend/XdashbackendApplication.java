@@ -6,7 +6,6 @@ import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.kobe.xbot.Client.XTablesClient;
-import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.entities.Notification;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 
 @SpringBootApplication
 public class XdashbackendApplication {
@@ -49,10 +47,11 @@ public class XdashbackendApplication {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        System.setProperty("java.awt.headless", "false");
         System.setProperty("java.net.preferIPv4Stack", "true");
+        System.setProperty("java.awt.headless", "false");
         SpringApplication.run(XdashbackendApplication.class, args);
         FlatMacDarkLaf.setup();
+
         FlatMacLightLaf.setup();
         FlatJetBrainsMonoFont.install();
         FlatInterFont.install();
@@ -182,8 +181,10 @@ public class XdashbackendApplication {
         try {
             Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
         } catch (Exception e) {
+
             logger.warning("Failed to open web browser");
             logger.warning("Open the website here: http://localhost:8080/");
+
         }
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             try {
@@ -196,7 +197,8 @@ public class XdashbackendApplication {
                                 .map(StackTraceElement::toString)
                                 .toArray(String[]::new))
                         .setSummary("Uncaught Exception: " + thread.getName()));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         });
     }
 

@@ -88,70 +88,53 @@ public class Utilities {
         // Return an instance of FormattedByteResult
         return new FormattedByteResult(roundedValue, unit);
     }
-    public static FormattedTimeResult formatTime(long ns, boolean longFormat) {
-        // Define time units
-        String[] units = {"ns", "μs", "ms", "s", "min", "h", "d", "w", "mo", "y"};
-        long[] unitFactors = {
-                1,                          // ns
-                1000,                       // μs
-                1000000,                    // ms
-                1000000000,                 // s
-                60000000000L,               // min
-                3600000000000L,             // h
-                86400000000000L,            // d (1 day = 24 hours * 60 min * 60 sec * 10^9 ns)
-                604800000000000L,           // w (1 week = 7 days)
-                2592000000000000L,          // mo (1 month = 30 days)
-                31536000000000000L          // y (1 year = 365 days)
+    public static FormattedTimeResult formatTime(long ms, boolean longFormat) {
+        // Define time units and their relative factors
+        String[] units = {"ms", "s", "min", "h", "d", "w", "mo", "y"};
+        long[] relativeFactors = {
+                1000,       // ms to seconds
+                60,         // seconds to minutes
+                60,         // minutes to hours
+                24,         // hours to days
+                7,          // days to weeks
+                30,         // weeks to months (approximate)
+                12          // months to years
         };
 
         int unitIndex = 0;
-        long value = ns;
 
-        // Convert ns to the most appropriate unit
-        while (value >= unitFactors[unitIndex] && unitIndex < units.length - 1) {
-            value /= unitFactors[unitIndex + 1]; // Divide by the factor for the next unit
+        // Loop to find the most appropriate unit
+        while (unitIndex < relativeFactors.length && ms >= relativeFactors[unitIndex]) {
+            ms /= relativeFactors[unitIndex];
             unitIndex++;
         }
 
-        // If long format is requested, return full unit name
+        // Get the correct unit
         String unit = units[unitIndex];
+
+        // Apply long format if requested
         if (longFormat) {
             switch (unit) {
-                case "μs":
-                    unit = "Microseconds";
-                    break;
-                case "ms":
-                    unit = "Milliseconds";
-                    break;
-                case "s":
-                    unit = "Seconds";
-                    break;
-                case "min":
-                    unit = "Minutes";
-                    break;
-                case "h":
-                    unit = "Hours";
-                    break;
-                case "d":
-                    unit = "Days";
-                    break;
-                case "w":
-                    unit = "Weeks";
-                    break;
-                case "mo":
-                    unit = "Months";
-                    break;
-                case "y":
-                    unit = "Years";
-                    break;
-                default:
-                    break;
+                case "ms":  unit = "Milliseconds"; break;
+                case "s":   unit = "Seconds"; break;
+                case "min": unit = "Minutes"; break;
+                case "h":   unit = "Hours"; break;
+                case "d":   unit = "Days"; break;
+                case "w":   unit = "Weeks"; break;
+                case "mo":  unit = "Months"; break;
+                case "y":   unit = "Years"; break;
+                default:    break;
             }
         }
 
-        // Return the formatted result
-        return new FormattedTimeResult(value, unit, longFormat);
+        // Return the result
+        return new FormattedTimeResult(ms, unit, longFormat);
     }
+
+
+
+
+
 
     public static String formatError(Throwable throwable) {
         StringBuilder sb = new StringBuilder();

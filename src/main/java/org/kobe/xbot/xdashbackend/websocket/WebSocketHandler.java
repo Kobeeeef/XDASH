@@ -697,7 +697,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new DevicesScriptReturn(e.getMessage(), null, 0, false, true), "DEVICES-REDEPLOY").toJSON()));
             }
         } else if (message.getType().equals("DOCKER-IMPORT-ALT-BASE")) {
-            long startTime = System.nanoTime();
+            long startTime = System.currentTimeMillis();
             Integer timeout = XdashbackendApplication.getConfigLoader().getDockerAltBaseImageImportTimeout();
             String URL = XdashbackendApplication.getConfigLoader().getDockerAltBaseImageURL();
             if (timeout == null) {
@@ -715,9 +715,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     } catch (IOException ignored) {
                     }
                 });
-                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(String.format("Imported base image in %1$s.", Utilities.formatTime(System.nanoTime(), true)), 100.0, true).setSuccess(true), message.getType()).toJSON()));
+                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(String.format("Imported base image in %1$s.", Utilities.formatTime(System.currentTimeMillis() - startTime, true)), 100.0, true).setSuccess(true), message.getType()).toJSON()));
             } catch (Exception e) {
-                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(String.format("Exception while importing (%1$s): %2$s", Utilities.formatTime(System.nanoTime(), true), e.getMessage()), 0.0, true).setSuccess(false), message.getType()).toJSON()));
+                session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(String.format("Exception while importing (%1$s): %2$s", Utilities.formatTime(System.currentTimeMillis() - startTime, true), e.getMessage()), 0.0, true).setSuccess(false), message.getType()).toJSON()));
             }
         } else if (message.getType().equals("DEVICES-DOCKER-IMPORT")) {
             String msg = message.getMessage();
