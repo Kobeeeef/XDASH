@@ -654,7 +654,7 @@ const Dashboard = () => {
         <div className="grid fadeIn">
             <Toast ref={toast} />
             <TimeoutsDialog timeoutsRef={timeoutsRef} updateInterval={10} />
-            <Dialog position={"left"} modal={false} header={'Compose Preview'} closeOnEscape={true} style={{ width: '50%' }}
+            <Dialog position={"top"} modal={false} header={'Compose Preview'} closeOnEscape={true} style={{ width: '50%' }}
                     visible={composePreviewDialogVisible} onHide={() => setComposePreviewDialogVisible(false)}>
                 <SyntaxHighlighter showLineNumbers={true} wrapLines={true} style={vs2015}>
                     {composePreview}
