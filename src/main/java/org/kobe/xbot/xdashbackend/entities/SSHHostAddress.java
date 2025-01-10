@@ -795,7 +795,7 @@ public class SSHHostAddress {
                     return;
                 }
                 updates.accept(new DockerImportReturn("Compose file uploaded successfully.", server, true, false));
-                boolean runSuccess = executeCommandDocker(session, "sudo -S docker-compose -f "+ remoteComposeFilePath + " down -t 0", updates);
+                boolean runSuccess = executeCommandDocker(session, "sudo -S docker compose -f "+ remoteComposeFilePath + " down -t 0", updates);
                 if (!runSuccess) {
                     updates.accept(new DockerImportReturn("Failed to shutdown previous docker compose. Continuing regardless...", server, false, false));
                 }
@@ -828,7 +828,7 @@ public class SSHHostAddress {
             } else {
                 // Step 4: Run a new compose
                 String remoteComposeFilePath = "/tmp/" + composeFile.getName();
-                String runCommand = "sudo -S docker-compose -f "+ remoteComposeFilePath + " up -d";
+                String runCommand = "sudo -S docker compose -f "+ remoteComposeFilePath + " up -d";
                 boolean runSuccess = executeCommandDocker(session, runCommand, updates);
 
                 if (runSuccess) {

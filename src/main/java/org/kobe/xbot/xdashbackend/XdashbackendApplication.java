@@ -178,14 +178,6 @@ public class XdashbackendApplication {
         });
         main.setDaemon(true);
         main.start();
-        try {
-            Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
-        } catch (Exception e) {
-
-            logger.warning("Failed to open web browser");
-            logger.warning("Open the website here: http://localhost:8080/");
-
-        }
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             try {
                 logger.fatal("UNCAUGHT EXCEPTION: " + Utilities.formatError(throwable));
@@ -200,6 +192,12 @@ public class XdashbackendApplication {
             } catch (Exception ignored) {
             }
         });
+//        try {
+//            Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+//        } catch (Exception e) {
+//            logger.warning("Failed to open web browser");
+//            logger.warning("Open the website here: http://localhost:8080/");
+//        }
     }
 
     public static Map<String, SSHHostAddress> getResolvedXCASTERServices() {
