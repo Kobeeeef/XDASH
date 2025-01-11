@@ -7,6 +7,8 @@ public enum Architecture {
     X86_MACOS("darwin/amd64"),          // 64-bit AMD architecture for macOS
 
     // ARM Architectures
+    AARCH64_LINUX("linux/aarch64"),
+    AARCH64("aarch64"),
     ARM64_LINUX("linux/arm64"),         // 64-bit ARM architecture for Linux
     ARM64_WINDOWS("windows/arm64"),     // 64-bit ARM architecture for Windows
     ARM64_MACOS("darwin/arm64"),        // 64-bit ARM architecture for macOS
