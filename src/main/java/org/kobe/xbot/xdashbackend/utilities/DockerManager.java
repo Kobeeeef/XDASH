@@ -38,7 +38,7 @@ public class DockerManager {
                     "docker buildx build --platform %s -t %s -o type=docker,dest=%s %s",
                     architecture.getBuildxPlatform(), imageName, tarFileLocation, dockerfileDirPath);
 
-            progressConsumer.accept(new DockerProgress("Starting Buildx build...", DockerStep.STARTING, 0).setFinished(false));
+            progressConsumer.accept(new DockerProgress("Starting Buildx build... Command: " + buildCommand, DockerStep.STARTING, 0).setFinished(false));
 
             ProcessBuilder processBuilder = new ProcessBuilder(buildCommand.split(" "));
             processBuilder.redirectErrorStream(true);
