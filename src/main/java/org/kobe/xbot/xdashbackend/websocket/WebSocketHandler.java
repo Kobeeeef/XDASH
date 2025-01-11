@@ -2,8 +2,6 @@ package org.kobe.xbot.xdashbackend.websocket;
 
 import com.google.gson.Gson;
 import org.kobe.xbot.JClient.XTablesClient;
-import org.kobe.xbot.Utilities.LatencyInfo;
-import org.kobe.xbot.Utilities.ResponseStatus;
 import org.kobe.xbot.Utilities.SystemStatistics;
 import org.kobe.xbot.xdashbackend.FileEditor.App;
 import org.kobe.xbot.xdashbackend.SSHConnectionManager;
