@@ -28,14 +28,14 @@ import { useRouter } from 'next/navigation';
 
 const Dashboard = () => {
     const toast = useRef(null);
-    const router = useRouter()
+    const router = useRouter();
     const {
         isConnected,
         lastConnectionUpdate,
         sendMessageAndWaitForCondition,
         sendMessageAndWaitForConditionWithManage,
-            getTimeoutManagerById,
-            timeoutsRef
+        getTimeoutManagerById,
+        timeoutsRef
     } = useContext(WebsocketContext);
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [devices, setDevices] = useState([]);
@@ -133,7 +133,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (ready !== null && !ready) {
             if (!readyLock) {
-                playErrorNotificationSound()
+                playErrorNotificationSound();
                 setReadyDialogVisible(true);
             }
         }
@@ -169,8 +169,8 @@ const Dashboard = () => {
             })
         }, (m) => {
             if (m?.type === 'DEVICES-DOCKER-IMPORT') {
-                let manager = getTimeoutManagerById("DEVICES-DOCKER-IMPORT")
-                if(manager) manager.extendTimeout(30000);
+                let manager = getTimeoutManagerById('DEVICES-DOCKER-IMPORT');
+                if (manager) manager.extendTimeout(30000);
                 const msg = JSON.parse(m?.message);
                 if (msg?.server) {
                     setTransferMessages((prev) => {
@@ -244,8 +244,8 @@ const Dashboard = () => {
             type: 'DEVICES-RECONNECT', message: JSON.stringify(selectedDevices)
         }, (m) => {
             if (m?.type === 'DEVICES-RECONNECT') {
-                let manager = getTimeoutManagerById("DEVICES-RECONNECT")
-                if(manager) manager.extendTimeout(10000);
+                let manager = getTimeoutManagerById('DEVICES-RECONNECT');
+                if (manager) manager.extendTimeout(10000);
                 const msg = JSON.parse(m?.message);
                 if (msg?.sshHostAddress) {
                     const device = JSON.parse(msg?.sshHostAddress);
@@ -324,8 +324,8 @@ const Dashboard = () => {
             })
         }, (m) => {
             if (m.type === 'DOCKER-BUILD') {
-                let manager = getTimeoutManagerById("DOCKER-BUILD")
-                if(manager) manager.extendTimeout(30000);
+                let manager = getTimeoutManagerById('DOCKER-BUILD');
+                if (manager) manager.extendTimeout(30000);
                 const msg = JSON.parse(m.message);
                 if (msg.step === 'STARTING') {
                     setBuildIndex(0);
@@ -390,7 +390,7 @@ const Dashboard = () => {
                     ...prev,
                     ROBOT_CONNECTION_MESSAGES: ['Attempting to connect back to robot WiFi now...']
                 }));
-                if(!additionalArguments?.USE_NETWORKING) {
+                if (!additionalArguments?.USE_NETWORKING) {
                     toast.current.show({
                         severity: 'info',
                         summary: 'Network Skipped!',
@@ -401,7 +401,7 @@ const Dashboard = () => {
                         summary: 'Reconnection Skipped!',
                         detail: 'The machine reconnection was skipped.'
                     });
-                    return transfer_import()
+                    return transfer_import();
                 }
                 connect_wifi('ROBOT', (m) => {
                     if (m.type === 'WIFI-CONNECT') {
@@ -503,13 +503,13 @@ const Dashboard = () => {
             ...prev,
             INTERNET_CONNECTION_MESSAGES: ['Attempting to connect to internet WiFi now...']
         }));
-        if(!additionalArguments?.USE_NETWORKING) {
+        if (!additionalArguments?.USE_NETWORKING) {
             toast.current.show({
                 severity: 'info',
                 summary: 'Network Skipped!',
                 detail: 'The internet wifi connection was skipped.'
             });
-            return build()
+            return build();
         }
         connect_wifi('INTERNET', (m) => {
             if (m.type === 'WIFI-CONNECT') {
@@ -563,7 +563,7 @@ const Dashboard = () => {
 
     function checkConfirmChangesArgs() {
         if (!confirmChanges) {
-            playErrorNotificationSound()
+            playErrorNotificationSound();
             confirmDialog({
                 group: 'headless',
                 breakpoints: { '1100px': '75vw', '960px': '100vw' },
@@ -741,9 +741,10 @@ const Dashboard = () => {
                                     <div className={'grid'}>
                                         <div className={'col-6'}>
                                             <div className="flex flex-column gap-2">
-                                                <label htmlFor="Project_DIRECTORY" className={'text-sm'}>Project Directory</label>
-                                            <InputText value={projectDirectory} disabled={true} className={'w-full'}
-                                                       placeholder={'There is no project directory configured.'} />
+                                                <label htmlFor="Project_DIRECTORY" className={'text-sm'}>Project
+                                                    Directory</label>
+                                                <InputText value={projectDirectory} disabled={true} className={'w-full'}
+                                                           placeholder={'There is no project directory configured.'} />
                                             </div>
                                         </div>
                                         <div className={'col-6'}>
@@ -779,63 +780,64 @@ const Dashboard = () => {
                                                               });
                                                           }} valueTemplate={archTemplate}
                                                           itemTemplate={archTemplate}
-                                                          options={['X86_LINUX', 'ARM64_LINUX', 'ARM_V7_LINUX', 'ARM_V6_LINUX', 'ARM_V6_LINUX', 'POWERPC_LINUX', 'S390X_LINUX', 'ARM64_WINDOWS', 'X86_WINDOWS', 'ARM_V7_WINDOWS', 'X86_MACOS', 'ARM64_MACOS']}
-                                                              disabled={!isConnected || loading} className={'w-full'}
-                                                              placeholder={'There is no architecture configured.'} />
-                                                </div>
-                                            </div>
-                                            <div className={'col-12 lg:col-6'}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="FLASH_TYPE" className={'text-sm'}>Flash Type</label>
-                                                    <ToggleButton disabled={!isConnected || loading}
-                                                                  onLabel={'Hard Flash'}
-                                                                  offLabel={'Light Flash'}
-                                                                  checked={additionalArguments?.FLASH_TYPE === 'HARD'}
-                                                                  onChange={(e) => {
-                                                                      if (!confirmChanges) return checkConfirmChangesArgs();
-                                                                      setAdditionalArguments((prev) => {
-                                                                          return ({
-                                                                              ...prev,
-                                                                              FLASH_TYPE: e.value ? 'HARD' : 'LIGHT'
-                                                                          });
-                                                                      });
-                                                                  }} />
-                                                </div>
-                                            </div>
-                                            <div className={'col-12 lg:col-6'}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="CONTAINER_NAME"
-                                                           className={'text-sm'}>Container</label>
-                                                    <InputText id={'CONTAINER_NAME'} onChange={(e) => {
-                                                        if (!confirmChanges) return checkConfirmChangesArgs();
-                                                        setAdditionalArguments((prev) => {
-                                                            return ({
-                                                                ...prev,
-                                                                CONTAINER_NAME: e.target.value
-                                                            });
-                                                        });
-                                                    }} value={additionalArguments?.CONTAINER_NAME}
-                                                               disabled={!isConnected || loading} className={'w-full'}
-                                                               placeholder={'There is no container name configured.'} />
-                                                </div>
-                                            </div>
-                                            <div className={'col-12 lg:col-6 '}>
-                                                <div className="flex flex-column gap-2">
-                                                    <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image</label>
-                                                    <InputText id={'IMAGE_NAME'} onChange={(e) => {
-                                                        if (!confirmChanges) return checkConfirmChangesArgs();
-                                                        setAdditionalArguments((prev) => {
-                                                            return ({
-                                                                ...prev,
-                                                                IMAGE_NAME: e.target.value
-                                                            });
-                                                        });
-                                                    }} value={additionalArguments?.IMAGE_NAME}
-                                                               disabled={!isConnected || loading} className={'w-full'}
-                                                               placeholder={'There is no image name configured.'} />
-                                                </div>
+                                                          editable={true}
+                                                          options={['linux/amd64', 'windows/amd64', 'darwin/amd64', 'linux/aarch64', 'aarch64', 'linux/arm64/v8', 'linux/arm64', 'windows/arm64', 'darwin/arm64', 'linux/arm/v7', 'windows/arm/v7', 'linux/arm/v6', 'linux/ppc64le', 'linux/s390x']}
+                                                          disabled={!isConnected || loading} className={'w-full'}
+                                                          placeholder={'There is no architecture configured.'} />
                                             </div>
                                         </div>
+                                        <div className={'col-12 lg:col-6'}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="FLASH_TYPE" className={'text-sm'}>Flash Type</label>
+                                                <ToggleButton disabled={!isConnected || loading}
+                                                              onLabel={'Hard Flash'}
+                                                              offLabel={'Light Flash'}
+                                                              checked={additionalArguments?.FLASH_TYPE === 'HARD'}
+                                                              onChange={(e) => {
+                                                                  if (!confirmChanges) return checkConfirmChangesArgs();
+                                                                  setAdditionalArguments((prev) => {
+                                                                      return ({
+                                                                          ...prev,
+                                                                          FLASH_TYPE: e.value ? 'HARD' : 'LIGHT'
+                                                                      });
+                                                                  });
+                                                              }} />
+                                            </div>
+                                        </div>
+                                        <div className={'col-12 lg:col-6'}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="CONTAINER_NAME"
+                                                       className={'text-sm'}>Container</label>
+                                                <InputText id={'CONTAINER_NAME'} onChange={(e) => {
+                                                    if (!confirmChanges) return checkConfirmChangesArgs();
+                                                    setAdditionalArguments((prev) => {
+                                                        return ({
+                                                            ...prev,
+                                                            CONTAINER_NAME: e.target.value
+                                                        });
+                                                    });
+                                                }} value={additionalArguments?.CONTAINER_NAME}
+                                                           disabled={!isConnected || loading} className={'w-full'}
+                                                           placeholder={'There is no container name configured.'} />
+                                            </div>
+                                        </div>
+                                        <div className={'col-12 lg:col-6 '}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="IMAGE_NAME" className={'text-sm'}>Image</label>
+                                                <InputText id={'IMAGE_NAME'} onChange={(e) => {
+                                                    if (!confirmChanges) return checkConfirmChangesArgs();
+                                                    setAdditionalArguments((prev) => {
+                                                        return ({
+                                                            ...prev,
+                                                            IMAGE_NAME: e.target.value
+                                                        });
+                                                    });
+                                                }} value={additionalArguments?.IMAGE_NAME}
+                                                           disabled={!isConnected || loading} className={'w-full'}
+                                                           placeholder={'There is no image name configured.'} />
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </AccordionTab>
                             </Accordion>

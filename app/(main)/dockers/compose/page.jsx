@@ -30,6 +30,7 @@ import { ToggleButton } from 'primereact/togglebutton';
 import TimeoutsDialog from '../../../../components/TimeoutsDialog';
 import { useRouter } from 'next/navigation';
 import SyntaxHighlighter from 'react-syntax-highlighter';
+import { SelectButton } from 'primereact/selectbutton';
 
 const Dashboard = () => {
     const toast = useRef(null);
@@ -73,9 +74,10 @@ const Dashboard = () => {
     const [additionalArguments, setAdditionalArguments] = useState({
         CONTAINER_NAME: 'xdash-docker-pipeline',
         IMAGE_NAME: 'xdash-docker-image',
-        ARCHITECTURE: 'ARM64_LINUX',
+        ARCHITECTURE: 'linux/arm64/v8',
         FLASH_TYPE: 'HARD',
-        USE_NETWORKING: true
+        USE_NETWORKING: false,
+        STEP: 1
     });
     const [transferMessages, setTransferMessages] = useState({});
     const [transferData, setTransferData] = useState({});
@@ -579,6 +581,13 @@ const Dashboard = () => {
             ...prev,
             INTERNET_CONNECTION_MESSAGES: ['Attempting to connect to internet WiFi now...']
         }));
+        if(additionalArguments?.STEP === 1) {
+            return build()
+        } else if(additionalArguments?.STEP === 3) {
+           return reconnection()
+        }else if(additionalArguments?.STEP === 4) {
+            return transfer_import()
+        }
         if (!additionalArguments?.USE_NETWORKING) {
             toast.current.show({
                 severity: 'info',
@@ -839,13 +848,14 @@ const Dashboard = () => {
                                                               offLabel={'Enable Networking'}
                                                               checked={additionalArguments?.USE_NETWORKING}
                                                               onChange={(e) => {
-                                                                  if (!confirmChanges) return checkConfirmChangesArgs();
                                                                   setAdditionalArguments((prev) => {
                                                                       return ({
                                                                           ...prev,
+                                                                          STEP: e.value ? 0 : 1,
                                                                           USE_NETWORKING: e.value
                                                                       });
                                                                   });
+                                                                  stepperRef.current.setActiveStep(e.value ? 0 : 1);
                                                               }} />
                                             </div>
                                         </div>
@@ -862,9 +872,11 @@ const Dashboard = () => {
                                                                       ARCHITECTURE: e.value
                                                                   });
                                                               });
-                                                          }} valueTemplate={archTemplate}
+                                                          }}
+                                                          editable={true}
+                                                          valueTemplate={archTemplate}
                                                           itemTemplate={archTemplate}
-                                                          options={['X86_LINUX', 'ARM64_LINUX', 'ARM_V7_LINUX', 'ARM_V6_LINUX', 'ARM_V6_LINUX', 'POWERPC_LINUX', 'S390X_LINUX', 'ARM64_WINDOWS', 'X86_WINDOWS', 'ARM_V7_WINDOWS', 'X86_MACOS', 'ARM64_MACOS']}
+                                                          options={['linux/amd64', 'windows/amd64', 'darwin/amd64', 'linux/aarch64', 'aarch64', 'linux/arm64/v8', 'linux/arm64', 'windows/arm64', 'darwin/arm64', 'linux/arm/v7', 'windows/arm/v7', 'linux/arm/v6', 'linux/ppc64le', 'linux/s390x']}
                                                           disabled={!isConnected || loading} className={'w-full'}
                                                           placeholder={'There is no architecture configured.'} />
                                             </div>
@@ -915,12 +927,55 @@ const Dashboard = () => {
                                                         setLoading(true);
                                                         preview_compose().then(() => setLoading(false))
                                                             .catch(() => setLoading(false))
-                                                            .finally(() => setLoading(false))
+                                                            .finally(() => setLoading(false));
                                                     }} icon="pi pi-search" disabled={!isConnected || !composeDirectory}
                                                             loading={loading} />
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <div className={'col-12'}>
+                                            <div className="flex flex-column gap-2">
+                                                <label htmlFor="Docker_compose_DIRECTORY" className={'text-sm'}>Step
+                                                    Start</label>
+                                                <SelectButton
+                                                    className={'w-full'}
+                                                    value={additionalArguments?.STEP || 0}
+                                                    onChange={(e) => {
+                                                        setAdditionalArguments((prev) => ({
+                                                            ...prev,
+                                                            STEP: e.target.value
+                                                        }));
+                                                        stepperRef.current.setActiveStep(e.target.value);
+                                                    }}
+                                                    options={[{ label: 'Internet', value: 0 }, {
+                                                        label: 'Build',
+                                                        value: 1
+                                                    }, { label: 'Reconnection', value: 3 }, {
+                                                        label: 'Transfer & Execute',
+                                                        value: 4
+                                                    }]}
+                                                    pt={{
+                                                        root: {
+                                                            style: {
+                                                                display: 'flex',
+                                                                width: '100%',
+                                                                justifyContent: 'space-between'
+                                                            }
+                                                        },
+                                                        button: {
+                                                            style: {
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                            }
+                                                        },
+
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+
+
                                     </div>
 
                                 </AccordionTab>
@@ -1118,7 +1173,7 @@ const archTemplate = (option) => {
     return (
         <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg shadow-md">
             {(
-                <i className={('pi ') + (option.toLowerCase().includes('windows') ? 'pi-microsoft' : option.toLowerCase().includes('mac') ? 'pi-apple' : option.toLowerCase().includes('linux') ? 'pi-microchip' : 'pi-desktop')} />)}
+                <i className={('pi ') + (option.toLowerCase().includes('windows') ? 'pi-microsoft' : (option.toLowerCase().includes('mac') || option.toLowerCase().includes('darwin')) ? 'pi-apple' : option.toLowerCase().includes('linux') ? 'pi-microchip' : 'pi-desktop')} />)}
             <span className={'ml-2'}>{option}</span>
         </div>
     );
