@@ -1,5 +1,6 @@
 package org.kobe.xbot.xdashbackend.websocket;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -13,7 +14,7 @@ import org.springframework.web.socket.TextMessage;
 public class BroadcastService {
 
     private final Set<WebSocketSession> sessions;
-    private final BlockingQueue<MessageTask> messageQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<MessageTask> messageQueue = new LinkedBlockingQueue<>(150);
     private final Thread broadcastThread;
 
     public BroadcastService(Set<WebSocketSession> sessions) {
@@ -33,7 +34,14 @@ public class BroadcastService {
     }
 
     public void queueBroadcast(DataReturn data, String type) {
-        messageQueue.offer(new MessageTask(new Message(data, type), null));
+        if(!messageQueue.offer(new MessageTask(new Message(data, type), null))) {
+            messageQueue.clear();
+        };
+    }
+    public void queueBroadcast(Object data, String type) {
+        if(!messageQueue.offer(new MessageTask(new Message(data, type), null))) {
+            messageQueue.clear();
+        };
     }
 
     public void queueBroadcastNotification(Notification notification) {

@@ -101,6 +101,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 session.sendMessage(new TextMessage(new Message(new XTablesDataReturn(false, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), null), "XTABLES-DATA").toJSON()));
 
             }
+        }else if (message.getType().equals("XTABLES-CONNECTION-DETAILS")) {
+            if (xTablesClient != null) {
+                WebSocketHandler.getBroadcastService().queueBroadcast(new XTablesConnectionMessage(xTablesClient.getSocketMonitor().getSimplifiedMessage()), message.getType());
+            } else {
+                WebSocketHandler.getBroadcastService().queueBroadcast(new XTablesConnectionMessage("DISCONNECTED"), message.getType());
+            }
         } else if (message.getType().equals("XTABLES-DATA-VIEW")) {
             if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
                 String json = xTablesClient.getRawJson();
@@ -477,11 +483,6 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         session.sendMessage(new TextMessage(new Message(new DockerProgress("Missing docker images directory.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
                         return;
                     }
-                    Architecture architecture = Architecture.valueOfNull(dockerBuildReturn.getARCHITECTURE());
-                    if (architecture == null) {
-                        session.sendMessage(new TextMessage(new Message(new DockerProgress("Invalid architecture type or unsupported.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
-                        return;
-                    }
                     File file = DockerManager.buildTARImage(XdashbackendApplication.getConfigLoader().getProjectDirectory(),
                             dockerBuildReturn.getIMAGE_NAME(),
                             XdashbackendApplication.getConfigLoader().getDockerImagesDirectory(),
@@ -491,7 +492,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                 } catch (IOException ignored) {
                                 }
 
-                            }, architecture);
+                            }, dockerBuildReturn.getARCHITECTURE());
                     if (file == null) {
                         session.sendMessage(new TextMessage(new Message(new DockerProgress("Image TARBALL file could not be located.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
                     } else {
@@ -736,11 +737,6 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 String archString = devicesTransferFiles.getArchitecture();
                 if (archString == null) {
                     session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No architecture in argument.", null, false, true), message.getType()).toJSON()));
-                    return;
-                }
-                Architecture architecture = Architecture.valueOfNull(archString);
-                if (architecture == null) {
-                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid architecture in argument.", null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 String flashTypeString = devicesTransferFiles.getFlashType();

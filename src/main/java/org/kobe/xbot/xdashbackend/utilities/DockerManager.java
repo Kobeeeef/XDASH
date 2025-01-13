@@ -16,7 +16,7 @@ public class DockerManager {
 
     private static final XDashLogger logger = XDashLogger.getLogger();
 
-    private static File buildAndSaveImageAsTarWithBuildx(String dockerfileDirPath, String imageName, String tarFileLocation, Consumer<DockerProgress> progressConsumer, Architecture architecture) {
+    private static File buildAndSaveImageAsTarWithBuildx(String dockerfileDirPath, String imageName, String tarFileLocation, Consumer<DockerProgress> progressConsumer, String architecture) {
         try {
             File dockerfileDir = new File(dockerfileDirPath);
             if (!dockerfileDir.exists() || !dockerfileDir.isDirectory()) {
@@ -36,7 +36,7 @@ public class DockerManager {
             // Command to build and save with Buildx
             String buildCommand = String.format(
                     "docker buildx build --platform %s -t %s -o type=docker,dest=%s %s",
-                    architecture.getBuildxPlatform(), imageName, tarFileLocation, dockerfileDirPath);
+                    architecture, imageName, tarFileLocation, dockerfileDirPath);
 
             progressConsumer.accept(new DockerProgress("Starting Buildx build... Command: " + buildCommand, DockerStep.STARTING, 0).setFinished(false));
 
@@ -71,7 +71,7 @@ public class DockerManager {
     }
 
 
-    public static File buildTARImage(String dockerfileDirPath, String imageName, String tarDirectory, Consumer<DockerProgress> progressConsumer, Architecture architecture) {
+    public static File buildTARImage(String dockerfileDirPath, String imageName, String tarDirectory, Consumer<DockerProgress> progressConsumer, String architecture) {
         return buildAndSaveImageAsTarWithBuildx(dockerfileDirPath, imageName + ":latest", (tarDirectory + "/" + imageName + ".tar").toLowerCase(), progressConsumer, architecture);
     }
 

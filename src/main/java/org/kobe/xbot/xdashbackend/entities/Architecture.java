@@ -9,6 +9,7 @@ public enum Architecture {
     // ARM Architectures
     AARCH64_LINUX("linux/aarch64"),
     AARCH64("aarch64"),
+    ARM64_LINUX_V8("linux/arm64/v8"),
     ARM64_LINUX("linux/arm64"),         // 64-bit ARM architecture for Linux
     ARM64_WINDOWS("windows/arm64"),     // 64-bit ARM architecture for Windows
     ARM64_MACOS("darwin/arm64"),        // 64-bit ARM architecture for macOS
