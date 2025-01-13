@@ -754,11 +754,11 @@ public class SSHHostAddress {
             // Step 2: Remove existing containers and images
             if(composeFile == null) {
                 if (type.equals(DockerFlashType.LIGHT)) {
-                    executeCommandDocker(session, "sudo -S docker rm -f " + containerName, updates);
-                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+                    executeCommandDocker(session, "sudo -S docker rm -f " + containerName + " 2>&1", updates);
+                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
                 } else {
-                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a)", updates);
-                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q)", updates);
+                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a) 2>&1", updates);
+                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
                 }
             } else {
 
@@ -795,14 +795,15 @@ public class SSHHostAddress {
                     return;
                 }
                 updates.accept(new DockerImportReturn("Compose file uploaded successfully.", server, true, false));
-                boolean runSuccess = executeCommandDocker(session, "sudo -S docker compose -f "+ remoteComposeFilePath + " down -t 0", updates);
+                boolean runSuccess = executeCommandDocker(session, "sudo -S docker compose -f "+ remoteComposeFilePath + " down -t 0 2>&1", updates);
                 if (!runSuccess) {
                     updates.accept(new DockerImportReturn("Failed to shutdown previous docker compose. Continuing regardless...", server, false, false));
                 }
                 if (type.equals(DockerFlashType.LIGHT)) {
-                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName, updates);
+                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
                 } else {
-                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q)", updates);
+                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a) 2>&1", updates);
+                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
                 }
             }
             // Step 3: Load the Docker image
@@ -828,7 +829,7 @@ public class SSHHostAddress {
             } else {
                 // Step 4: Run a new compose
                 String remoteComposeFilePath = "/tmp/" + composeFile.getName();
-                String runCommand = "sudo -S docker compose -f "+ remoteComposeFilePath + " up -d";
+                String runCommand = "sudo -S docker compose -f "+ remoteComposeFilePath + " up -d 2>&1";
                 boolean runSuccess = executeCommandDocker(session, runCommand, updates);
 
                 if (runSuccess) {

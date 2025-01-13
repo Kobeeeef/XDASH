@@ -146,7 +146,6 @@ public class SSHConnectionManager {
             if (sshHostAddress.getPassword() != null) password = sshHostAddress.getPassword();
             logger.info(String.format("Connecting to %s with username '%s' and password '%s'", sshHostAddress.getAddress(), username, password));
             Session session = jsch.getSession(username, sshHostAddress.getAddress(), 22);
-
             session.setPassword(password);
 
             // Avoid asking for key confirmation
