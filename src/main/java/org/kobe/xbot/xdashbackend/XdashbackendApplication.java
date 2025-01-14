@@ -6,6 +6,7 @@ import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.kobe.xbot.JClient.XTablesClient;
+import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.entities.Notification;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @SpringBootApplication
 public class XdashbackendApplication {
@@ -170,6 +172,7 @@ public class XdashbackendApplication {
             if (clientRef.get() == null && !lock.get()) {
                 lock.set(true);
                 XTablesClient client = new XTablesClient();
+                XTablesLogger.setLoggingLevel(Level.OFF);
                 client.addVersionProperty("XDASH");
                 clientRef.set(client);
                 xTablesViewerRef.set(new XTablesViewer(client));

@@ -808,7 +808,7 @@ public class SSHHostAddress {
             }
             // Step 3: Load the Docker image
             updates.accept(new DockerImportReturn("Loading Docker image...", server, true, false));
-            String loadCommand = "sudo -S docker load --input " + remoteFilePath;
+            String loadCommand = "sudo -S docker load --input " + remoteFilePath + " 2>&1";
             boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
 
             if (!loadSuccess) {

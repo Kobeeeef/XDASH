@@ -1,5 +1,7 @@
 package org.kobe.xbot.xdashbackend.entities;
 
+import java.util.zip.Deflater;
+
 public enum Architecture {
     // x86 Architectures
     X86_LINUX("linux/amd64"),           // 64-bit AMD architecture for Linux
@@ -33,6 +35,7 @@ public enum Architecture {
 
     public static Architecture fromUnixCLI(String osResponse, String archResponse) {
         return switch (osResponse.toLowerCase()) {
+
             case "linux" -> switch (archResponse.toLowerCase()) {
                 case "x86_64" -> X86_LINUX;
                 case "arm64" -> ARM64_LINUX;

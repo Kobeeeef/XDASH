@@ -7,6 +7,7 @@ public class DockerImportRequest {
     private String architecture;
     private String flashType;
     private boolean useCompose;
+    private boolean wasGZFile;
 
     public String getFlashType() {
         return flashType;
@@ -14,6 +15,10 @@ public class DockerImportRequest {
 
     public boolean isUseCompose() {
         return useCompose;
+    }
+
+    public boolean isWasGZFile() {
+        return wasGZFile;
     }
 
     public String[] getServers() {

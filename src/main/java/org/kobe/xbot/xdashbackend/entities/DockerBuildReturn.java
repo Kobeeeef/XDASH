@@ -4,6 +4,12 @@ public class DockerBuildReturn {
     private String CONTAINER_NAME;
     private String IMAGE_NAME;
     private String ARCHITECTURE;
+    private int COMPRESSION;
+
+
+    public int getCOMPRESSION() {
+        return COMPRESSION;
+    }
 
     public String getCONTAINER_NAME() {
         return CONTAINER_NAME;

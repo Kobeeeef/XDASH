@@ -10,10 +10,7 @@ import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.entities.*;
 import org.kobe.xbot.xdashbackend.logs.LogSave;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
-import org.kobe.xbot.xdashbackend.utilities.DockerManager;
-import org.kobe.xbot.xdashbackend.utilities.NetworkDiscovery;
-import org.kobe.xbot.xdashbackend.utilities.NetworkManager;
-import org.kobe.xbot.xdashbackend.utilities.Utilities;
+import org.kobe.xbot.xdashbackend.utilities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
@@ -496,7 +493,24 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     if (file == null) {
                         session.sendMessage(new TextMessage(new Message(new DockerProgress("Image TARBALL file could not be located.", DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
                     } else {
-                        session.sendMessage(new TextMessage(new Message(new DockerProgress("XDASH has finished building the docker image.", DockerStep.FINISHED, 100).setFinished(true).setSuccess(true), message.getType()).toJSON()));
+                        if(dockerBuildReturn.getCOMPRESSION() != 0) {
+                            session.sendMessage(new TextMessage(new Message(new DockerProgress("XDASH has finished building the docker image. Proceeding to GZIP compression.", DockerStep.BUILDING, 100).setFinished(false).setSuccess(true), message.getType()).toJSON()));
+                            try {
+                               File compressedFile = GZIP.compress(file, dockerBuildReturn.getCOMPRESSION(), (m) -> {
+                                    try {
+                                        session.sendMessage(new TextMessage(new Message(new DockerProgress(m, DockerStep.COMPRESSION, 0).setFinished(false).setSuccess(true), message.getType()).toJSON()));
+                                    } catch (IOException ignored) {
+                                    }
+                                });
+                               if(compressedFile != null && compressedFile.exists() && compressedFile.isFile())
+                                session.sendMessage(new TextMessage(new Message(new DockerProgress("XDASH finished compressing docker image. File at: " + compressedFile.getAbsolutePath(), DockerStep.COMPRESSION, 0).setFinished(true).setSuccess(true), message.getType()).toJSON()));
+                                else throw new RuntimeException("File not found or is not a file.");
+                            } catch (Exception e) {
+                                session.sendMessage(new TextMessage(new Message(new DockerProgress("XDASH has failed at compressing the docker image: " + e.getMessage(), DockerStep.ERROR, 100).setFinished(true).setSuccess(false), message.getType()).toJSON()));
+                            }
+                        } else {
+                            session.sendMessage(new TextMessage(new Message(new DockerProgress("XDASH has finished building the docker image.", DockerStep.FINISHED, 100).setFinished(true).setSuccess(true), message.getType()).toJSON()));
+                        }
                     }
                 } catch (Exception e) {
                     session.sendMessage(new TextMessage(new Message(new DockerProgress("Failed while building: " + e.getMessage(), DockerStep.ERROR, 0).setFinished(true).setSuccess(false), message.getType()).toJSON()));
@@ -760,10 +774,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     return;
                 }
 
-                String imagePath = XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() + "/" + imageName + ".tar";
+                String imagePath = XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() + "/" + imageName + ".tar" + (devicesTransferFiles.isWasGZFile() ? ".gz" : "");
                 File imageFile = new File(imagePath);
                 if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
-                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid image found.", null, false, true), message.getType()).toJSON()));
+                    session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid image found at: " + imagePath, null, false, true), message.getType()).toJSON()));
                     return;
                 }
                 File composeFile = null;

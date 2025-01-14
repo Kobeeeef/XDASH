@@ -4,6 +4,6 @@ public enum DockerStep {
     STARTING,
     BUILDING,
     FINISHED,
-    CLEANING,
+    COMPRESSION,
     ERROR
 }
