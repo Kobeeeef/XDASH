@@ -16,6 +16,7 @@
         "@types/react-dom": "18.2.5",
         "ansi-to-html": "^0.7.2",
         "chart.js": "4.2.1",
+        "d3": "^7.9.0",
         "file-saver": "^2.0.5",
         "next": "13.4.8",
         "primeflex": "^3.3.1",

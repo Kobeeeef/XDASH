@@ -51,6 +51,7 @@ const Dashboard = () => {
     const [buildStatus, setBuildStatus] = useState({
         STARTING: [],
         BUILDING: [],
+        COMPRESSION: [],
         ERRORS: [],
         FINISHED: []
     });
@@ -70,13 +71,14 @@ const Dashboard = () => {
     const [response, setResponse] = useState(null);
     const [composePreviewDialogVisible, setComposePreviewDialogVisible] = useState(false);
     const [composePreview, setComposePreview] = useState(null);
-    const [additionalArgumentsIndex, setAdditionalArgumentsIndex] = useState(-1)
+    const [additionalArgumentsIndex, setAdditionalArgumentsIndex] = useState(-1);
     const [additionalArguments, setAdditionalArguments] = useState({
         CONTAINER_NAME: 'xdash-docker-pipeline',
         IMAGE_NAME: 'xdash-docker-image',
         ARCHITECTURE: 'linux/arm64/v8',
         FLASH_TYPE: 'HARD',
         USE_NETWORKING: false,
+        COMPRESSION: 9,
         STEP: 1
     });
     const [transferMessages, setTransferMessages] = useState({});
@@ -198,7 +200,7 @@ const Dashboard = () => {
 
     function finish() {
         setFinished(true);
-        setComposePreviewDialogVisible(false)
+        setComposePreviewDialogVisible(false);
         setLoading(false);
         stepperRef.current.setActiveStep(5);
     }
@@ -229,7 +231,8 @@ const Dashboard = () => {
                 imageName: additionalArguments?.IMAGE_NAME,
                 architecture: additionalArguments?.ARCHITECTURE,
                 flashType: additionalArguments?.FLASH_TYPE,
-                useCompose: true
+                useCompose: true,
+                wasGZFile: additionalArguments?.COMPRESSION !== 0
             })
         }, (m) => {
             if (m?.type === 'DEVICES-DOCKER-IMPORT') {
@@ -284,6 +287,7 @@ const Dashboard = () => {
                 finish();
             } else {
                 playFatalNotificationSound();
+                setFinished(true)
             }
         }).catch((e) => {
             setTransferData((prev) => ({
@@ -293,6 +297,7 @@ const Dashboard = () => {
                     ...(prev?.messages ?? [])
                 ]
             }));
+            setFinished(true)
             playFatalNotificationSound();
             setLoading(false);
         });
@@ -384,7 +389,8 @@ const Dashboard = () => {
             type: 'DOCKER-BUILD', message: JSON.stringify({
                 CONTAINER_NAME: additionalArguments?.CONTAINER_NAME,
                 IMAGE_NAME: additionalArguments?.IMAGE_NAME,
-                ARCHITECTURE: additionalArguments?.ARCHITECTURE
+                ARCHITECTURE: additionalArguments?.ARCHITECTURE,
+                COMPRESSION: additionalArguments?.COMPRESSION
             })
         }, (m) => {
             if (m.type === 'DOCKER-BUILD') {
@@ -411,8 +417,18 @@ const Dashboard = () => {
                             BUILDING: array
                         });
                     });
+                } else if (msg.step === 'COMPRESSION') {
+                    setBuildIndex(2);
+                    setBuildStatus((prev) => {
+                        const array = prev?.COMPRESSION ?? [];
+                        array.unshift(msg?.message || '');
+                        return ({
+                            ...prev,
+                            COMPRESSION: array
+                        });
+                    });
                 } else if (msg.step === 'FINISHED') {
-                    setBuildIndex(3);
+                    setBuildIndex(4);
                     setBuildStatus((prev) => {
                         const array = prev?.FINISHED ?? [];
                         array.unshift(msg?.message || 'Unknown message while building on step FINISHED...');
@@ -422,7 +438,7 @@ const Dashboard = () => {
                         });
                     });
                 } else {
-                    setBuildIndex(2);
+                    setBuildIndex(3);
                     setBuildStatus((prev) => {
                         const array = prev?.ERRORS ?? [];
                         array.unshift(msg?.message || 'Unknown Exception while building...');
@@ -512,13 +528,13 @@ const Dashboard = () => {
                             ROBOT_CONNECTION_MESSAGES: prev.ROBOT_CONNECTION_MESSAGES
                         });
                     });
-                    playFatalNotificationSound()
+                    playFatalNotificationSound();
                     setLoading(false);
                 });
             }
         }).catch((e) => {
             setLoading(false);
-            playFatalNotificationSound()
+            playFatalNotificationSound();
             setBuildStatus((prev) => {
                 const array = prev?.ERRORS ?? [];
                 array.unshift(e?.message || 'Unknown Exception while building...');
@@ -537,7 +553,7 @@ const Dashboard = () => {
         setFinished(false);
         setFinalSummary([]);
         setTransferIndex(0);
-        setAdditionalArgumentsIndex(-1)
+        setAdditionalArgumentsIndex(-1);
         stepperRef.current.setActiveStep(0);
         if (!ready) {
             toast.current.show({
@@ -581,12 +597,12 @@ const Dashboard = () => {
             ...prev,
             INTERNET_CONNECTION_MESSAGES: ['Attempting to connect to internet WiFi now...']
         }));
-        if(additionalArguments?.STEP === 1) {
-            return build()
-        } else if(additionalArguments?.STEP === 3) {
-           return reconnection()
-        }else if(additionalArguments?.STEP === 4) {
-            return transfer_import()
+        if (additionalArguments?.STEP === 1) {
+            return build();
+        } else if (additionalArguments?.STEP === 3) {
+            return reconnection();
+        } else if (additionalArguments?.STEP === 4) {
+            return transfer_import();
         }
         if (!additionalArguments?.USE_NETWORKING) {
             toast.current.show({
@@ -663,7 +679,8 @@ const Dashboard = () => {
         <div className="grid fadeIn">
             <Toast ref={toast} />
             <TimeoutsDialog timeoutsRef={timeoutsRef} updateInterval={10} />
-            <Dialog position={"top"} modal={false} header={'Compose Preview'} closeOnEscape={true} style={{ width: '50%' }}
+            <Dialog position={'top'} modal={false} header={'Compose Preview'} closeOnEscape={true}
+                    style={{ width: '50%' }}
                     visible={composePreviewDialogVisible} onHide={() => setComposePreviewDialogVisible(false)}>
                 <SyntaxHighlighter showLineNumbers={true} wrapLines={true} style={vs2015}>
                     {composePreview}
@@ -827,7 +844,8 @@ const Dashboard = () => {
                                          placeholder="Select Machines" itemTemplate={template} className="w-full" />
                         </div>
                         <div className={'col-12'}>
-                            <Accordion activeIndex={additionalArgumentsIndex} onTabChange={(e) => setAdditionalArgumentsIndex(e.index)}>
+                            <Accordion activeIndex={additionalArgumentsIndex}
+                                       onTabChange={(e) => setAdditionalArgumentsIndex(e.index)}>
                                 <AccordionTab disabled={loading || !isConnected}
                                               header="Additional Arguments">
                                     <div className={'grid'}>
@@ -933,15 +951,59 @@ const Dashboard = () => {
                                                 </div>
                                             </div>
                                         </div>
+                                        <div className="col-12">
+                                            <div className="flex flex-column gap-2 align-items-center">
+                                                <label
+                                                    htmlFor="Docker_compose_DIRECTORY"
+                                                    className="text-sm text-center"
+                                                >
+                                                    Compression Status
+                                                </label>
+                                                <ToggleButton disabled={!isConnected || loading} onChange={(e) => {
+                                                    setAdditionalArguments((prev) => {
+                                                        return ({
+                                                            ...prev,
+                                                            COMPRESSION: e.value ? 9 : 0
+                                                        });
+                                                    });
+                                                }} checked={additionalArguments?.COMPRESSION !== 0}
+                                                              offLabel={'Compression Algorithm Inactive'}
+                                                              onLabel={'Compression Algorithm Active'}
+                                                              className="w-full" />
+                                                <Dropdown loading={loading}  onChange={(e) => {
+                                                    setAdditionalArguments((prev) => {
+                                                        return ({
+                                                            ...prev,
+                                                            COMPRESSION: e.target.value
+                                                        });
+                                                    });
+                                                }} value={additionalArguments?.COMPRESSION}
+                                                          disabled={additionalArguments?.COMPRESSION === 0 || !isConnected || loading}
+                                                          className="w-full" options={[
+                                                    { label: 'Default Compression', value: -1 },
+                                                    { label: 'Fastest Compression', value: 1 },
+                                                    { label: 'Very Fast Compression', value: 2 },
+                                                    { label: 'Fast Compression', value: 3 },
+                                                    { label: 'Balanced Speed/Size', value: 4 },
+                                                    { label: 'Moderate Compression', value: 5 },
+                                                    { label: 'Standard Compression', value: 6 },
+                                                    { label: 'Good Compression', value: 7 },
+                                                    { label: 'High Compression', value: 8 },
+                                                    { label: 'Maximum Compression', value: 9 }
+                                                ]} />
+                                            </div>
+                                        </div>
 
                                         <div className={'col-12'}>
-                                            <div className="flex flex-column gap-2">
-                                                <label htmlFor="Docker_compose_DIRECTORY" className={'text-sm'}>Step
-                                                    Start</label>
+                                            <div className="flex flex-column gap-2 align-items-center">
+                                                <label htmlFor="Docker_compose_DIRECTORY" className={'text-sm'}>Start
+                                                    Step</label>
                                                 <SelectButton
+                                                    disabled={!isConnected || loading}
                                                     className={'w-full'}
                                                     value={additionalArguments?.STEP || 0}
                                                     onChange={(e) => {
+                                                        if (!confirmChanges) return checkConfirmChangesArgs();
                                                         setAdditionalArguments((prev) => ({
                                                             ...prev,
                                                             STEP: e.target.value
@@ -966,9 +1028,9 @@ const Dashboard = () => {
                                                         button: {
                                                             style: {
                                                                 flex: 1,
-                                                                textAlign: 'center',
+                                                                textAlign: 'center'
                                                             }
-                                                        },
+                                                        }
 
                                                     }}
                                                 />
@@ -1028,6 +1090,13 @@ const Dashboard = () => {
                                 <TabPanel className={'w-full'} header="BUILDING" leftIcon="pi pi-hammer mr-2">
                                     <TerminalDisplay
                                         messages={buildStatus?.BUILDING ?? []}
+                                        loadingDots={true}
+                                        placeholder={'Waiting for a message'}
+                                    />
+                                </TabPanel>
+                                <TabPanel className={'w-full'} header="COMPRESSION" leftIcon="pi pi-window-minimize mr-2">
+                                    <TerminalDisplay
+                                        messages={buildStatus?.COMPRESSION ?? []}
                                         loadingDots={true}
                                         placeholder={'Waiting for a message'}
                                     />

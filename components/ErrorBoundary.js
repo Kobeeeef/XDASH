@@ -2,6 +2,7 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Button } from 'primereact/button';
 import { useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
+import { playFatalNotificationSound } from '@/utilities/notification';
 
 export function GlobalErrorHandler({ children }) {
     const [fatalErrorDialogVisible, setFatalErrorDialogVisible] = useState(false);
@@ -10,6 +11,7 @@ export function GlobalErrorHandler({ children }) {
     useEffect(() => {
         // Global error handling for uncaught exceptions
         const handleGlobalError = (message, source, lineno, colno, error) => {
+            playFatalNotificationSound()
             console.error('Uncaught Error:', { message, source, lineno, colno, error });
             setLatestError({
                 summary: message || 'Unknown error occurred',
@@ -22,6 +24,7 @@ export function GlobalErrorHandler({ children }) {
         };
 
         const handleUnhandledRejection = (event) => {
+            playFatalNotificationSound()
             console.error('Unhandled Promise Rejection:', event.reason);
             setLatestError({
                 summary: 'Unhandled Promise Rejection',

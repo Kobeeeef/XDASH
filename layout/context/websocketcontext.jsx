@@ -178,7 +178,7 @@ export const WebSocketProvider = ({ children, url }) => {
         return new Promise((resolve, reject) => {
             const listener = (event) => {
                 const data = JSON.parse(event.data);
-                console.log(data)
+                console.debug(data)
                 if (conditionFunc(data)) {
                     socket.current.removeEventListener('message', listener);
                     clearTimeout(timeoutId);
