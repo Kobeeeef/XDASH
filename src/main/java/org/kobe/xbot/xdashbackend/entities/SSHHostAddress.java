@@ -10,6 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -708,7 +711,7 @@ public class SSHHostAddress {
             // Check if Docker is installed
             updates.accept(new DockerImportReturn("Checking if Docker is installed...", server, true, false));
             if (!isDockerInstalled(session, updates)) {
-                updates.accept(new DockerImportReturn("Docker is not installed. Please install docker.io manually and try again.", server, true, true));
+                updates.accept(new DockerImportReturn("Docker is not installed. Please install docker.io manually and try again.", server, true, false));
                 return;
             } else {
                 updates.accept(new DockerImportReturn("Docker is already installed.", server, true, false));
@@ -746,13 +749,13 @@ public class SSHHostAddress {
 
 
             if (!uploadSuccess) {
-                updates.accept(new DockerImportReturn("Failed to upload Docker image file.", server, true, true));
+                updates.accept(new DockerImportReturn("Failed to upload Docker image file.", server, true, false));
                 return;
             }
             updates.accept(new DockerImportReturn("File uploaded successfully.", server, true, false));
 
             // Step 2: Remove existing containers and images
-            if(composeFile == null) {
+            if (composeFile == null) {
                 if (type.equals(DockerFlashType.LIGHT)) {
                     executeCommandDocker(session, "sudo -S docker rm -f " + containerName + " 2>&1", updates);
                     executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
@@ -761,44 +764,6 @@ public class SSHHostAddress {
                     executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
                 }
             } else {
-
-                String remoteComposeFilePath = "/tmp/" + composeFile.getName();
-                AtomicReference<Double> lastComposePercentage = new AtomicReference<>(0.0);
-                boolean composeUploadSuccess = uploadFileUsingLocalSFTP(
-                        composeFile.getAbsolutePath(),
-                        remoteComposeFilePath,
-                        username,
-                        password,
-                        address,
-                        progress -> {
-                            double currentPercentage = progress.getPercentage();
-                            double lastLoggedPercentage = lastComposePercentage.get();
-
-                            if (currentPercentage - lastLoggedPercentage >= 0.8) {
-                                updates.accept(new DockerImportReturn(
-                                        String.format(
-                                                "Uploading compose file: %.2f%% complete (%d/%d bytes)",
-                                                currentPercentage,
-                                                progress.getCurrentBytes(),
-                                                progress.getTotalBytes()
-                                        ),
-                                        server,
-                                        true,
-                                        false
-                                ));
-                                lastComposePercentage.set(currentPercentage); // Update the last logged percentage
-                            }
-                        }
-                );
-                if (!composeUploadSuccess) {
-                    updates.accept(new DockerImportReturn("Failed to upload Docker compose file.", server, true, true));
-                    return;
-                }
-                updates.accept(new DockerImportReturn("Compose file uploaded successfully.", server, true, false));
-                boolean runSuccess = executeCommandDocker(session, "sudo -S docker compose -f "+ remoteComposeFilePath + " down -t 0 2>&1", updates);
-                if (!runSuccess) {
-                    updates.accept(new DockerImportReturn("Failed to shutdown previous docker compose. Continuing regardless...", server, false, false));
-                }
                 if (type.equals(DockerFlashType.LIGHT)) {
                     executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
                 } else {
@@ -812,7 +777,7 @@ public class SSHHostAddress {
             boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
 
             if (!loadSuccess) {
-                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, false, true));
+                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, false, false));
                 return;
             }
             updates.accept(new DockerImportReturn("Docker image loaded successfully.", server, true, false));
@@ -828,14 +793,30 @@ public class SSHHostAddress {
                 }
             } else {
                 // Step 4: Run a new compose
-                String remoteComposeFilePath = "/tmp/" + composeFile.getName();
-                String runCommand = "sudo -S docker compose -f "+ remoteComposeFilePath + " up -d 2>&1";
-                boolean runSuccess = executeCommandDocker(session, runCommand, updates);
+                try (InputStream inputStream = SSHHostAddress.class.getResourceAsStream("/docker/xdash-docker-watchdog.sh")) {
+                    if (inputStream == null) {
+                        updates.accept(new DockerImportReturn("Script file not found in resources.", server, false, false));
+                        return;
+                    }
 
-                if (runSuccess) {
-                    updates.accept(new DockerImportReturn("Docker Compose started successfully.", server, true, false));
-                } else {
-                    updates.accept(new DockerImportReturn("Failed to start docker compose.", server, true, true));
+                    String dockerComposeContent = Files.readString(Path.of(composeFile.getAbsolutePath()), StandardCharsets.UTF_8);
+                    dockerComposeContent = dockerComposeContent.replace("${HOSTNAME}", this.hostname)
+                            .replace("${ADDRESS}", this.address)
+                            .replace("${USERNAME}", this.username)
+                            .replace("${PASSWORD}", this.password)
+                            .replace("${SERVER}", this.server);
+                    String script = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                    script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent);
+                    String command = "nohup bash -c '" + script + "' > /tmp/xdash-watchdog-logs.txt 2>&1 &";
+                    boolean runSuccess = executeCommandDocker(session, command, updates);
+
+                    if (runSuccess) {
+                        updates.accept(new DockerImportReturn("XDASH watchdog script started successfully.", server, true, false));
+                    } else {
+                        updates.accept(new DockerImportReturn("Failed to start XDASH watchdog script.", server, false, false));
+                    }
+                } catch (Exception e) {
+                    updates.accept(new DockerImportReturn("Exception while attempting XDASH watchdog script flow: " + e.getMessage(), server, false, false));
                 }
             }
 
@@ -987,7 +968,7 @@ public class SSHHostAddress {
             for (int i = 0; i < length; i++) {
                 outputStream.write((password + "\n").getBytes());
                 outputStream.flush();
-                if(length > 1) {
+                if (length > 1) {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {

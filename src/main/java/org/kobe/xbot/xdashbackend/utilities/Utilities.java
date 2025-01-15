@@ -1,16 +1,14 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
-import org.kobe.xbot.xdashbackend.entities.FormattedByteResult;
-import org.kobe.xbot.xdashbackend.entities.FormattedTimeResult;
-import org.kobe.xbot.xdashbackend.entities.TransferProgress;
+import org.kobe.xbot.xdashbackend.entities.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -18,6 +16,17 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class Utilities {
+    public static void main(String[] ar) throws IOException {
+        InputStream inputStream = SSHHostAddress.class.getResourceAsStream("/docker/xdash-docker-watchdog.sh");
+
+
+            String dockerComposeContent = Files.readString(Path.of("D:\\stuff\\PyCharmProjects\\Alt\\docker-compose.yml"), StandardCharsets.UTF_8);
+            String script = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+        script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent);
+        String command = "nohup bash -c '" + script + "' > /tmp/xdash-watchdog-logs.txt 2>&1 &";
+            System.out.println(command);
+    }
     public static InetAddress getLocalInetAddress() throws SocketException, UnknownHostException {
         InetAddress localHost = Inet4Address.getLocalHost();
         if (localHost.isLoopbackAddress()) {

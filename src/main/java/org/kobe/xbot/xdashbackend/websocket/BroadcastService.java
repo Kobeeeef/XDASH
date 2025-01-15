@@ -43,6 +43,11 @@ public class BroadcastService {
             messageQueue.clear();
         };
     }
+    public void queueBroadcast(Message data) {
+        if(!messageQueue.offer(new MessageTask(data, null))) {
+            messageQueue.clear();
+        };
+    }
 
     public void queueBroadcastNotification(Notification notification) {
         messageQueue.offer(new MessageTask(new Message(notification, "NOTIFICATION"), null));
