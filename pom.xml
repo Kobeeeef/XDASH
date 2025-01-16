@@ -31,6 +31,11 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.9.0-0</version>
+        </dependency>
+        <dependency>
             <groupId>org.kobe.xbot</groupId>
             <artifactId>xtables</artifactId>
             <version>4.6.3</version>
