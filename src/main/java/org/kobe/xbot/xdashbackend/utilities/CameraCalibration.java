@@ -131,7 +131,8 @@ public class CameraCalibration {
         if (success) {
             byte[] data = new byte[(int) buffer.limit()]; // Allocate array with the size of encoded data
             buffer.get(data); // Copy the encoded data into the byte array
-            DatagramPacket packet = new DatagramPacket(data, data.length, udpSocket.getInetAddress(), udpPort);
+            InetSocketAddress targetAddress = new InetSocketAddress("192.168.1.255", udpPort); // Replace with actual target
+            DatagramPacket packet = new DatagramPacket(data, data.length, targetAddress);
 
             try {
                 udpSocket.send(packet); // Send the packet via UDP
