@@ -31,9 +31,9 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.openpnp</groupId>
-            <artifactId>opencv</artifactId>
-            <version>4.9.0-0</version>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.9</version>
         </dependency>
         <dependency>
             <groupId>org.kobe.xbot</groupId>

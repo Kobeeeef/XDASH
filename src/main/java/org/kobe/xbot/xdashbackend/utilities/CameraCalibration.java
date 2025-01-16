@@ -1,10 +1,12 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
-import org.opencv.calib3d.Calib3d;
-import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.videoio.VideoCapture;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.FloatPointer;
+import org.bytedeco.opencv.global.opencv_calib3d;
+import org.bytedeco.opencv.global.opencv_imgcodecs;
+import org.bytedeco.opencv.global.opencv_imgproc;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_videoio.VideoCapture;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -40,11 +42,7 @@ public class CameraCalibration {
         // Reset state
         isCalibrating.set(true);
         calibrationData.clear();
-        try {
-            cap = new VideoCapture(cameraIndex);
-        } catch (UnsatisfiedLinkError e) {
-            throw new IllegalStateException("Error: Could not open camera with index " + cameraIndex, e);
-        }
+        cap = new VideoCapture(cameraIndex);
         if (!cap.isOpened()) {
             isCalibrating.set(false);
             throw new IllegalStateException("Error: Could not open camera with index " + cameraIndex);
@@ -75,30 +73,30 @@ public class CameraCalibration {
         Mat gray = new Mat();
         List<Mat> objectPoints = new ArrayList<>();
         List<Mat> imagePoints = new ArrayList<>();
-        MatOfPoint3f objp = new MatOfPoint3f();
-        MatOfPoint2f corners = new MatOfPoint2f();
+        Mat objp = new Mat();
+        Mat corners = new Mat();
 
         // Prepare object points (3D points in the real world).
-        for (int i = 0; i < checkerboardSize.height; i++) {
-            for (int j = 0; j < checkerboardSize.width; j++) {
-                objp.push_back(new MatOfPoint3f(new Point3(j * squareSize, i * squareSize, 0.0f)));
+        for (int i = 0; i < checkerboardSize.height(); i++) {
+            for (int j = 0; j < checkerboardSize.width(); j++) {
+                objp.push_back(new Mat(new FloatPointer(j * squareSize, i * squareSize, 0.0f)));
             }
         }
 
         long startTime = System.currentTimeMillis();
         int waitTime = 3000;
         while (isCalibrating.get() && cap.read(frame)) {
-            Imgproc.cvtColor(frame, gray, Imgproc.COLOR_BGR2GRAY);
+            opencv_imgproc.cvtColor(frame, gray, opencv_imgproc.COLOR_BGR2GRAY);
 
-            boolean found = Calib3d.findChessboardCorners(gray, checkerboardSize, corners);
+            boolean found = opencv_calib3d.findChessboardCorners(gray, checkerboardSize, corners);
             if (found && (System.currentTimeMillis() - startTime) > waitTime) {
                 startTime = System.currentTimeMillis();
                 objectPoints.add(objp);
-                MatOfPoint2f refinedCorners = new MatOfPoint2f();
-                Imgproc.cornerSubPix(gray, corners, new Size(11, 11), new Size(-1, -1),
+                Mat refinedCorners = new Mat();
+                opencv_imgproc.cornerSubPix(gray, corners, new Size(11, 11), new Size(-1, -1),
                         new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 30, 0.001));
                 imagePoints.add(corners);
-                Calib3d.drawChessboardCorners(frame, checkerboardSize, corners, found);
+                opencv_calib3d.drawChessboardCorners(frame, checkerboardSize, corners, found);
             }
 
             // Send frame via UDP
@@ -106,40 +104,72 @@ public class CameraCalibration {
         }
 
         if (!objectPoints.isEmpty() && !imagePoints.isEmpty()) {
+            Point3fVectorVector objectPointsVec = new Point3fVectorVector();
+            for (Mat obj : objectPoints) {
+                objectPointsVec.put(new Point3fVector(obj));
+            }
+
+            Point2fVectorVector imagePointsVec = new Point2fVectorVector();
+            for (Mat img : imagePoints) {
+                imagePointsVec.put(new Point2fVector(img));
+            }
             Mat cameraMatrix = new Mat();
             Mat distCoeffs = new Mat();
-            List<Mat> rvecs = new ArrayList<>();
-            List<Mat> tvecs = new ArrayList<>();
-            Calib3d.calibrateCamera(objectPoints, imagePoints, gray.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
+            MatVector rvecs = new MatVector();
+            MatVector tvecs = new MatVector();
+
+            opencv_calib3d.calibrateCamera(objectPointsVec, imagePointsVec, gray.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
 
             saveCalibration(cameraMatrix, distCoeffs);
         }
     }
 
     private void sendFrameOverUDP(Mat frame) {
-        MatOfByte buffer = new MatOfByte();
-        boolean success = Imgcodecs.imencode(".jpg", frame, buffer);
+        BytePointer buffer = new BytePointer(); // Use BytePointer for storing encoded image
+        boolean success = opencv_imgcodecs.imencode(".jpg", frame, buffer);
 
         if (success) {
-            byte[] data = buffer.toArray();
+            byte[] data = new byte[(int) buffer.limit()]; // Allocate array with the size of encoded data
+            buffer.get(data); // Copy the encoded data into the byte array
             DatagramPacket packet = new DatagramPacket(data, data.length, udpSocket.getInetAddress(), udpPort);
+
             try {
-                udpSocket.send(packet);
+                udpSocket.send(packet); // Send the packet via UDP
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        buffer.deallocate(); // Free the memory used by BytePointer
     }
 
     private void saveCalibration(Mat cameraMatrix, Mat distCoeffs) {
         try {
+            StringBuilder cameraMatrixBuilder = new StringBuilder();
+            StringBuilder distCoeffsBuilder = new StringBuilder();
+
+            // Serialize cameraMatrix
+            for (int row = 0; row < cameraMatrix.rows(); row++) {
+                for (int col = 0; col < cameraMatrix.cols(); col++) {
+                    cameraMatrixBuilder.append(cameraMatrix.ptr(row, col).getDouble()).append(" ");
+                }
+            }
+
+            // Serialize distCoeffs
+            for (int i = 0; i < distCoeffs.rows(); i++) {
+                distCoeffsBuilder.append(distCoeffs.ptr(i).getDouble()).append(" ");
+            }
+
+            // Create JSON string
             String json = String.format("{\"CameraMatrix\": \"%s\", \"DistortionCoeff\": \"%s\"}",
-                    cameraMatrix.dump(), distCoeffs.dump());
+                    cameraMatrixBuilder.toString().trim(), distCoeffsBuilder.toString().trim());
+
+            // Add to calibration data
             calibrationData.add(json);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
     public List<String> getCalibrationData() {
         return new ArrayList<>(calibrationData);
@@ -177,4 +207,3 @@ public class CameraCalibration {
         }
     }
 }
-
