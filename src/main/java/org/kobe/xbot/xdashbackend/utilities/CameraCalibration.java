@@ -1,9 +1,7 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
-import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.opencv.global.opencv_calib3d;
-import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_videoio.VideoCapture;
@@ -99,11 +97,12 @@ public class CameraCalibration {
             if (found && (System.currentTimeMillis() - startTime) > waitTime) {
                 startTime = System.currentTimeMillis();
                 objectPoints.add(objp);
-                Mat refinedCorners = new Mat();
-                opencv_imgproc.cornerSubPix(gray, corners, new Size(11, 11), new Size(-1, -1),
-                        new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 30, 0.001));
-                imagePoints.add(corners);
-                opencv_calib3d.drawChessboardCorners(frame, checkerboardSize, corners, found);
+                try (Mat refinedCorners = new Mat()) {
+                    opencv_imgproc.cornerSubPix(gray, corners, new Size(11, 11), new Size(-1, -1),
+                            new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 30, 0.001));
+                    imagePoints.add(corners);
+                    opencv_calib3d.drawChessboardCorners(frame, checkerboardSize, corners, found);
+                }
             }
         }
 
