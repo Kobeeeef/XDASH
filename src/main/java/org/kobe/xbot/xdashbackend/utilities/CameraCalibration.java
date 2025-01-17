@@ -5,6 +5,9 @@ import org.bytedeco.opencv.global.opencv_calib3d;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_videoio.VideoCapture;
+import org.bytedeco.opencv.global.opencv_highgui;
+
+
 
 import java.io.File;
 import java.io.FileWriter;
@@ -194,12 +197,27 @@ public class CameraCalibration {
     public void setSquareSize(float squareSize) {
         this.squareSize = squareSize; // Set new square size (in the chosen unit, e.g., inches).
     }
+    public void show() {
+        Thread showThread = new Thread(() -> {
+            while (isCalibrating.get()) {
+                synchronized (this) {
+                    if (latestFrame != null && !latestFrame.empty()) {
+                        opencv_highgui.imshow("Camera Frame", latestFrame);
+                        opencv_highgui.waitKey(33); // Approx. 30 FPS
+                    }
+                }
+            }
+            opencv_highgui.destroyAllWindows();
+        });
+        showThread.setDaemon(true);
+        showThread.start();
+    }
 
     public static void main(String[] args) {
         try {
             CameraCalibration calibration = new CameraCalibration(new Size(7, 10), 2.0f); // Default checkerboard size and square size.
             calibration.startCalibration(0);
-
+            calibration.show();
             // Demonstrate updating checkerboard parameters.
             Thread.sleep(5000); // Let it run for 5 seconds.
             calibration.setCheckerboardSize(new Size(9, 6));
