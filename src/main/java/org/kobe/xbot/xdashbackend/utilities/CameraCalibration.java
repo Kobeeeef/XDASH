@@ -125,19 +125,6 @@ public class CameraCalibration {
         return latestFrame;
     }
 
-    public byte[] encodeFrame(Mat frame) {
-        BytePointer buffer = new BytePointer(); // Use BytePointer for storing encoded image
-        boolean success = opencv_imgcodecs.imencode(".jpg", frame, buffer);
-
-        if (success) {
-            byte[] data = new byte[(int) buffer.limit()]; // Allocate array with the size of encoded data
-            buffer.get(data); // Copy the encoded data into the byte array
-            buffer.deallocate(); // Free the memory used by BytePointer
-            return data;
-        }
-        return null; // Return null if encoding fails
-    }
-
     private void saveCalibration(Mat cameraMatrix, Mat distCoeffs) {
         try {
             StringBuilder cameraMatrixBuilder = new StringBuilder();
