@@ -8,7 +8,12 @@ import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_videoio.VideoCapture;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,8 +67,10 @@ public class CameraCalibration {
             latestFrame.release(); // Clear the frame memory
             latestFrame = null; // Explicitly set to null
         }
-    }
 
+        // Save calibration data to file
+        saveCalibrationToFile();
+    }
 
     private void performCalibration() {
         Mat frame = new Mat();
@@ -149,6 +156,26 @@ public class CameraCalibration {
             // Add to calibration data
             calibrationData.add(json);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveCalibrationToFile() {
+        try {
+            String date = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            File directory = new File("XDASH-CAMERA-CALIBRATION");
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            File file = new File(directory, date + ".json");
+            try (FileWriter writer = new FileWriter(file)) {
+                for (String calibration : calibrationData) {
+                    writer.write(calibration + System.lineSeparator());
+                }
+            }
+            System.out.println("Calibration data saved to: " + file.getAbsolutePath());
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
