@@ -8,10 +8,6 @@ import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_videoio.VideoCapture;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,16 +16,12 @@ public class CameraCalibration {
     private static final AtomicBoolean isCalibrating = new AtomicBoolean(false); // Ensures only one calibration globally.
     private final List<String> calibrationData;
     private VideoCapture cap;
-    private final DatagramSocket udpSocket;
-    private final int udpPort;
-
     private Size checkerboardSize; // Checkerboard dimensions (number of inner corners per row and column).
     private float squareSize; // Size of a square on the checkerboard in the chosen unit (e.g., inches).
+    private Mat latestFrame = new Mat(); // Variable to store the latest frame
 
-    public CameraCalibration(int udpPort, Size checkerboardSize, float squareSize) throws Exception {
-        this.udpPort = udpPort;
+    public CameraCalibration(Size checkerboardSize, float squareSize) {
         this.calibrationData = new ArrayList<>();
-        this.udpSocket = new DatagramSocket(new InetSocketAddress(udpPort));
         this.checkerboardSize = checkerboardSize;
         this.squareSize = squareSize;
     }
@@ -66,7 +58,12 @@ public class CameraCalibration {
         if (cap != null && cap.isOpened()) {
             cap.release();
         }
+        synchronized (this) {
+            latestFrame.release(); // Clear the frame memory
+            latestFrame = null; // Explicitly set to null
+        }
     }
+
 
     private void performCalibration() {
         Mat frame = new Mat();
@@ -86,6 +83,9 @@ public class CameraCalibration {
         long startTime = System.currentTimeMillis();
         int waitTime = 3000;
         while (isCalibrating.get() && cap.read(frame)) {
+            synchronized (this) {
+                latestFrame = frame.clone(); // Update the latest frame
+            }
             opencv_imgproc.cvtColor(frame, gray, opencv_imgproc.COLOR_BGR2GRAY);
 
             boolean found = opencv_calib3d.findChessboardCorners(gray, checkerboardSize, corners);
@@ -98,9 +98,6 @@ public class CameraCalibration {
                 imagePoints.add(corners);
                 opencv_calib3d.drawChessboardCorners(frame, checkerboardSize, corners, found);
             }
-
-            // Send frame via UDP
-            sendFrameOverUDP(frame);
         }
 
         if (!objectPoints.isEmpty() && !imagePoints.isEmpty()) {
@@ -124,23 +121,21 @@ public class CameraCalibration {
         }
     }
 
-    private void sendFrameOverUDP(Mat frame) {
+    public synchronized Mat getLatestFrame() {
+        return latestFrame;
+    }
+
+    public byte[] encodeFrame(Mat frame) {
         BytePointer buffer = new BytePointer(); // Use BytePointer for storing encoded image
         boolean success = opencv_imgcodecs.imencode(".jpg", frame, buffer);
 
         if (success) {
             byte[] data = new byte[(int) buffer.limit()]; // Allocate array with the size of encoded data
             buffer.get(data); // Copy the encoded data into the byte array
-            InetSocketAddress targetAddress = new InetSocketAddress("192.168.1.255", udpPort); // Replace with actual target
-            DatagramPacket packet = new DatagramPacket(data, data.length, targetAddress);
-
-            try {
-                udpSocket.send(packet); // Send the packet via UDP
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            buffer.deallocate(); // Free the memory used by BytePointer
+            return data;
         }
-        buffer.deallocate(); // Free the memory used by BytePointer
+        return null; // Return null if encoding fails
     }
 
     private void saveCalibration(Mat cameraMatrix, Mat distCoeffs) {
@@ -171,7 +166,6 @@ public class CameraCalibration {
         }
     }
 
-
     public List<String> getCalibrationData() {
         return new ArrayList<>(calibrationData);
     }
@@ -190,7 +184,7 @@ public class CameraCalibration {
 
     public static void main(String[] args) {
         try {
-            CameraCalibration calibration = new CameraCalibration(12345, new Size(7, 10), 2.0f); // Default checkerboard size and square size.
+            CameraCalibration calibration = new CameraCalibration(new Size(7, 10), 2.0f); // Default checkerboard size and square size.
             calibration.startCalibration(0);
 
             // Demonstrate updating checkerboard parameters.
