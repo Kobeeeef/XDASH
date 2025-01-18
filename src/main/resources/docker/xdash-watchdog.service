@@ -1,0 +1,14 @@
+[Unit]
+Description=XDASH Docker Watchdog Service
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=${SCRIPT}
+Restart=always
+RestartSec=3
+Environment=DOCKER_BUILDKIT=1
+Environment=COMPOSE_DOCKER_CLI_BUILD=1
+KillSignal=SIGTERM
+[Install]
+WantedBy=multi-user.target

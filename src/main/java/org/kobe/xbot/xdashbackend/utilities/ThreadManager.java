@@ -1,10 +1,16 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
-import java.util.*;
+import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class ThreadManager implements AutoCloseable {
+    private static final XDashLogger logger = XDashLogger.getLogger();
     private ExecutorService executor;
     private final Map<String, List<TaskInfo>> tasks; // Task name to a list of TaskInfo objects
     private final int poolSize;   // Pool size (for thread count)
@@ -102,16 +108,40 @@ public class ThreadManager implements AutoCloseable {
     }
 
     public void shutdownInstantly() {
+        shutdownInstantly(1);
+    }
+
+    public boolean isRunning() {
+        return !tasks.isEmpty();
+    }
+
+    public void shutdownInstantly(int sec) {
         try {
-            executor.shutdownNow();  // Forcefully shutdown immediately
-            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                System.err.println("Executor pool did not terminate in time.");
+            Map<String, List<TaskInfo>> cloned = new HashMap<>(tasks);
+            if (!cloned.isEmpty()) {
+                String[] headers = {"Name", "Description"};
+                List<String[]> rows = new ArrayList<>();
+                for (Map.Entry<String, List<TaskInfo>> entry : cloned.entrySet()) {
+                    for (TaskInfo taskInfo : entry.getValue()) {
+                        rows.add(new String[]{taskInfo.name, taskInfo.description});
+                    }
+                }
+                String[][] data = rows.toArray(new String[0][0]);
+
+                String table = TableFormatter.makeTable(headers, data);
+                logger.info("\n" + table);
+                System.out.println("------------ Shutting Down Threads ------------\n" + table);
+            }
+            executor.shutdownNow();
+            if (!executor.awaitTermination(sec, TimeUnit.SECONDS)) {
+                throw new RuntimeException("Executor pool did not terminate in time.");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.err.println("Error during shutdown: " + e.getMessage());
+            throw new RuntimeException("Shutdown interrupted.", e);
         }
     }
+
 
     // Wait for all tasks to finish
     public void waitForAllToFinish() throws InterruptedException {

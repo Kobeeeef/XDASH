@@ -695,6 +695,45 @@ public class SSHHostAddress {
         }
     }
 
+    public boolean uploadContentUsingSFTP(String content, String remoteFilePath, String username, String password, String host, Consumer<TransferProgress> progressConsumer) {
+        ChannelSftp channel = null;
+
+        try {
+            // Open SFTP channel
+            channel = (ChannelSftp) session.openChannel("sftp");
+            channel.connect();
+
+            // Convert the String content to an InputStream
+            byte[] contentBytes = content.getBytes(StandardCharsets.UTF_8);
+            long contentSize = contentBytes.length;
+
+            try (InputStream inputStream = new ByteArrayInputStream(contentBytes)) {
+                // Upload the InputStream as the remote file
+                channel.put(inputStream, remoteFilePath, new ProgressMonitor(progressConsumer, contentSize));
+            }
+
+            // Success
+            logger.info("Content upload completed successfully.");
+            if (progressConsumer != null) {
+                progressConsumer.accept(new TransferProgress("Content upload completed successfully.", 100, contentSize, contentSize));
+            }
+
+            return true;
+
+        } catch (JSchException | SftpException | IOException e) {
+            logger.severe("Error during SFTP upload: " + e.getMessage());
+            if (progressConsumer != null) {
+                progressConsumer.accept(new TransferProgress("Error during SFTP upload: " + e.getMessage(), 0, 0, 0));
+            }
+            return false;
+
+        } finally {
+            if (channel != null) {
+                channel.exit();
+            }
+        }
+    }
+
     public void uploadDockerImage(
             File image,
             String containerName,
@@ -706,7 +745,7 @@ public class SSHHostAddress {
         String imageName = image.getName().toLowerCase().replace(".tar", ""); // Assuming the image name is the file name
         containerName = containerName.toLowerCase();
         String remoteFilePath = "/tmp/" + image.getName(); // Path to upload the Docker image on the remote server
-
+        if (Thread.currentThread().isInterrupted()) return;
         try {
             // Check if Docker is installed
             updates.accept(new DockerImportReturn("Checking if Docker is installed...", server, true, false));
@@ -716,42 +755,42 @@ public class SSHHostAddress {
             } else {
                 updates.accept(new DockerImportReturn("Docker is already installed.", server, true, false));
             }
-
+            if (Thread.currentThread().isInterrupted()) return;
             // Step 1: Upload the Docker image file using SFTP
             updates.accept(new DockerImportReturn("Uploading Docker image file...", server, true, false));
             AtomicReference<Double> lastPercentage = new AtomicReference<>(0.0);
-            boolean uploadSuccess = uploadFileUsingLocalSFTP(
-                    image.getAbsolutePath(),
-                    remoteFilePath,
-                    username,
-                    password,
-                    address,
-                    progress -> {
-                        double currentPercentage = progress.getPercentage();
-                        double lastLoggedPercentage = lastPercentage.get();
-
-                        if (currentPercentage - lastLoggedPercentage >= 0.8) {
-                            updates.accept(new DockerImportReturn(
-                                    String.format(
-                                            "Uploading image file: %.2f%% complete (%d/%d bytes)",
-                                            currentPercentage,
-                                            progress.getCurrentBytes(),
-                                            progress.getTotalBytes()
-                                    ),
-                                    server,
-                                    true,
-                                    false
-                            ));
-                            lastPercentage.set(currentPercentage); // Update the last logged percentage
-                        }
-                    }
-            );
-
-
-            if (!uploadSuccess) {
-                updates.accept(new DockerImportReturn("Failed to upload Docker image file.", server, true, false));
-                return;
-            }
+//            boolean uploadSuccess = uploadFileUsingLocalSFTP(
+//                    image.getAbsolutePath(),
+//                    remoteFilePath,
+//                    username,
+//                    password,
+//                    address,
+//                    progress -> {
+//                        double currentPercentage = progress.getPercentage();
+//                        double lastLoggedPercentage = lastPercentage.get();
+//
+//                        if (currentPercentage - lastLoggedPercentage >= 0.8) {
+//                            updates.accept(new DockerImportReturn(
+//                                    String.format(
+//                                            "Uploading image file: %.2f%% complete (%d/%d bytes)",
+//                                            currentPercentage,
+//                                            progress.getCurrentBytes(),
+//                                            progress.getTotalBytes()
+//                                    ),
+//                                    server,
+//                                    true,
+//                                    false
+//                            ));
+//                            lastPercentage.set(currentPercentage); // Update the last logged percentage
+//                        }
+//                    }
+//            );
+//            if (Thread.currentThread().isInterrupted()) return;
+//
+//            if (!uploadSuccess) {
+//                updates.accept(new DockerImportReturn("Failed to upload Docker image file.", server, true, false));
+//                return;
+//            }
             updates.accept(new DockerImportReturn("File uploaded successfully.", server, true, false));
 
             // Step 2: Remove existing containers and images
@@ -764,22 +803,24 @@ public class SSHHostAddress {
                     executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
                 }
             } else {
-                if (type.equals(DockerFlashType.LIGHT)) {
-                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
-                } else {
-                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a) 2>&1", updates);
-                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
-                }
+//                if (type.equals(DockerFlashType.LIGHT)) {
+//                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
+//                } else {
+//                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a) 2>&1", updates);
+//                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
+//                }
             }
+            if (Thread.currentThread().isInterrupted()) return;
             // Step 3: Load the Docker image
             updates.accept(new DockerImportReturn("Loading Docker image...", server, true, false));
-            String loadCommand = "sudo -S docker load --input " + remoteFilePath + " 2>&1";
-            boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
-
-            if (!loadSuccess) {
-                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, false, false));
-                return;
-            }
+//            String loadCommand = "sudo -S docker load --input " + remoteFilePath + " 2>&1";
+//            boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
+//
+//            if (!loadSuccess) {
+//                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, false, false));
+//                return;
+//            }
+            if (Thread.currentThread().isInterrupted()) return;
             updates.accept(new DockerImportReturn("Docker image loaded successfully.", server, true, false));
             if (composeFile == null) {
                 // Step 4: Run a new container
@@ -798,18 +839,98 @@ public class SSHHostAddress {
                         updates.accept(new DockerImportReturn("Script file not found in resources.", server, false, false));
                         return;
                     }
-
+                    if (Thread.currentThread().isInterrupted()) return;
                     String dockerComposeContent = Files.readString(Path.of(composeFile.getAbsolutePath()), StandardCharsets.UTF_8);
                     String script = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                    script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent);
-                    String command = "nohup bash -c '" + script + "' > /tmp/xdash-watchdog-logs.txt 2>&1 &";
-                    boolean runSuccess = executeCommandDocker(session, command, updates);
+                    script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent).replace("${TIMEOUT}", "2");
 
-                    if (runSuccess) {
-                        updates.accept(new DockerImportReturn("XDASH watchdog script started successfully.", server, true, false));
-                    } else {
-                        updates.accept(new DockerImportReturn("Failed to start XDASH watchdog script.", server, false, false));
+                    AtomicReference<Double> lastScriptPercentage = new AtomicReference<>(0.0);
+                    String remoteScriptFilePath = "/tmp/xdash-watchdog.sh";
+                    boolean scriptUploadSuccess = uploadContentUsingSFTP(script, remoteScriptFilePath, username, password, address, (progress) -> {
+                        double currentPercentage = progress.getPercentage();
+                        double lastLoggedPercentage = lastScriptPercentage.get();
+
+                        if (currentPercentage - lastLoggedPercentage >= 0.8) {
+                            updates.accept(new DockerImportReturn(
+                                    String.format(
+                                            "Uploading script file: %.2f%% complete (%d/%d bytes)",
+                                            currentPercentage,
+                                            progress.getCurrentBytes(),
+                                            progress.getTotalBytes()
+                                    ),
+                                    server,
+                                    true,
+                                    false
+                            ));
+                            lastScriptPercentage.set(currentPercentage); // Update the last logged percentage
+                        }
+                    });
+                    if (!scriptUploadSuccess) {
+                        updates.accept(new DockerImportReturn("Failed to upload watchdog script file.", server, false, false));
+                        return;
                     }
+                    updates.accept(new DockerImportReturn("Moving script file to /usr/local/bin", server, true, false));
+                    boolean moveScriptSuccess = executeCommandDocker(session, "sudo -S mv " + remoteScriptFilePath + " /usr/local/bin/ 2>&1", updates);
+                    if(!moveScriptSuccess) {
+                        updates.accept(new DockerImportReturn("Failed to move XDASH watchdog script to /usr/local/bin", server, false, false));
+                        return;
+                    }
+                    try (InputStream serviceInputStream = SSHHostAddress.class.getResourceAsStream("/docker/xdash-watchdog.service")) {
+                        if (serviceInputStream == null) {
+                            updates.accept(new DockerImportReturn("Service file not found in resources.", server, false, false));
+                            return;
+                        }
+                        String service = new String(serviceInputStream.readAllBytes(), StandardCharsets.UTF_8);
+                        service = service.replace("${SCRIPT}", "/bin/bash /usr/local/bin/xdash-watchdog.sh");
+                        updates.accept(new DockerImportReturn("Uploading Watchdog Service file...", server, true, false));
+                        AtomicReference<Double> lastServicePercentage = new AtomicReference<>(0.0);
+                        String remoteServiceFilePath = "/tmp/xdash-watchdog.service";
+                        boolean serviceUploadSuccess = uploadContentUsingSFTP(service, remoteServiceFilePath, username, password, address, (progress) -> {
+                            double currentPercentage = progress.getPercentage();
+                            double lastLoggedPercentage = lastServicePercentage.get();
+
+                            if (currentPercentage - lastLoggedPercentage >= 0.8) {
+                                updates.accept(new DockerImportReturn(
+                                        String.format(
+                                                "Uploading service file: %.2f%% complete (%d/%d bytes)",
+                                                currentPercentage,
+                                                progress.getCurrentBytes(),
+                                                progress.getTotalBytes()
+                                        ),
+                                        server,
+                                        true,
+                                        false
+                                ));
+                                lastServicePercentage.set(currentPercentage); // Update the last logged percentage
+                            }
+                        });
+                        if (!serviceUploadSuccess) {
+                            updates.accept(new DockerImportReturn("Failed to upload watchdog service file.", server, false, false));
+                            return;
+                        }
+                        updates.accept(new DockerImportReturn("Moving file to /etc/systemd/system/", server, true, false));
+                        boolean moveSuccess = executeCommandDocker(session, "sudo -S mv " + remoteServiceFilePath + " /etc/systemd/system/", updates);
+                        if (moveSuccess) {
+                            boolean success1 = executeCommandDocker(session, "sudo -S systemctl daemon-reload 2>&1", updates);
+                            boolean success2 = executeCommandDocker(session, "sudo -S systemctl enable xdash-watchdog.service 2>&1", updates);
+                            boolean success3 = executeCommandDocker(session, "sudo -S systemctl restart xdash-watchdog.service 2>&1", updates);
+                            if (success2 && success1 && success3) {
+                                updates.accept(new DockerImportReturn("XDASH watchdog script started successfully.", server, true, false));
+                            } else {
+                                updates.accept(new DockerImportReturn("One of the systemctl commands failed! Printing logs for further details.", server, false, false));
+                                boolean success4 = executeCommandDocker(session, "sudo -S systemctl status xdash-watchdog.service 2>&1", updates);
+                                if(!success4) {
+                                    updates.accept(new DockerImportReturn("Failed to get status on watchdog service. Giving up on host.", server, false, false));
+                                }
+                            }
+                        } else {
+                            updates.accept(new DockerImportReturn("Failed to move XDASH watchdog script.", server, false, false));
+                        }
+
+                    } catch (Exception e) {
+                        updates.accept(new DockerImportReturn("Exception while attempting XDASH watchdog service flow: " + e.getMessage(), server, false, false));
+                    }
+
                 } catch (Exception e) {
                     updates.accept(new DockerImportReturn("Exception while attempting XDASH watchdog script flow: " + e.getMessage(), server, false, false));
                 }
@@ -851,7 +972,7 @@ public class SSHHostAddress {
 
         @Override
         public void end() {
-            // Upload complete
+                // Upload complete
         }
     }
 

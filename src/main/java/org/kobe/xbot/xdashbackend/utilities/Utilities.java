@@ -23,8 +23,8 @@ public class Utilities {
             String dockerComposeContent = Files.readString(Path.of("D:\\stuff\\PyCharmProjects\\Alt\\docker-compose.yml"), StandardCharsets.UTF_8);
             String script = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-        script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent);
-        String command = "nohup bash -c '" + script + "' > /tmp/xdash-watchdog-logs.txt 2>&1 &";
+        script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent).replace("${TIMEOUT}", "2");
+        String command = "bash -c '" + script + "'";
             System.out.println(command);
     }
     public static InetAddress getLocalInetAddress() throws SocketException, UnknownHostException {

@@ -14,9 +14,6 @@ cleanup() {
     exit 0
 }
 trap cleanup SIGTERM
-echo "Stopping any existing watchdog scripts..."
-kill "$(cat /tmp/xdash-watchdog-pid.txt)" && echo "Previous watchdog stopped."
-echo $$ > /tmp/xdash-watchdog-pid.txt
 echo "Stopping existing Docker Compose services..."
 echo "$DOCKER_COMPOSE_CONTENT" | docker compose -f - down
 echo "Starting Docker Compose services..."
@@ -27,5 +24,5 @@ while true; do
         echo "Docker Compose services stopped unexpectedly. Restarting..."
     fi
     echo "$DOCKER_COMPOSE_CONTENT" | docker compose -f - down
-    sleep 2
+    sleep ${TIMEOUT}
 done

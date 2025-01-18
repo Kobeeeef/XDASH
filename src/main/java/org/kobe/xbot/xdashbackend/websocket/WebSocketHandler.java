@@ -278,7 +278,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         ready = false;
                         response = "The project directory has not been configured.";
                     }
-                    session.sendMessage(new TextMessage(new Message(new DockerPageReturn(gson.toJson(dataList), ready, response, XdashbackendApplication.getConfigLoader().getProjectDirectory(), XdashbackendApplication.getConfigLoader().getDockerComposeFileDirectory()), message.getType()).toJSON()));
+
+                    session.sendMessage(new TextMessage(new Message(new DockerPageReturn(gson.toJson(dataList), ready, response, XdashbackendApplication.getConfigLoader().getProjectDirectory(), XdashbackendApplication.getConfigLoader().getDockerComposeFileDirectory(), machineThreadManager != null && machineThreadManager.isRunning()), message.getType()).toJSON()));
                 } else if (message.getType().equals("DEVICE-DATA")) {
                     String server = message.getMessage();
                     SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
@@ -742,6 +743,16 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     } catch (Exception e) {
                         session.sendMessage(new TextMessage(new Message(new ProgressMessageSuccessReturn(String.format("Exception while importing (%1$s): %2$s", Utilities.formatTime(System.currentTimeMillis() - startTime, true), e.getMessage()), 0.0, true).setSuccess(false), message.getType()).toJSON()));
                     }
+                } else if (message.getType().equals("DEVICES-DOCKER-IMPORT-SHUTDOWN-THREADS")) {
+                    try {
+                        if(machineThreadManager != null) {
+                            machineThreadManager.shutdownInstantly(5);
+                            machineThreadManager = null;
+                        }
+                        WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new StatusMessageCode(true, "Successfully shutdown."), message.getType()));
+                    } catch (Exception e) {
+                        WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new StatusMessageCode(false, "Failed to shutdown: " + e.getMessage()), message.getType()));
+                    }
                 } else if (message.getType().equals("DEVICES-DOCKER-IMPORT")) {
                     String msg = message.getMessage();
                     try {
@@ -802,7 +813,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
                             composeFile = null;
                         }
                         AtomicInteger failures = new AtomicInteger(0);
-                        if(machineThreadManager != null) machineThreadManager.shutdownInstantly();
+                        if (machineThreadManager != null) machineThreadManager.shutdownInstantly();
+
                         try {
                             machineThreadManager = new ThreadManager(servers.length, servers.length);
                             for (String server : servers) {
