@@ -1,4 +1,5 @@
 #!/bin/bash
+export HOSTNAME=$(hostname)
 DOCKER_COMPOSE_CONTENT=$(cat <<EOF
 ${DOCKER_COMPOSE}
 EOF

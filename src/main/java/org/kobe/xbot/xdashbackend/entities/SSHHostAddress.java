@@ -800,11 +800,6 @@ public class SSHHostAddress {
                     }
 
                     String dockerComposeContent = Files.readString(Path.of(composeFile.getAbsolutePath()), StandardCharsets.UTF_8);
-                    dockerComposeContent = dockerComposeContent.replace("${HOSTNAME}", this.hostname)
-                            .replace("${ADDRESS}", this.address)
-                            .replace("${USERNAME}", this.username)
-                            .replace("${PASSWORD}", this.password)
-                            .replace("${SERVER}", this.server);
                     String script = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
                     script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent);
                     String command = "nohup bash -c '" + script + "' > /tmp/xdash-watchdog-logs.txt 2>&1 &";
