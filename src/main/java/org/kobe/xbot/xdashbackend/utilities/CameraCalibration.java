@@ -1,235 +1,127 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
-import org.bytedeco.javacpp.FloatPointer;
+import org.bytedeco.javacpp.indexer.FloatIndexer;
 import org.bytedeco.opencv.global.opencv_calib3d;
+import org.bytedeco.opencv.global.opencv_highgui;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_videoio.VideoCapture;
-import org.bytedeco.opencv.global.opencv_highgui;
 
-
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CameraCalibration {
-    private static final AtomicBoolean isCalibrating = new AtomicBoolean(false); // Ensures only one calibration globally.
-    private final List<String> calibrationData;
-    private VideoCapture cap;
-    private Size checkerboardSize; // Checkerboard dimensions (number of inner corners per row and column).
-    private float squareSize; // Size of a square on the checkerboard in the chosen unit (e.g., inches).
-    private Mat latestFrame = new Mat(); // Variable to store the latest frame
+    private final AtomicBoolean running = new AtomicBoolean(false);
+    private final int CHESSBOARD_WIDTH;
+    private final int CHESSBOARD_HEIGHT;
+    private final Size CHESSBOARD_SIZE;
+    private int currentInterval;
+    private final int interval;
+    private Thread thread;
+    private final List<Point3fVector> objectPoints = new ArrayList<>();
+    private final List<Point2fVector> imagePoints = new ArrayList<>();
+    private final Mat intrinsic = new Mat();
+    private final Mat distCoeffs = new Mat();
 
-    public CameraCalibration(Size checkerboardSize, float squareSize) {
-        this.calibrationData = new ArrayList<>();
-        this.checkerboardSize = checkerboardSize;
-        this.squareSize = squareSize;
+    public CameraCalibration(int chessboardWidth, int chessboardHeight, int interval) {
+        this.CHESSBOARD_WIDTH = chessboardWidth;
+        this.CHESSBOARD_HEIGHT = chessboardHeight;
+        this.CHESSBOARD_SIZE = new Size(chessboardWidth, chessboardHeight);
+        this.interval = interval;
     }
 
-    public synchronized void startCalibration(int cameraIndex) throws IllegalStateException {
-        if (isCalibrating.get()) {
-            throw new IllegalStateException("Calibration is already running.");
-        }
-
-        // Reset state
-        isCalibrating.set(true);
-        calibrationData.clear();
-        cap = new VideoCapture(cameraIndex);
-        if (!cap.isOpened()) {
-            isCalibrating.set(false);
-            throw new IllegalStateException("Error: Could not open camera with index " + cameraIndex);
-        }
-
-        Thread calibrationThread = new Thread(() -> {
-            try {
-                performCalibration();
-            } finally {
-                isCalibrating.set(false);
-                if (cap != null && cap.isOpened()) {
-                    cap.release();
+    public void startCalibration() {
+        running.set(true);
+        thread = new Thread(() -> {
+            try (VideoCapture cap = new VideoCapture(1)) {
+                if (!cap.isOpened()) {
+                    System.out.println("Camera could not be opened.");
+                    return;
                 }
-            }
-        });
-        calibrationThread.start();
-    }
 
-    public synchronized void stopCalibration() {
-        isCalibrating.set(false);
-        if (cap != null && cap.isOpened()) {
-            cap.release();
-        }
-        synchronized (this) {
-            latestFrame.release(); // Clear the frame memory
-            latestFrame = null; // Explicitly set to null
-        }
+                Mat frame = new Mat();
 
-        // Save calibration data to file
-        saveCalibrationToFile();
-    }
-
-    private void performCalibration() {
-        Mat frame = new Mat();
-        Mat gray = new Mat();
-        List<Mat> objectPoints = new ArrayList<>();
-        List<Mat> imagePoints = new ArrayList<>();
-        Mat objp = new Mat();
-        Mat corners = new Mat();
-
-        // Prepare object points (3D points in the real world).
-        for (int i = 0; i < checkerboardSize.height(); i++) {
-            for (int j = 0; j < checkerboardSize.width(); j++) {
-                objp.push_back(new Mat(new FloatPointer(j * squareSize, i * squareSize, 0.0f)));
-            }
-        }
-
-        long startTime = System.currentTimeMillis();
-        int waitTime = 3000;
-        while (isCalibrating.get() && cap.read(frame)) {
-            synchronized (this) {
-                latestFrame = frame.clone(); // Update the latest frame
-            }
-            opencv_imgproc.cvtColor(frame, gray, opencv_imgproc.COLOR_BGR2GRAY);
-
-            boolean found = opencv_calib3d.findChessboardCorners(gray, checkerboardSize, corners);
-            if (found && (System.currentTimeMillis() - startTime) > waitTime) {
-                startTime = System.currentTimeMillis();
-                objectPoints.add(objp);
-                try (Mat refinedCorners = new Mat()) {
-                    opencv_imgproc.cornerSubPix(gray, corners, new Size(11, 11), new Size(-1, -1),
-                            new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 30, 0.001));
-                    imagePoints.add(corners);
-                    opencv_calib3d.drawChessboardCorners(frame, checkerboardSize, corners, found);
-                }
-            }
-        }
-
-        if (!objectPoints.isEmpty() && !imagePoints.isEmpty()) {
-            Point3fVectorVector objectPointsVec = new Point3fVectorVector();
-            for (Mat obj : objectPoints) {
-                objectPointsVec.put(new Point3fVector(obj));
-            }
-
-            Point2fVectorVector imagePointsVec = new Point2fVectorVector();
-            for (Mat img : imagePoints) {
-                imagePointsVec.put(new Point2fVector(img));
-            }
-            Mat cameraMatrix = new Mat();
-            Mat distCoeffs = new Mat();
-            MatVector rvecs = new MatVector();
-            MatVector tvecs = new MatVector();
-
-            opencv_calib3d.calibrateCamera(objectPointsVec, imagePointsVec, gray.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
-
-            saveCalibration(cameraMatrix, distCoeffs);
-        }
-    }
-
-    public synchronized Mat getLatestFrame() {
-        return latestFrame;
-    }
-
-    private void saveCalibration(Mat cameraMatrix, Mat distCoeffs) {
-        try {
-            StringBuilder cameraMatrixBuilder = new StringBuilder();
-            StringBuilder distCoeffsBuilder = new StringBuilder();
-
-            // Serialize cameraMatrix
-            for (int row = 0; row < cameraMatrix.rows(); row++) {
-                for (int col = 0; col < cameraMatrix.cols(); col++) {
-                    cameraMatrixBuilder.append(cameraMatrix.ptr(row, col).getDouble()).append(" ");
-                }
-            }
-
-            // Serialize distCoeffs
-            for (int i = 0; i < distCoeffs.rows(); i++) {
-                distCoeffsBuilder.append(distCoeffs.ptr(i).getDouble()).append(" ");
-            }
-
-            // Create JSON string
-            String json = String.format("{\"CameraMatrix\": \"%s\", \"DistortionCoeff\": \"%s\"}",
-                    cameraMatrixBuilder.toString().trim(), distCoeffsBuilder.toString().trim());
-
-            // Add to calibration data
-            calibrationData.add(json);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void saveCalibrationToFile() {
-        try {
-            String date = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-            File directory = new File("XDASH-CAMERA-CALIBRATION");
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            File file = new File(directory, date + ".json");
-            try (FileWriter writer = new FileWriter(file)) {
-                for (String calibration : calibrationData) {
-                    writer.write(calibration + System.lineSeparator());
-                }
-            }
-            System.out.println("Calibration data saved to: " + file.getAbsolutePath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public List<String> getCalibrationData() {
-        return new ArrayList<>(calibrationData);
-    }
-
-    public static boolean isRunning() {
-        return isCalibrating.get();
-    }
-
-    public void setCheckerboardSize(Size checkerboardSize) {
-        this.checkerboardSize = checkerboardSize; // Set new checkerboard dimensions.
-    }
-
-    public void setSquareSize(float squareSize) {
-        this.squareSize = squareSize; // Set new square size (in the chosen unit, e.g., inches).
-    }
-    public void show() {
-        Thread showThread = new Thread(() -> {
-            while (isCalibrating.get()) {
-                synchronized (this) {
-                    if (latestFrame != null && !latestFrame.empty()) {
-                        opencv_highgui.imshow("Camera Frame", latestFrame);
-                        opencv_highgui.waitKey(33); // Approx. 30 FPS
+                while (running.get() && !thread.isInterrupted()) {
+                    cap.read(frame);
+                    if (frame.empty()) {
+                        System.out.println("No frame captured.");
+                        break;
                     }
+                    if (currentInterval >= interval) {
+                        perform(frame);
+                        currentInterval = 0;
+                    } else {
+                        currentInterval++;
+                    }
+
+                    opencv_highgui.imshow("Calibration Frame", frame);
+                    opencv_highgui.waitKey(1);
                 }
+
+                cap.release();
             }
-            opencv_highgui.destroyAllWindows();
         });
-        showThread.setDaemon(true);
-        showThread.start();
+        thread.start();
     }
 
-    public static void main(String[] args) {
+    public void stopCalibration() {
+        running.set(false);
         try {
-            CameraCalibration calibration = new CameraCalibration(new Size(7, 10), 2.0f); // Default checkerboard size and square size.
-            calibration.startCalibration(0);
-            calibration.show();
-            // Demonstrate updating checkerboard parameters.
-            Thread.sleep(5000); // Let it run for 5 seconds.
-            calibration.setCheckerboardSize(new Size(9, 6));
-            calibration.setSquareSize(1.5f); // Update square size to 1.5 inches.
-
-            Thread.sleep(15000); // Let it run for 15 more seconds.
-            calibration.stopCalibration();
-
-            System.out.println("Calibration Data:");
-            calibration.getCalibrationData().forEach(System.out::println);
-        } catch (Exception e) {
+            if (thread != null && thread.isAlive()) {
+                thread.interrupt();
+                thread.join(1000);
+            }
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
+
+    public static void main(String[] args) throws InterruptedException {
+        CameraCalibration calibration = new CameraCalibration(13, 9, 0); // 30-frame interval
+        calibration.startCalibration();
+
+        // Allow calibration to run for 20 seconds, collecting frames
+        Thread.sleep(10000);
+        calibration.stopCalibration();
+    }
+
+    private void perform(Mat frame) {
+        Mat gray = new Mat();
+        opencv_imgproc.cvtColor(frame, gray, opencv_imgproc.COLOR_BGR2GRAY);
+
+        Mat corners = new Mat();
+        boolean found = opencv_calib3d.findChessboardCorners(gray, CHESSBOARD_SIZE, corners);
+
+        if (found) {
+            // Add object points
+            // Refine corner locations for sub-pixel accuracy
+            opencv_imgproc.cornerSubPix(
+                    gray,
+                    corners,
+                    new Size(11, 11),
+                    new Size(-1, -1),
+                    new TermCriteria(TermCriteria.EPS + TermCriteria.COUNT, 30, 0.1)
+            );
+
+            opencv_calib3d.drawChessboardCorners(frame, CHESSBOARD_SIZE, corners, true);
+
+            System.out.println("Chessboard detected and points saved.");
+        } else {
+            System.out.println("Chessboard not detected in this frame.");
+        }
+    }
+
+    private Point3fVector createObjectPoints() {
+        Point3fVector obj = new Point3fVector((long) CHESSBOARD_WIDTH * CHESSBOARD_HEIGHT);
+        for (int i = 0; i < CHESSBOARD_HEIGHT; i++) {
+            for (int j = 0; j < CHESSBOARD_WIDTH; j++) {
+                obj.put((long) i * CHESSBOARD_WIDTH + j, new Point3f(j, i, 0));
+            }
+        }
+        return obj;
+    }
+
 }
