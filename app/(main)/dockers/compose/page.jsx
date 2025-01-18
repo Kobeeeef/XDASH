@@ -67,6 +67,7 @@ const Dashboard = () => {
     const isMounted = useRef(true); // Tracks if the component is mounted
     const timeoutId = useRef(null); // Stores the timeout ID persistently
     const [ready, setReady] = useState(null);
+    const [running, setRunning] = useState(false);
     const [readyLock, setReadyLock] = useState(false);
     const [response, setResponse] = useState(null);
     const [composePreviewDialogVisible, setComposePreviewDialogVisible] = useState(false);
@@ -87,6 +88,7 @@ const Dashboard = () => {
     const [projectDirectory, setProjectDirectory] = useState(null);
     const [composeDirectory, setComposeDirectory] = useState(null);
     const [finalSummary, setFinalSummary] = useState([]);
+    const [shutdownPreviousThreadsDialogVisible, setShutdownPreviousThreadsDialogVisible] = useState(false);
     useEffect(() => {
         isMounted.current = true; // Set the mounted flag
         let isRequestInProgress = false;
@@ -110,6 +112,9 @@ const Dashboard = () => {
                             });
                             setReady(
                                 message?.message?.ready ?? false
+                            );
+                            setRunning(
+                                message?.message?.running ?? false
                             );
                             setProjectDirectory(message?.message?.docker_images_directory);
                             setComposeDirectory(message?.message?.docker_compose_directory);
@@ -287,7 +292,7 @@ const Dashboard = () => {
                 finish();
             } else {
                 playFatalNotificationSound();
-                setFinished(true)
+                setFinished(true);
             }
         }).catch((e) => {
             setTransferData((prev) => ({
@@ -297,7 +302,7 @@ const Dashboard = () => {
                     ...(prev?.messages ?? [])
                 ]
             }));
-            setFinished(true)
+            setFinished(true);
             playFatalNotificationSound();
             setLoading(false);
         });
@@ -546,7 +551,24 @@ const Dashboard = () => {
         });
     }
 
+    function shutdownAllPreviousThreads() {
+        return sendMessageAndWaitForConditionWithManage('DEVICES-DOCKER-IMPORT-SHUTDOWN-THREADS', {
+            type: 'DEVICES-DOCKER-IMPORT-SHUTDOWN-THREADS'
+        }, (m) => m.type === 'DEVICES-DOCKER-IMPORT-SHUTDOWN-THREADS', 10000);
+
+
+    }
+
     function start() {
+
+        if (running) {
+            playFatalNotificationSound();
+            setShutdownPreviousThreadsDialogVisible(true);
+            return;
+
+        }
+
+
         setSetup({});
         setTransferData({});
         setTransferMessages({});
@@ -686,6 +708,81 @@ const Dashboard = () => {
                     {composePreview}
                 </SyntaxHighlighter>
             </Dialog>
+            <Dialog
+                group="shutdownThreads"
+                closable={false}
+                visible={shutdownPreviousThreadsDialogVisible}
+                content={({ headerRef, contentRef, footerRef, hide, message }) => (
+                    <div className="flex flex-column align-items-center p-5 surface-overlay border-round">
+                        <div
+                            className="border-circle bg-red-600 inline-flex justify-content-center align-items-center h-6rem w-6rem -mt-8">
+                            <i className="pi pi-exclamation-triangle text-5xl"></i>
+                        </div>
+                        <span className="font-bold text-2xl block mb-2 mt-4" ref={headerRef}>
+                Shutdown Required
+            </span>
+                        <div className="p-4 rounded-lg shadow-md" ref={contentRef}>
+                            <p className="text-lg">
+                                There are previous tasks submitted. You must shut down all previous threads before
+                                submitting a new request.
+                            </p>
+                            <ul className="mt-2 list-disc list-inside text-base">
+                                <li>Failure to shut down threads may cause performance degradation.</li>
+                                <li>Resources allocated to old threads might lead to conflicts with new tasks.</li>
+                                <li>Ensuring all threads are terminated prevents unintended errors.</li>
+                            </ul>
+                            <p className="mt-2 text-lg font-medium text-red-600">
+                                Proceed only if you have confirmed that all previous threads are safely shut down.
+                            </p>
+                        </div>
+                        <div className="flex align-items-center gap-2 mt-4" ref={footerRef}>
+
+                            <Button
+                                label="Cancel"
+                                outlined={true}
+                                onClick={(event) => setShutdownPreviousThreadsDialogVisible(false)}
+                                className="w-8rem"
+                            ></Button>
+                            <Button
+                                outlined={false}
+                                label="Shutdown"
+                                loading={loading}
+                                onClick={(event) => {
+                                    setLoading(true);
+                                    shutdownAllPreviousThreads().then(m => {
+                                        setLoading(false);
+                                        if (m?.message?.success) {
+                                            setShutdownPreviousThreadsDialogVisible(false);
+                                            toast.current.show({
+                                                severity: 'success',
+                                                summary: 'Shutdown Success!',
+                                                detail: 'The threads have been shutdown.'
+                                            });
+                                            playSuccessNotificationSound();
+                                        } else {
+                                            toast.current.show({
+                                                severity: 'warn',
+                                                summary: 'Shutdown Failed!',
+                                                detail: m?.message?.message ?? 'The server returned a bad status code.'
+                                            });
+                                            playErrorNotificationSound();
+                                        }
+                                    }).catch((e) => {
+                                        toast.current.show({
+                                            severity: 'warn',
+                                            summary: 'Shutdown Failed!',
+                                            detail: e?.message ?? 'There was a exception while shutting down threads.'
+                                        });
+                                        playFatalNotificationSound();
+                                        setLoading(false);
+                                    });
+                                }}
+                                className="w-8rem"
+                            ></Button>
+                        </div>
+                    </div>
+                )}
+             onHide={() => setShutdownPreviousThreadsDialogVisible(false)}/>
             <ConfirmDialog
                 group="headless"
                 content={({ headerRef, contentRef, footerRef, hide, message }) => (
@@ -970,7 +1067,7 @@ const Dashboard = () => {
                                                               offLabel={'Compression Algorithm Inactive'}
                                                               onLabel={'Compression Algorithm Active'}
                                                               className="w-full" />
-                                                <Dropdown loading={loading}  onChange={(e) => {
+                                                <Dropdown loading={loading} onChange={(e) => {
                                                     setAdditionalArguments((prev) => {
                                                         return ({
                                                             ...prev,
@@ -1094,7 +1191,8 @@ const Dashboard = () => {
                                         placeholder={'Waiting for a message'}
                                     />
                                 </TabPanel>
-                                <TabPanel className={'w-full'} header="COMPRESSION" leftIcon="pi pi-window-minimize mr-2">
+                                <TabPanel className={'w-full'} header="COMPRESSION"
+                                          leftIcon="pi pi-window-minimize mr-2">
                                     <TerminalDisplay
                                         messages={buildStatus?.COMPRESSION ?? []}
                                         loadingDots={true}
