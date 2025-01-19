@@ -109,6 +109,8 @@ public class NetworkDiscovery {
             xcasterScanRunning.set(true);
             currentExecutor = Executors.newFixedThreadPool(threads); // Create a new executor for the new scan
             List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+            XdashbackendApplication.getConfigLoader().setPropertyList("servers.constant", new ArrayList<>());
+            XdashbackendApplication.getConfigLoader().save();
             for (int i = low; i < high; i++) {
                 if (!xcasterScanRunning.get()) {
                     break;

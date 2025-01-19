@@ -469,7 +469,38 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         ));
                     }
 
-                } else if (message.getType().equals("DOCKER-BUILD")) {
+                } else if (message.getType().equals("DOCKER-FILE-GET")) {
+                    try {
+                        String filePath = XdashbackendApplication.getConfigLoader().getProjectDirectory();
+
+                        if (filePath != null && !filePath.isEmpty() && !filePath.isBlank()) {
+                            filePath = filePath  + File.separator + "Dockerfile";
+                            Path path = Paths.get(filePath);
+                            long fileSize = Files.size(path);
+
+                            long maxFileSize = 50 * 1024;
+                            if (fileSize > maxFileSize) {
+                                session.sendMessage(new TextMessage(
+                                        new Message(new StatusMessageCode(false, "File size exceeds the 50 KB limit."), message.getType()).toJSON()
+                                ));
+                            } else {
+                                String fileContent = Files.readString(path, StandardCharsets.UTF_8);
+                                session.sendMessage(new TextMessage(
+                                        new Message(new StatusMessageCode(true, fileContent), message.getType()).toJSON()
+                                ));
+                            }
+                        } else {
+                            session.sendMessage(new TextMessage(
+                                    new Message(new StatusMessageCode(false, "File path is invalid or null!"), message.getType()).toJSON()
+                            ));
+                        }
+                    } catch (Exception e) {
+                        session.sendMessage(new TextMessage(
+                                new Message(new StatusMessageCode(false, "Exception: " + e.getMessage()), message.getType()).toJSON()
+                        ));
+                    }
+
+                }else if (message.getType().equals("DOCKER-BUILD")) {
                     String msg = message.getMessage();
                     if (msg != null) {
                         try {
