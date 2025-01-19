@@ -759,38 +759,38 @@ public class SSHHostAddress {
             // Step 1: Upload the Docker image file using SFTP
             updates.accept(new DockerImportReturn("Uploading Docker image file...", server, true, false));
             AtomicReference<Double> lastPercentage = new AtomicReference<>(0.0);
-//            boolean uploadSuccess = uploadFileUsingLocalSFTP(
-//                    image.getAbsolutePath(),
-//                    remoteFilePath,
-//                    username,
-//                    password,
-//                    address,
-//                    progress -> {
-//                        double currentPercentage = progress.getPercentage();
-//                        double lastLoggedPercentage = lastPercentage.get();
-//
-//                        if (currentPercentage - lastLoggedPercentage >= 0.8) {
-//                            updates.accept(new DockerImportReturn(
-//                                    String.format(
-//                                            "Uploading image file: %.2f%% complete (%d/%d bytes)",
-//                                            currentPercentage,
-//                                            progress.getCurrentBytes(),
-//                                            progress.getTotalBytes()
-//                                    ),
-//                                    server,
-//                                    true,
-//                                    false
-//                            ));
-//                            lastPercentage.set(currentPercentage); // Update the last logged percentage
-//                        }
-//                    }
-//            );
-//            if (Thread.currentThread().isInterrupted()) return;
-//
-//            if (!uploadSuccess) {
-//                updates.accept(new DockerImportReturn("Failed to upload Docker image file.", server, true, false));
-//                return;
-//            }
+            boolean uploadSuccess = uploadFileUsingLocalSFTP(
+                    image.getAbsolutePath(),
+                    remoteFilePath,
+                    username,
+                    password,
+                    address,
+                    progress -> {
+                        double currentPercentage = progress.getPercentage();
+                        double lastLoggedPercentage = lastPercentage.get();
+
+                        if (currentPercentage - lastLoggedPercentage >= 0.8) {
+                            updates.accept(new DockerImportReturn(
+                                    String.format(
+                                            "Uploading image file: %.2f%% complete (%d/%d bytes)",
+                                            currentPercentage,
+                                            progress.getCurrentBytes(),
+                                            progress.getTotalBytes()
+                                    ),
+                                    server,
+                                    true,
+                                    false
+                            ));
+                            lastPercentage.set(currentPercentage); // Update the last logged percentage
+                        }
+                    }
+            );
+            if (Thread.currentThread().isInterrupted()) return;
+
+            if (!uploadSuccess) {
+                updates.accept(new DockerImportReturn("Failed to upload Docker image file.", server, true, false));
+                return;
+            }
             updates.accept(new DockerImportReturn("File uploaded successfully.", server, true, false));
 
             // Step 2: Remove existing containers and images
@@ -803,23 +803,23 @@ public class SSHHostAddress {
                     executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
                 }
             } else {
-//                if (type.equals(DockerFlashType.LIGHT)) {
-//                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
-//                } else {
-//                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a) 2>&1", updates);
-//                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
-//                }
+                if (type.equals(DockerFlashType.LIGHT)) {
+                    executeCommandDocker(session, "sudo -S docker rmi -f " + imageName + " 2>&1", updates);
+                } else {
+                    executeCommandDocker(session, "sudo -S docker rm -f $(sudo -S docker ps -q -a) 2>&1", updates);
+                    executeCommandDocker(session, "sudo -S docker rmi -f $(sudo -S docker images -a -q) 2>&1", updates);
+                }
             }
             if (Thread.currentThread().isInterrupted()) return;
             // Step 3: Load the Docker image
             updates.accept(new DockerImportReturn("Loading Docker image...", server, true, false));
-//            String loadCommand = "sudo -S docker load --input " + remoteFilePath + " 2>&1";
-//            boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
-//
-//            if (!loadSuccess) {
-//                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, false, false));
-//                return;
-//            }
+            String loadCommand = "sudo -S docker load --input " + remoteFilePath + " 2>&1";
+            boolean loadSuccess = executeCommandDocker(session, loadCommand, updates);
+
+            if (!loadSuccess) {
+                updates.accept(new DockerImportReturn("Failed to load Docker image.", server, false, false));
+                return;
+            }
             if (Thread.currentThread().isInterrupted()) return;
             updates.accept(new DockerImportReturn("Docker image loaded successfully.", server, true, false));
             if (composeFile == null) {
