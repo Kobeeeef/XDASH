@@ -72,6 +72,8 @@ const Dashboard = () => {
     const [response, setResponse] = useState(null);
     const [composePreviewDialogVisible, setComposePreviewDialogVisible] = useState(false);
     const [composePreview, setComposePreview] = useState(null);
+    const [dockerfilePreviewDialogVisible, setDockerfilePreviewDialogVisible] = useState(false);
+    const [dockerfilePreview, setDockerfilePreview] = useState(null);
     const [additionalArgumentsIndex, setAdditionalArgumentsIndex] = useState(-1);
     const [additionalArguments, setAdditionalArguments] = useState({
         CONTAINER_NAME: 'xdash-docker-pipeline',
@@ -164,7 +166,43 @@ const Dashboard = () => {
             message: type
         }, vFunc, 20000);
     }
-
+    async function preview_dockerfile() {
+        try {
+            let response = await sendMessageAndWaitForCondition({
+                type: 'DOCKER-FILE-GET'
+            }, (m) => m?.type === 'DOCKER-FILE-GET', 5000);
+            if (response?.message?.success) {
+                if (response?.message?.message) {
+                    setDockerfilePreviewDialogVisible(true);
+                    setDockerfilePreview(response.message.message);
+                } else {
+                    toast.current.show({
+                        severity: 'warn',
+                        summary: 'Dockerfile Preview Falsy!',
+                        detail: 'The server returned a falsy message.'
+                    });
+                    setDockerfilePreviewDialogVisible(false);
+                    setDockerfilePreview(null);
+                }
+            } else {
+                toast.current.show({
+                    severity: 'warn',
+                    summary: 'Dockerfile Preview Failed!',
+                    detail: response?.message?.message || 'The server returned a false success.'
+                });
+                setDockerfilePreviewDialogVisible(false);
+                setDockerfilePreview(null);
+            }
+        } catch (e) {
+            toast.current.show({
+                severity: 'warn',
+                summary: 'Dockerfile Preview Failed!',
+                detail: e?.message ?? 'There was a exception while getting the Dockerfile preview.'
+            });
+            setDockerfilePreviewDialogVisible(false);
+            setDockerfilePreview(null);
+        }
+    }
     async function preview_compose() {
         try {
             let response = await sendMessageAndWaitForCondition({
@@ -385,11 +423,14 @@ const Dashboard = () => {
         });
     }
 
-    function build() {
+    async function build() {
         stepperRef.current.setActiveStep(1);
         setFinished(false);
         setBuildStatus({});
         setLoading(true);
+
+        await preview_dockerfile()
+
         sendMessageAndWaitForConditionWithManage('DOCKER-BUILD', {
             type: 'DOCKER-BUILD', message: JSON.stringify({
                 CONTAINER_NAME: additionalArguments?.CONTAINER_NAME,
@@ -704,8 +745,15 @@ const Dashboard = () => {
             <Dialog position={'top'} modal={false} header={'Compose Preview'} closeOnEscape={true}
                     style={{ width: '50%' }}
                     visible={composePreviewDialogVisible} onHide={() => setComposePreviewDialogVisible(false)}>
-                <SyntaxHighlighter showLineNumbers={true} wrapLines={true} style={vs2015}>
+                <SyntaxHighlighter language={"yml"} showLineNumbers={true} wrapLines={true} style={vs2015}>
                     {composePreview}
+                </SyntaxHighlighter>
+            </Dialog>
+            <Dialog position={'top'} modal={false} header={'Dockerfile Preview'} closeOnEscape={true}
+                    style={{ width: '50%' }}
+                    visible={dockerfilePreviewDialogVisible} onHide={() => setDockerfilePreviewDialogVisible(false)}>
+                <SyntaxHighlighter language={"dockerfile"} showLineNumbers={true} wrapLines={true} style={vs2015}>
+                    {dockerfilePreview}
                 </SyntaxHighlighter>
             </Dialog>
             <Dialog
@@ -950,9 +998,18 @@ const Dashboard = () => {
                                             <div className="flex flex-column gap-2">
                                                 <label htmlFor="Project_DIRECTORY" className={'text-sm'}>Project
                                                     Directory</label>
+                                                <div className="p-inputgroup flex-1">
                                                 <InputText disabled={!isConnected || loading} value={projectDirectory}
                                                            readOnly={true} className={'w-full'}
                                                            placeholder={'There is no project directory configured.'} />
+                                                <Button onClick={() => {
+                                                    setLoading(true);
+                                                    preview_dockerfile().then(() => setLoading(false))
+                                                        .catch(() => setLoading(false))
+                                                        .finally(() => setLoading(false));
+                                                }} icon="pi pi-search" disabled={!isConnected || !projectDirectory}
+                                                        loading={loading} />
+                                                </div>
                                             </div>
                                         </div>
                                         <div className={'col-6'}>
