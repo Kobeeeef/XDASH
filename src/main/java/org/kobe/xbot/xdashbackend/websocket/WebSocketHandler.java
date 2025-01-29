@@ -111,9 +111,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 } else if (message.getType().equals("XTABLES-DATA-VIEW")) {
                     if (xTablesClient != null && xTablesClient.getSocketMonitor().isConnected("REQUEST")) {
                         String json = xTablesClient.getRawJson();
-                        System.out.println(0);
                         session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(true, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), json == null || json.equals("null") || json.equals("{}") ? 0 : Utilities.estimateStringSize(json)), "XTABLES-DATA-VIEW").toJSON()));
-                        System.out.println(1);
                     } else {
                         session.sendMessage(new TextMessage(new Message(new XTablesDataViewReturn(false, XdashbackendApplication.xTablesViewerRef.get() != null && XdashbackendApplication.xTablesViewerRef.get().isVisible(), 0), "XTABLES-DATA-VIEW").toJSON()));
                     }

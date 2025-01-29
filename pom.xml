@@ -29,11 +29,12 @@
     <properties>
         <java.version>17</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.kobe.xbot</groupId>
             <artifactId>xtables</artifactId>
-            <version>4.6.3</version>
+            <version>4.7.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -153,6 +154,13 @@
         </plugins>
     </build>
     <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/kobeeeef/XTABLES</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>maven_central</id>
             <name>Maven Central</name>

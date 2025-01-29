@@ -2,6 +2,7 @@ package org.kobe.xbot.xdashbackend.XGRID;
 
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import org.kobe.xbot.JClient.XTablesClient;
+import org.kobe.xbot.Utilities.Entities.XTableProto;
 import org.kobe.xbot.Utilities.Utilities;
 import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
@@ -16,6 +17,7 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Map;
 
@@ -203,11 +205,14 @@ public class XTablesDropdownViewer extends JPanel {
     }
 
     private void addNodes(DefaultMutableTreeNode parent, XTablesData data, String fullKey) {
+
         if (data == null) return;
-
         Map<String, XTablesData> subTables = data.getTablesMap();
-        String value = XTablesByteUtils.autoFromBytesToJsonString(data.getValue(), data.getType());
 
+        String value = null;
+        if(data.getType() != null && data.getValue() != null) {
+            value = XTablesByteUtils.convertTypeValueToJsonString(data.getType(), data.getValue());
+        }
         // Add value node if it exists
         if (value != null && !value.isEmpty()) {
             KeyValueNode kvNode = new KeyValueNode(fullKey, value, true);
@@ -236,7 +241,11 @@ public class XTablesDropdownViewer extends JPanel {
         if (!key.isEmpty() && Utilities.validateKey(key, false)) {
             try {
                 try {
-                    boolean success = client.putBytes(key, XTablesByteUtils.autoStringJsonToBytes(value));
+                    Map.Entry entry = XTablesByteUtils.convertJsonStringToTypeValue(value);
+                    XTableProto.XTableMessage.Type type = (XTableProto.XTableMessage.Type) entry.getKey();
+                    byte[] bytes = (byte[]) entry.getValue();
+                    System.out.println(type);
+                    boolean success = client.putTypedBytes(key, type, bytes);
                     if (!success) {
                         JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + success, "Error", JOptionPane.ERROR_MESSAGE);
                     }

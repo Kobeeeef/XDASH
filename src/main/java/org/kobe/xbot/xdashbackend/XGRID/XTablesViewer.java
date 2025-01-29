@@ -1,17 +1,11 @@
 package org.kobe.xbot.xdashbackend.XGRID;
 
 
-import com.formdev.flatlaf.fonts.inter.FlatInterFont;
-import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
-import org.fife.ui.rtextarea.RTextScrollPane;
 import org.kobe.xbot.JClient.XTablesClient;
-import org.kobe.xbot.Utilities.ResponseStatus;
-import org.kobe.xbot.Utilities.Utilities;
+import org.kobe.xbot.Utilities.Entities.XTableProto;
 import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
@@ -22,7 +16,10 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 public class XTablesViewer extends JFrame {
     private static final XDashLogger logger = XDashLogger.getLogger();
@@ -38,13 +35,15 @@ public class XTablesViewer extends JFrame {
     private final XTablesClient client;
     private Thread cacheThread;
     private final Theme theme;
+
     public XTablesViewer(XTablesClient client) {
+        setVisible(false);
         this.client = client;
         this.cache = new XTablesData();
         InputStream nightStream = getClass().getResourceAsStream("/themes/monokai.xml");
         try {
             theme = Theme.load(nightStream);
-        }  catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         setSize(900, 800);
@@ -73,7 +72,7 @@ public class XTablesViewer extends JFrame {
         ScheduledExecutorService daemonScheduler = Executors.newScheduledThreadPool(1, daemonThreadFactory);
         daemonScheduler.scheduleAtFixedRate(() -> {
             setStatus(client.getSocketMonitor().getSimplifiedMessage());
-            if(client.getSocketMonitor().isConnected("REQUEST")) {
+            if (client.getSocketMonitor().isConnected("REQUEST")) {
                 rebootButton.setEnabled(true);
                 addButton.setEnabled(true);
                 reloadButton.setEnabled(true);
@@ -82,8 +81,7 @@ public class XTablesViewer extends JFrame {
                 addButton.setEnabled(false);
                 reloadButton.setEnabled(false);
             }
-        }, 0, 200, TimeUnit.MILLISECONDS);
-        setVisible(false);
+        }, 0, 100, TimeUnit.MILLISECONDS);
         try {
 
             UIManager.setLookAndFeel(new FlatMacDarkLaf());
@@ -91,19 +89,24 @@ public class XTablesViewer extends JFrame {
         } catch (UnsupportedLookAndFeelException ex) {
             throw new RuntimeException(ex);
         }
+        setVisible(false);
     }
-
 
 
     private void loadCache() {
         try {
-            String rawJSON = client.getRawJson();
-            cache.updateFromRawJSON(rawJSON);
+            XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
+            if (dataProto == null) {
+                throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
+            }
+            cache.fromProto(dataProto);
+            dropdownViewer.populateTable();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Failed to Load Cache: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Failed to Load Cache: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     private void enableCache() {
         try {
             loadCache();
@@ -116,17 +119,20 @@ public class XTablesViewer extends JFrame {
             System.out.println("Failed to initialize cache or subscribe to updates. Error:\n" + e.getMessage());
         }
     }
+
     private boolean subscribeToCacheUpdates() {
         boolean responseStatus = client.subscribe((updateEvent) -> {
             cache.put(updateEvent.getKey(), updateEvent.getValue().toByteArray(), updateEvent.getType());
-            dropdownViewer.updateNode(updateEvent.getKey(), XTablesByteUtils.autoFromBytesToJsonString(updateEvent.getValue().toByteArray(), updateEvent.getType()));
+            dropdownViewer.updateNode(updateEvent.getKey(), XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
         });
         if (responseStatus) System.out.println("Cache is now subscribed for updates.");
         return responseStatus;
     }
+
     public void setStatus(String status) {
         setTitle(String.format("XDASH - XTABLES - %1$s", status));
     }
+
     public void init() {
         dropdownViewer = new XTablesDropdownViewer(this, client, cache);
 
@@ -192,76 +198,59 @@ public class XTablesViewer extends JFrame {
     private JPanel createControlPanel() {
 
 
-         reloadButton = new JButton("Reload Data");
+        reloadButton = new JButton("Reload Data");
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
             try {
-                String json = client.getRawJson();
-                reloadButton.setEnabled(true);
-                cache.updateFromRawJSON(json);
+                XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
+                if (dataProto == null) {
+                    throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
+                }
+                cache.fromProto(dataProto);
                 dropdownViewer.populateTable();
+                reloadButton.setEnabled(true);
             } catch (Exception ec) {
+                ec.printStackTrace();
                 reloadButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "Failed to reload Cache: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
 
 
         });
-         addButton = new JButton("Add Data");
+        addButton = new JButton("Add Data");
         addButton.addActionListener(e -> {
-            JPanel inputPanel = new JPanel(new BorderLayout(10, 10));
+            DynamicInputPanel inputPanel = new DynamicInputPanel();
 
-            // Key input field
-            JPanel keyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            keyPanel.add(new JLabel("Key:"));
-            JTextField keyField = new JTextField(20);
-            keyPanel.add(keyField);
-            inputPanel.add(keyPanel, BorderLayout.NORTH);
-
-            // RSyntaxTextArea for JSON input
-            RSyntaxTextArea valueArea = new RSyntaxTextArea(10, 40);
-            valueArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
-            valueArea.setCodeFoldingEnabled(true); // Enable code folding for JSON
-            valueArea.setLineWrap(true);
-            theme.apply(valueArea);
-            // Wrap RSyntaxTextArea in an RTextScrollPane
-            RTextScrollPane scrollPane = new RTextScrollPane(valueArea);
-            scrollPane.setFoldIndicatorEnabled(true);
-            inputPanel.add(scrollPane, BorderLayout.CENTER);
-
-            // Show the dialog
             int result = JOptionPane.showConfirmDialog(
-                    this,
+                    null,
                     inputPanel,
-                    "Enter Key and JSON Value",
+                    "Enter Key and Value",
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE
             );
 
-            // Handle the user's input
             if (result == JOptionPane.OK_OPTION) {
-                String key = keyField.getText();
-                String value = valueArea.getText().replace("\n", "");
-                if (!key.isEmpty() && Utilities.validateKey(key, false)) {
-                    try {
-                        boolean success = client.putBytes(key, XTablesByteUtils.autoStringJsonToBytes(value));
-                        if (!success) {
-                            JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + success, "Error", JOptionPane.ERROR_MESSAGE);
-                        }
-                    } catch (Exception err) {
-                        JOptionPane.showMessageDialog(null, "Exception while updating value: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                String key = inputPanel.getKey();
+                String selectedType = inputPanel.getSelectedType();
+                Object value = inputPanel.getEnteredValue();
 
+                if (key.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Key cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                try {
+                    boolean success = sendToClient(selectedType, key, value);
+                    if (!success) {
+                        JOptionPane.showMessageDialog(null, "Failed to store value", "Error", JOptionPane.ERROR_MESSAGE);
                     }
-                } else {
-                    JOptionPane.showMessageDialog(null, "This key is invalid.", "Error", JOptionPane.ERROR_MESSAGE);
-
+                } catch (Exception err) {
+                    JOptionPane.showMessageDialog(null, "Error: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-
-
-
         });
-         rebootButton = new JButton("Reboot");
+
+        rebootButton = new JButton("Reboot");
         rebootButton.addActionListener(e -> {
             rebootButton.setEnabled(false);
             try {
@@ -301,10 +290,56 @@ public class XTablesViewer extends JFrame {
     }
 
 
+    private boolean sendToClient(String type, String key, Object value) throws Exception {
+        switch (type) {
+            case "String":
+                return client.putString(key, value.toString());
+            case "Double":
+                return client.putDouble(key, Double.parseDouble(value.toString()));
+            case "Integer":
+                return client.putInteger(key, Integer.parseInt(value.toString()));
+            case "Float":
+                return client.putDouble(key, Double.parseDouble(value.toString())); // Using putDouble for float
+            case "Boolean":
+                return client.putBoolean(key, (Boolean) value);
+            case "Long":
+                return client.putLong(key, Long.parseLong(value.toString()));
+            case "DoubleList":
+                return client.putDoubleList(key, parseDoubleList((java.util.List<String>) value));
+            case "StringList":
+                return client.putStringList(key, (java.util.List<String>) value);
+            case "IntegerList":
+                return client.putIntegerList(key, parseIntegerList((java.util.List<String>) value));
+            case "LongList":
+                return client.putLongList(key, parseLongList((java.util.List<String>) value));
+            case "FloatList":
+                return client.putFloatList(key, parseFloatList((java.util.List<String>) value));
+            case "BooleanList":
+                return client.putBooleanList(key, parseBooleanList((java.util.List<String>) value));
+            default:
+                throw new IllegalArgumentException("Unknown type: " + type);
+        }
+    }
 
+    private java.util.List<Double> parseDoubleList(java.util.List<String> value) {
+        return value.stream().map(Double::parseDouble).toList();
+    }
 
+    private java.util.List<Integer> parseIntegerList(java.util.List<String> value) {
+        return value.stream().map(Integer::parseInt).toList();
+    }
 
+    private java.util.List<Long> parseLongList(java.util.List<String> value) {
+        return value.stream().map(Long::parseLong).toList();
+    }
 
+    private static java.util.List<Float> parseFloatList(java.util.List<String> value) {
+        return value.stream().map(Float::parseFloat).toList();
+    }
+
+    private static java.util.List<Boolean> parseBooleanList(java.util.List<String> value) {
+        return value.stream().map(Boolean::parseBoolean).toList();
+    }
 
 
 }
