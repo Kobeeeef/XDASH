@@ -10,9 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class Utilities {
@@ -27,13 +25,7 @@ public class Utilities {
         String command = "bash -c '" + script + "'";
             System.out.println(command);
     }
-    public static InetAddress getLocalInetAddress() throws SocketException, UnknownHostException {
-        InetAddress localHost = Inet4Address.getLocalHost();
-        if (localHost.isLoopbackAddress()) {
-            return findNonLoopbackAddress();
-        }
-        return localHost;
-    }
+
     public static InetAddress getLocalInetAddressOrNull() {
         try {
             return getLocalInetAddress();
@@ -247,26 +239,86 @@ public class Utilities {
         return 16 + str.length() * 2 + 4 + (8 - ((16 + str.length() * 2 + 4) % 8)) % 8;
     }
 
-    private static InetAddress findNonLoopbackAddress() throws SocketException {
-        Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-        while (networkInterfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = networkInterfaces.nextElement();
+    public static String getLocalIPAddress() throws SocketException {
 
-            // Skip loopback and down interfaces
-            if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                continue;
-            }
+            return findBestNetworkAddress().getHostAddress();
 
+    }
+    public static InetAddress getLocalInetAddress() throws SocketException {
+
+            return findBestNetworkAddress();
+
+
+    }
+
+
+    private static InetAddress findBestNetworkAddress() throws SocketException {
+        List<NetworkInterface> sortedInterfaces = getSortedNetworkInterfaces();
+
+        for (NetworkInterface networkInterface : sortedInterfaces) {
+            if (networkInterface.isLoopback() || networkInterface.isVirtual() || !networkInterface.isUp()) continue;
             Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
             while (inetAddresses.hasMoreElements()) {
                 InetAddress inetAddress = inetAddresses.nextElement();
 
-                // Return the first non-loopback IPv4 address
-                if (!inetAddress.isLoopbackAddress() && inetAddress.isSiteLocalAddress() && inetAddress.getHostAddress().contains(".")) {
-                    return inetAddress;
+                // Prioritize site-local IPv4 addresses, excluding Docker subnets
+                if (!inetAddress.isLoopbackAddress() && inetAddress.isSiteLocalAddress() && inetAddress instanceof Inet4Address) {
+                    String ip = inetAddress.getHostAddress();
+                    if (!isDockerSubnet(ip)) {
+                        return inetAddress;
+                    }
                 }
             }
         }
-        throw new SocketException("No non-loopback IPv4 address found");
+        throw new SocketException("No suitable non-loopback IPv4 address found");
+    }
+
+    private static List<NetworkInterface> getSortedNetworkInterfaces() throws SocketException {
+        List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+
+        // Sort interfaces: Ethernet first, then WiFi, then others
+        interfaces.sort(Comparator.comparingInt(Utilities::getInterfacePriority));
+        return interfaces;
+    }
+
+    private static int getInterfacePriority(NetworkInterface networkInterface) {
+        String os = System.getProperty("os.name").toLowerCase();
+        String name = os.contains("win") ? networkInterface.getDisplayName().toLowerCase() : networkInterface.getName().toLowerCase();
+        if (name.startsWith("eth") || name.startsWith("enp") || name.startsWith("eno") || name.startsWith("ens") || name.contains("ethernet")) {
+            return 0; // Ethernet (highest priority)
+        } else if (name.startsWith("wlan") || name.startsWith("wifi") || name.startsWith("wlp") || name.startsWith("wlo") || name.contains("wi-fi")) {
+            return 1; // WiFi
+        } else if (name.contains("tailscale") || name.contains("docker") || name.contains("virtual") || name.contains("veth")) {
+            return 99; // Tailscale, Docker, Virtual interfaces (lowest priority)
+        }
+        return 2; // Other interfaces
+    }
+
+
+    /**
+     * Check if the IP belongs to Docker's typical private subnet ranges.
+     *
+     * @param ip The IP address as a string.
+     * @return true if the IP is in Docker's subnet; false otherwise.
+     */
+    private static boolean isDockerSubnet(String ip) {
+        return (ip.startsWith("172.") && isWithinRange(ip, 16, 31)) || ip.startsWith("169.254");
+    }
+    /**
+     * Helper method to determine if an IP's second octet is within a specific range.
+     *
+     * @param ip       The IP address as a string.
+     * @param start    The start of the range (inclusive).
+     * @param end      The end of the range (inclusive).
+     * @return true if within range; false otherwise.
+     */
+    private static boolean isWithinRange(String ip, int start, int end) {
+        try {
+            String[] parts = ip.split("\\.");
+            int secondOctet = Integer.parseInt(parts[1]);
+            return secondOctet >= start && secondOctet <= end;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

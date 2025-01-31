@@ -37,7 +37,9 @@ public class DockerManager {
             String buildCommand = String.format(
                     "docker buildx build --platform %s -t %s -o type=docker,dest=%s %s",
                     architecture, imageName, tarFileLocation, dockerfileDirPath);
-
+            if(System.getProperty("os.name").toLowerCase().contains("linux")) {
+                buildCommand = "sudo " + buildCommand;
+            }
             progressConsumer.accept(new DockerProgress("Starting Buildx build... Command: " + buildCommand, DockerStep.STARTING, 0).setFinished(false));
 
             ProcessBuilder processBuilder = new ProcessBuilder(buildCommand.split(" "));

@@ -10,6 +10,7 @@ import org.kobe.xbot.Utilities.XTablesData;
 import javax.swing.*;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -89,7 +90,12 @@ public class XTablesDropdownViewer extends JPanel {
 
 
         JScrollPane scrollPane = new JScrollPane(tree);
+        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI());  // Ensure proper UI setup
+        scrollPane.getHorizontalScrollBar().setUI(new BasicScrollBarUI());
+        JScrollBar vScrollBar = scrollPane.getVerticalScrollBar();
+
         add(scrollPane, BorderLayout.CENTER);
+
         tree.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -244,7 +250,6 @@ public class XTablesDropdownViewer extends JPanel {
                     Map.Entry entry = XTablesByteUtils.convertJsonStringToTypeValue(value);
                     XTableProto.XTableMessage.Type type = (XTableProto.XTableMessage.Type) entry.getKey();
                     byte[] bytes = (byte[]) entry.getValue();
-                    System.out.println(type);
                     boolean success = client.putTypedBytes(key, type, bytes);
                     if (!success) {
                         JOptionPane.showMessageDialog(null, "NON-OK Status returned: " + success, "Error", JOptionPane.ERROR_MESSAGE);

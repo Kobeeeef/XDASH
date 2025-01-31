@@ -2,16 +2,20 @@ package org.kobe.xbot.xdashbackend.utilities;
 
 import com.google.gson.Gson;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
-import org.kobe.xbot.xdashbackend.entities.*;
+import org.kobe.xbot.xdashbackend.entities.DeviceAddData;
+import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
+import org.kobe.xbot.xdashbackend.entities.SubnetScanData;
+import org.kobe.xbot.xdashbackend.entities.XCASTERServiceInfo;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.websocket.WebSocketHandler;
-import org.springframework.web.socket.TextMessage;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 public class NetworkDiscovery {
     private static final AtomicBoolean running = new AtomicBoolean(false);
@@ -35,24 +38,8 @@ public class NetworkDiscovery {
 
     public static String getSubnetBase() {
         try {
-            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-
-            while (networkInterfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = networkInterfaces.nextElement();
-
-                if (networkInterface.isUp() && !networkInterface.isLoopback()) {
-                    Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-
-                    while (inetAddresses.hasMoreElements()) {
-                        InetAddress inetAddress = inetAddresses.nextElement();
-
-                        if (inetAddress.isSiteLocalAddress()) {
-                            String ip = inetAddress.getHostAddress();
-                            return ip.substring(0, ip.lastIndexOf('.')); // Extract subnet base
-                        }
-                    }
-                }
-            }
+            String ip = Utilities.getLocalIPAddress();
+            return  ip.substring(0, ip.lastIndexOf('.'));
         } catch (SocketException e) {
             System.err.println("SocketException: " + e.getMessage());
         }
@@ -127,7 +114,7 @@ public class NetworkDiscovery {
                             WebSocketHandler.getBroadcastService().queueBroadcast(new SubnetScanData("The device was found at " + address, xcasterScanRunning.get(), address, xcaster.getHostname(), subnet, "FOUND").setUsername(xcaster.getUsername()).setPassword(xcaster.getPassword()), "XCASTER-SUBNET-SCAN");
                             if (XdashbackendApplication.getResolvedXCASTERServices().values().stream().noneMatch(m -> m.getAddress().equals(address))) {
                                 SSHHostAddress sshHostAddress = new SSHHostAddress(xcaster.getHostname(), xcaster.getUsername(), xcaster.getPassword(), address, xcaster.getServer());
-                               SSHHostAddress previous = XdashbackendApplication.getResolvedXCASTERServices().put(xcaster.getServer(), sshHostAddress);
+                                SSHHostAddress previous = XdashbackendApplication.getResolvedXCASTERServices().put(xcaster.getServer(), sshHostAddress);
                                 if (previous == null) {
                                     List<String> machines = new ArrayList<>(XdashbackendApplication.getConfigLoader().getPropertyList("servers.constant"));
                                     machines.add(gson.toJson(new DeviceAddData(xcaster.getHostname(), address, xcaster.getUsername(), xcaster.getPassword())));
@@ -148,7 +135,7 @@ public class NetworkDiscovery {
                                     } catch (Exception e) {
                                         logger.severe("Error while saving servers.constant: " + e.getMessage());
                                     }
-                                      }
+                                }
                             }
                         } else {
                             WebSocketHandler.getBroadcastService().queueBroadcast(new SubnetScanData("The device could not be found at: " + host, xcasterScanRunning.get(), host, null, subnet, "UNAVAILABLE"), "XCASTER-SUBNET-SCAN");
@@ -228,6 +215,7 @@ public class NetworkDiscovery {
         }
         return null;
     }
+
     public static XCASTERServiceInfo getXCASTERFromServerWithTimeout(String host) {
         try {
             if (!host.startsWith("http://")) {

@@ -37,7 +37,6 @@ public class XTablesViewer extends JFrame {
     private final Theme theme;
 
     public XTablesViewer(XTablesClient client) {
-        setVisible(false);
         this.client = client;
         this.cache = new XTablesData();
         InputStream nightStream = getClass().getResourceAsStream("/themes/monokai.xml");
@@ -83,13 +82,13 @@ public class XTablesViewer extends JFrame {
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
         try {
-
             UIManager.setLookAndFeel(new FlatMacDarkLaf());
             SwingUtilities.updateComponentTreeUI(this);
         } catch (UnsupportedLookAndFeelException ex) {
-            throw new RuntimeException(ex);
+            logger.severe("Look and feel not supported: " + ex.getMessage());
+        } catch (Exception e) {
+            logger.severe("Unknown error on look and feel: " + e.getMessage());
         }
-        setVisible(false);
     }
 
 

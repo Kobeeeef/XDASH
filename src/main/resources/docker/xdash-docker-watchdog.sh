@@ -7,19 +7,11 @@ EOF
 PROJECT_NAME="xdash-watchdog-project"
 cleanup() {
     echo "Received termination signal. Cleaning up..."
-    echo "$DOCKER_COMPOSE_CONTENT" | docker compose -p "$PROJECT_NAME" -f - down
+    echo "$DOCKER_COMPOSE_CONTENT" | docker compose -p "$PROJECT_NAME" -f - down -t 0
     exit 0
 }
 trap cleanup SIGTERM
 echo "Stopping existing Docker Compose services..."
-echo "$DOCKER_COMPOSE_CONTENT" | docker compose -p "$PROJECT_NAME" -f - down
+echo "$DOCKER_COMPOSE_CONTENT" | docker compose -p "$PROJECT_NAME" -f - down -t 3
 echo "Starting Docker Compose services..."
-while true; do
-    if echo "$DOCKER_COMPOSE_CONTENT" | docker compose -p "$PROJECT_NAME" -f - up --abort-on-container-exit; then
-        echo "Docker Compose services are running successfully."
-    else
-        echo "Docker Compose services stopped unexpectedly. Restarting..."
-    fi
-    echo "$DOCKER_COMPOSE_CONTENT" | docker compose -p "$PROJECT_NAME" -f - down
-    sleep ${TIMEOUT}
-done
+echo "$DOCKER_COMPOSE_CONTENT" | docker compose -p "$PROJECT_NAME" -f - up --abort-on-container-exit
