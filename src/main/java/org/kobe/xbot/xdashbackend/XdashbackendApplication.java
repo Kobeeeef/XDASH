@@ -51,9 +51,22 @@ public class XdashbackendApplication {
     public static void main(String[] args) throws IOException, InterruptedException {
         System.setProperty("java.net.preferIPv4Stack", "true");
         System.setProperty("java.awt.headless", "false");
+        System.setProperty("file.encoding", "UTF-8");
         SpringApplication.run(XdashbackendApplication.class, args);
+        logger.info("\n" + """                                                                                                                         
+                             ███████ ███████  ██████████████████                                                                                                                             \s
+                                 █████  █████████  ███████   █████                                                                                                                           \s
+                                   █████  █████   ██████████   █████      ████   ███ ███████      ██████   ██████████    ███████            ████                     ███                     \s
+                                    █████   ██   █████  █████   █████      ████ ███  █████████  ██████████ ██████████    █████████          ████                ███  ███                     \s
+                                     █████  ██  █████    █████   ████       ██████   ███  ████ ████    ████   ███        ███   ███  ██████  ████████   ██████  █████████   █████  █████      \s
+                     ████    ████     ████ ████ ████      ████    ████       ████    █████████ ███      ███   ███        ████████  ████ ███ █████████ ████ ████ ███  ████████ ███ ██████     \s
+                      ████   █████   █████  ██  █████                       ███████  ███   ███ ████    ████   ███        ███████  ████  ████████  ███████  ████ ███  ███████      ██████     \s
+                       ████   █████ █████   ██   █████                    ████  ████ █████████  ██████████    ███        ███ ████  ████████ █████████ ████████  ███  ████ ███████ ███████    \s
+                       ██████  █████████  █████   █████                   ███    ███████████       ████       ███        ███   ███   ████    ██████     ████     ██  ███    ████   ████      \s
+                         ██████ ███████ █████████   █████                                                                                                                                    \s
+                            ███████████████   ███████ ███████                                                                                                                                                                                                                                                                                                \s
+                    \s""");
         FlatMacDarkLaf.setup();
-
         FlatMacLightLaf.setup();
         FlatJetBrainsMonoFont.install();
         FlatInterFont.install();
@@ -195,6 +208,7 @@ public class XdashbackendApplication {
             } catch (Exception ignored) {
             }
         });
+
         try {
             Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
         } catch (Exception e) {
