@@ -76,10 +76,10 @@ public class XTablesDropdownViewer extends JPanel {
                     if (key != null) {
                         // If a key is found, update with the new value
                         String value = tree.getCellEditor().getCellEditorValue().toString().trim();
+                        populateTable();
                         onUpdate(key, value); // Pass the full key and updated value
                     }
-                }
-                populateTable(); // Refresh the tree view
+                } else populateTable(); // Refresh the tree view
             }
 
             @Override
@@ -204,9 +204,14 @@ public class XTablesDropdownViewer extends JPanel {
     }
 
 
-    private void expandAllRows() {
+    public void expandAllRows() {
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.expandRow(i);
+        }
+    }
+    public void collapseAllRows() {
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            tree.collapseRow(i);
         }
     }
 

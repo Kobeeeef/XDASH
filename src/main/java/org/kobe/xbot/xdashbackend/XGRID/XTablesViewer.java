@@ -31,7 +31,7 @@ public class XTablesViewer extends JFrame {
     public JMenuItem darkThemeItem, lightThemeItem,
             exitItem;
     private final XTablesData cache;
-    private JButton reloadButton, addButton, rebootButton;
+    private JButton reloadButton, addButton, rebootButton, expandButton,closeButton;
     private final XTablesClient client;
     private Thread cacheThread;
     private final Theme theme;
@@ -75,10 +75,12 @@ public class XTablesViewer extends JFrame {
                 rebootButton.setEnabled(true);
                 addButton.setEnabled(true);
                 reloadButton.setEnabled(true);
+                expandButton.setEnabled(true);
             } else {
                 rebootButton.setEnabled(false);
                 addButton.setEnabled(false);
                 reloadButton.setEnabled(false);
+                expandButton.setEnabled(false);
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
         try {
@@ -122,7 +124,10 @@ public class XTablesViewer extends JFrame {
     private boolean subscribeToCacheUpdates() {
         boolean responseStatus = client.subscribe((updateEvent) -> {
             cache.put(updateEvent.getKey(), updateEvent.getValue().toByteArray(), updateEvent.getType());
-            dropdownViewer.updateNode(updateEvent.getKey(), XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
+            SwingUtilities.invokeLater(() -> {
+                dropdownViewer.updateNode(updateEvent.getKey(),
+                        XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
+            });
         });
         if (responseStatus) System.out.println("Cache is now subscribed for updates.");
         return responseStatus;
@@ -196,7 +201,24 @@ public class XTablesViewer extends JFrame {
 
     private JPanel createControlPanel() {
 
-
+        expandButton = new JButton("Expand");
+        expandButton.addActionListener(e -> {
+            expandButton.setEnabled(false);
+            try {
+                if(expandButton.getText().equals("Expand")) {
+                    this.dropdownViewer.expandAllRows();
+                    expandButton.setText("Collapse");
+                } else {
+                    this.dropdownViewer.collapseAllRows();
+                    expandButton.setText("Expand");
+                }
+                expandButton.setEnabled(true);
+            } catch (Exception ec) {
+                ec.printStackTrace();
+                expandButton.setEnabled(true);
+                JOptionPane.showMessageDialog(null, "Failed to expand: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
         reloadButton = new JButton("Reload Data");
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
@@ -261,10 +283,23 @@ public class XTablesViewer extends JFrame {
                 JOptionPane.showMessageDialog(null, "Failed to reboot server: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+        closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> {
+            closeButton.setEnabled(false);
+            try {
+                setVisible(false);
+                closeButton.setEnabled(true);
+             } catch (Exception ec) {
+                closeButton.setEnabled(true);
+                JOptionPane.showMessageDialog(null, "Failed to close panel: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
         JPanel panel = new JPanel();
+        panel.add(expandButton);
         panel.add(reloadButton);
         panel.add(addButton);
         panel.add(rebootButton);
+        panel.add(closeButton);
         return panel;
     }
 

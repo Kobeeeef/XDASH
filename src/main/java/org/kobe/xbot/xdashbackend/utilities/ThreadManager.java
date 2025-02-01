@@ -2,10 +2,7 @@ package org.kobe.xbot.xdashbackend.utilities;
 
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -28,7 +25,7 @@ public class ThreadManager implements AutoCloseable {
                 new ArrayBlockingQueue<>(queueSize),    // Bounded queue with specified capacity
                 new ThreadPoolExecutor.CallerRunsPolicy()  // Rejection policy
         );
-        tasks = new HashMap<>();
+        tasks = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -39,16 +36,21 @@ public class ThreadManager implements AutoCloseable {
     // Execute a task and associate it with a name and description
     public void execute(String name, String description, Runnable task) {
         TaskInfo taskInfo = new TaskInfo(name, description);
-        tasks.computeIfAbsent(name, k -> new ArrayList<>()).add(taskInfo); // Add the TaskInfo to the list of tasks for this name
+        tasks.computeIfAbsent(name, k -> new LinkedList<>()).add(taskInfo); // Add the TaskInfo to the list of tasks for this name
 
         executor.execute(() -> {
             try {
                 task.run();
             } finally {
-                tasks.get(name).remove(taskInfo); // Remove from the list after completion
-                if (tasks.get(name).isEmpty()) {
-                    tasks.remove(name); // Remove the entry if the list is empty
+               List<TaskInfo> infos = tasks.get(name);
+                if(infos != null) {
+                    infos.remove(taskInfo);
+                    if (infos.isEmpty()) {
+                        tasks.remove(name); // Remove the entry if the list is empty
+                    }
                 }
+                     // Remove from the list after completion
+
             }
         });
     }
@@ -56,7 +58,7 @@ public class ThreadManager implements AutoCloseable {
     // Submit a task and return a Future object
     public Future<?> submit(String name, String description, Runnable task) {
         TaskInfo taskInfo = new TaskInfo(name, description);
-        tasks.computeIfAbsent(name, k -> new ArrayList<>()).add(taskInfo); // Add the TaskInfo to the list of tasks for this name
+        tasks.computeIfAbsent(name, k -> new LinkedList<>()).add(taskInfo); // Add the TaskInfo to the list of tasks for this name
 
         return executor.submit(() -> {
             try {
