@@ -132,7 +132,10 @@ public class XTablesViewer extends JFrame {
                 dropdownViewer.updateNode(updateEvent.getKey(),
                         XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
                 if (XTablesValueLogs.logWindows.containsKey(updateEvent.getKey())) {
-                    XTablesValueLogs.addLogToKey(updateEvent.getKey(), XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
+                    XTablesValueLogs.addLogToKey(updateEvent.getKey(), updateEvent);
+                }
+                if (XTablesImageViewer.imageWindows.containsKey(updateEvent.getKey())) {
+                    XTablesImageViewer.setFrameForKey(updateEvent.getKey(), updateEvent.getValue().toByteArray());
                 }
             });
         });
@@ -313,10 +316,14 @@ public class XTablesViewer extends JFrame {
         addValueLogButton.addActionListener(e -> {
             Set<String> history = new HashSet<>(XdashbackendApplication.getConfigLoader().getPropertyList("XTABLE-VALUE-LOGS-HISTORY"));
             JComboBox<String> keyDropdown = new JComboBox<>(history.toArray(new String[0]));
+            JComboBox<String> typeDropdown = new JComboBox<>(new String[] { "JSON", "Coordinates", "Image"});
+            JPanel panel = new JPanel(new BorderLayout());
             keyDropdown.setEditable(true);
+            panel.add(keyDropdown, BorderLayout.NORTH);
+            panel.add(typeDropdown, BorderLayout.CENTER);
             int result = JOptionPane.showConfirmDialog(
                     null,
-                    keyDropdown,
+                    panel,
                     "Enter Key:",
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE
@@ -336,7 +343,13 @@ public class XTablesViewer extends JFrame {
                         } catch (Exception err) {
                             JOptionPane.showMessageDialog(null, "Failed to store value: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                        XTablesValueLogs.openLogWindow(key);
+                        if(typeDropdown.getSelectedItem().toString().equals("JSON")) {
+                            XTablesValueLogs.openLogWindow(key, "JSON");
+                        } else if(typeDropdown.getSelectedItem().toString().equals("Coordinates")) {
+                            XTablesValueLogs.openLogWindow(key, "Coordinates");
+                        }  else if (typeDropdown.getSelectedItem().toString().equals("Image")) {
+                            XTablesImageViewer.openImageWindow(key);
+                        }
                     }
                 } else {
                     JOptionPane.showMessageDialog(null, "Invalid Key", "Error", JOptionPane.ERROR_MESSAGE);

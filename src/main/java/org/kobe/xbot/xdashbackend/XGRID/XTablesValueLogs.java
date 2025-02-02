@@ -1,6 +1,9 @@
 package org.kobe.xbot.xdashbackend.XGRID;
 
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import org.kobe.xbot.Utilities.Entities.XTableProto;
+import org.kobe.xbot.Utilities.Entities.XTableValues;
+import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import javax.imageio.ImageIO;
@@ -21,9 +24,11 @@ public class XTablesValueLogs extends JFrame {
     private boolean isScrollLocked = true;
     public static final Map<String, XTablesValueLogs> logWindows = new ConcurrentHashMap<>();
     private final String key;
+    private final String type;
 
-    public XTablesValueLogs(String key) {
+    public XTablesValueLogs(String key, String type) {
         this.key = key;
+        this.type = type;
         setTitle("XDASH - XTABLES LOGS - " + key);
         setSize(900, 800);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -78,13 +83,13 @@ public class XTablesValueLogs extends JFrame {
         isScrollLocked = !isScrollLocked;
         lockScrollButton.setText(isScrollLocked ? "Unlock Scroll" : "Lock Scroll");
     }
-    public static void openLogWindow(String key) {
+    public static void openLogWindow(String key, String type) {
         SwingUtilities.invokeLater(() -> {
-            logWindows.computeIfAbsent(key, XTablesValueLogs::new);
+            logWindows.computeIfAbsent(key, (k) -> (new XTablesValueLogs(k,type)));
         });
     }
 
-    public static void addLogToKey(String key, String log) {
+    public static void addLogToKey(String key, XTableProto.XTableMessage.XTableUpdate log) {
         XTablesValueLogs window = logWindows.get(key);
         if (window != null) {
             SwingUtilities.invokeLater(() -> {
@@ -93,12 +98,20 @@ public class XTablesValueLogs extends JFrame {
         }
     }
 
-    public void addLog(String log) {
+    public void addLog(XTableProto.XTableMessage.XTableUpdate updateEvent) {
         SwingUtilities.invokeLater(() -> {
             if (logModel.getSize() > 5000) {
                 logModel.remove(0);
             }
-            logModel.addElement(log);
+            if (this.type.equals("JSON")) {
+                logModel.addElement(XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
+            } else if (this.type.equals("Coordinates")) {
+                try {
+                    logModel.addElement(Arrays.toString(XTableValues.CoordinateList.parseFrom(updateEvent.getValue()).getCoordinatesList().stream().map(m -> String.format("X: %1$s Y: %2$s", m.getX(), m.getY())).toArray()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             if (isScrollLocked) {
                 logList.ensureIndexIsVisible(logModel.getSize() - 1);
             }
