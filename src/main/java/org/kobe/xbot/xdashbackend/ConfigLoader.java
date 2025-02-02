@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ConfigLoader {
@@ -326,7 +323,7 @@ public class ConfigLoader {
             properties.setProperty("roboRIO.server", configProperties.getROBORIO_SERVER());
         }
         if (configProperties.getSERVICES() != null) {
-            properties.setProperty("services", String.join(",", configProperties.getSERVICES()));
+            setPropertyList("services", Arrays.stream(configProperties.getSERVICES()).toList());
         }
 
         save(); // Save updated properties to the file

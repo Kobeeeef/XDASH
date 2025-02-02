@@ -8,6 +8,7 @@ import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.Entities.XTableProto;
 import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
+import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 
 import javax.imageio.ImageIO;
@@ -15,7 +16,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -31,7 +35,7 @@ public class XTablesViewer extends JFrame {
     public JMenuItem darkThemeItem, lightThemeItem,
             exitItem;
     private final XTablesData cache;
-    private JButton reloadButton, addButton, rebootButton, expandButton,closeButton;
+    private JButton reloadButton, addButton, rebootButton, expandButton, addValueLogButton, closeButton;
     private final XTablesClient client;
     private Thread cacheThread;
     private final Theme theme;
@@ -127,6 +131,9 @@ public class XTablesViewer extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 dropdownViewer.updateNode(updateEvent.getKey(),
                         XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
+                if (XTablesValueLogs.logWindows.containsKey(updateEvent.getKey())) {
+                    XTablesValueLogs.addLogToKey(updateEvent.getKey(), XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
+                }
             });
         });
         if (responseStatus) System.out.println("Cache is now subscribed for updates.");
@@ -205,7 +212,7 @@ public class XTablesViewer extends JFrame {
         expandButton.addActionListener(e -> {
             expandButton.setEnabled(false);
             try {
-                if(expandButton.getText().equals("Expand")) {
+                if (expandButton.getText().equals("Expand")) {
                     this.dropdownViewer.expandAllRows();
                     expandButton.setText("Collapse");
                 } else {
@@ -283,13 +290,48 @@ public class XTablesViewer extends JFrame {
                 JOptionPane.showMessageDialog(null, "Failed to reboot server: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+        addValueLogButton = new JButton("Add Value Log");
+        addValueLogButton.addActionListener(e -> {
+            Set<String> history = new HashSet<>(XdashbackendApplication.getConfigLoader().getPropertyList("XTABLE-VALUE-LOGS_HISTORY"));
+            JComboBox<String> keyDropdown = new JComboBox<>(history.toArray(new String[0]));
+            keyDropdown.setEditable(true);
+            int result = JOptionPane.showConfirmDialog(
+                    null,
+                    keyDropdown,
+                    "Enter Key:",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
+            );
+
+            if (result == JOptionPane.OK_OPTION) {
+                Object item = keyDropdown.getSelectedItem();
+                if (item instanceof String) {
+                    String key = keyDropdown.getSelectedItem().toString().trim();
+                    if (!key.isEmpty()) {
+                        try {
+                            if (!history.contains(key)) {
+                                history.add(key);
+                                XdashbackendApplication.getConfigLoader().setPropertyList("XTABLE-VALUE-LOGS_HISTORY", new ArrayList<>(history));
+                                XdashbackendApplication.getConfigLoader().save();
+                            }
+                        } catch (Exception err) {
+                            JOptionPane.showMessageDialog(null, "Failed to store value: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        XTablesValueLogs.openLogWindow(key);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid Key", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         closeButton = new JButton("Close");
         closeButton.addActionListener(e -> {
             closeButton.setEnabled(false);
             try {
                 setVisible(false);
                 closeButton.setEnabled(true);
-             } catch (Exception ec) {
+            } catch (Exception ec) {
                 closeButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "Failed to close panel: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -299,6 +341,7 @@ public class XTablesViewer extends JFrame {
         panel.add(reloadButton);
         panel.add(addButton);
         panel.add(rebootButton);
+        panel.add(addValueLogButton);
         panel.add(closeButton);
         return panel;
     }
