@@ -247,35 +247,54 @@ public class XTablesViewer extends JFrame {
         });
         addButton = new JButton("Add Data");
         addButton.addActionListener(e -> {
+            Set<String> history = new HashSet<>(XdashbackendApplication.getConfigLoader().getPropertyList("XTABLE-VALUE-LOGS-HISTORY"));
+            JComboBox<String> keyDropdown = new JComboBox<>(history.toArray(new String[0]));
+            keyDropdown.setEditable(true);
+
             DynamicInputPanel inputPanel = new DynamicInputPanel();
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(keyDropdown, BorderLayout.NORTH);
+            panel.add(inputPanel, BorderLayout.CENTER);
 
             int result = JOptionPane.showConfirmDialog(
                     null,
-                    inputPanel,
+                    panel,
                     "Enter Key and Value",
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE
             );
 
             if (result == JOptionPane.OK_OPTION) {
-                String key = inputPanel.getKey();
-                String selectedType = inputPanel.getSelectedType();
-                Object value = inputPanel.getEnteredValue();
+                Object item = keyDropdown.getSelectedItem();
+                if (item instanceof String) {
+                    String key = keyDropdown.getSelectedItem().toString().trim();
+                    String selectedType = inputPanel.getSelectedType();
+                    Object value = inputPanel.getEnteredValue();
 
-                if (key.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Key cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                try {
-                    boolean success = sendToClient(selectedType, key, value);
-                    if (!success) {
-                        JOptionPane.showMessageDialog(null, "Failed to store value", "Error", JOptionPane.ERROR_MESSAGE);
+                    if (key.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Key cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
                     }
-                } catch (Exception err) {
-                    JOptionPane.showMessageDialog(null, "Error: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+
+                    try {
+                        if (!history.contains(key)) {
+                            history.add(key);
+                            XdashbackendApplication.getConfigLoader().setPropertyList("XTABLE-VALUE-LOGS-HISTORY", new ArrayList<>(history));
+                            XdashbackendApplication.getConfigLoader().save();
+                        }
+
+                        boolean success = sendToClient(selectedType, key, value);
+                        if (!success) {
+                            JOptionPane.showMessageDialog(null, "Failed to store value", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception err) {
+                        JOptionPane.showMessageDialog(null, "Error: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid Key", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+
         });
 
         rebootButton = new JButton("Reboot");
@@ -292,7 +311,7 @@ public class XTablesViewer extends JFrame {
         });
         addValueLogButton = new JButton("Add Value Log");
         addValueLogButton.addActionListener(e -> {
-            Set<String> history = new HashSet<>(XdashbackendApplication.getConfigLoader().getPropertyList("XTABLE-VALUE-LOGS_HISTORY"));
+            Set<String> history = new HashSet<>(XdashbackendApplication.getConfigLoader().getPropertyList("XTABLE-VALUE-LOGS-HISTORY"));
             JComboBox<String> keyDropdown = new JComboBox<>(history.toArray(new String[0]));
             keyDropdown.setEditable(true);
             int result = JOptionPane.showConfirmDialog(
@@ -311,7 +330,7 @@ public class XTablesViewer extends JFrame {
                         try {
                             if (!history.contains(key)) {
                                 history.add(key);
-                                XdashbackendApplication.getConfigLoader().setPropertyList("XTABLE-VALUE-LOGS_HISTORY", new ArrayList<>(history));
+                                XdashbackendApplication.getConfigLoader().setPropertyList("XTABLE-VALUE-LOGS-HISTORY", new ArrayList<>(history));
                                 XdashbackendApplication.getConfigLoader().save();
                             }
                         } catch (Exception err) {

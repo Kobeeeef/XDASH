@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DynamicInputPanel extends JPanel {
-    private final JTextField keyField;
     private final JComboBox<String> typeDropdown;
     private final JPanel valuePanel;
     private JTextField singleValueField;
@@ -18,11 +17,6 @@ public class DynamicInputPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
 
         // Key input field
-        JPanel keyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        keyPanel.add(new JLabel("Key:"));
-        keyField = new JTextField(20);
-        keyPanel.add(keyField);
-        add(keyPanel, BorderLayout.NORTH);
 
         // Dropdown for type selection
         JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -97,9 +91,7 @@ public class DynamicInputPanel extends JPanel {
         valuePanel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    public String getKey() {
-        return keyField.getText().trim();
-    }
+
 
     public String getSelectedType() {
         return (String) typeDropdown.getSelectedItem();

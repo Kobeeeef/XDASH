@@ -17,8 +17,8 @@ public class XTablesValueLogs extends JFrame {
     private final JList<String> logList;
     private final JScrollPane scrollPane;
     private final JPanel toolPanel;
-    private final JButton clearButton, closeButton;
-
+    private final JButton clearButton, closeButton, lockScrollButton;
+    private boolean isScrollLocked = true;
     public static final Map<String, XTablesValueLogs> logWindows = new ConcurrentHashMap<>();
     private final String key;
 
@@ -61,8 +61,11 @@ public class XTablesValueLogs extends JFrame {
         closeButton.addActionListener(e -> {
             dispose();
         });
+        lockScrollButton = new JButton("Unlock Scroll");
+        lockScrollButton.addActionListener(e -> toggleScrollLock());
 
         toolPanel.add(clearButton);
+        toolPanel.add(lockScrollButton);
         toolPanel.add(closeButton);
 
         add(toolPanel, BorderLayout.NORTH);
@@ -71,7 +74,10 @@ public class XTablesValueLogs extends JFrame {
 
         setVisible(true);
     }
-
+    private void toggleScrollLock() {
+        isScrollLocked = !isScrollLocked;
+        lockScrollButton.setText(isScrollLocked ? "Unlock Scroll" : "Lock Scroll");
+    }
     public static void openLogWindow(String key) {
         SwingUtilities.invokeLater(() -> {
             logWindows.computeIfAbsent(key, XTablesValueLogs::new);
@@ -93,7 +99,9 @@ public class XTablesValueLogs extends JFrame {
                 logModel.remove(0);
             }
             logModel.addElement(log);
-            logList.ensureIndexIsVisible(logModel.getSize() - 1);
+            if (isScrollLocked) {
+                logList.ensureIndexIsVisible(logModel.getSize() - 1);
+            }
         });
     }
     @Override
