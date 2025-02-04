@@ -1,6 +1,7 @@
 package org.kobe.xbot.xdashbackend.XGRID;
 
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
+import org.kobe.xbot.JClient.XTableContext;
 import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.Entities.XTableProto;
 import org.kobe.xbot.Utilities.Utilities;
@@ -26,9 +27,9 @@ public class XTablesDropdownViewer extends JPanel {
     private final XTablesData cache;
     private final JTree tree;
     private Font treeFont;
-    private final XTablesClient client;
+    private final XTableContext client;
 
-    public XTablesDropdownViewer(JFrame parent, XTablesClient client, XTablesData cache) {
+    public XTablesDropdownViewer(XTableContext client, XTablesData cache) {
         this.cache = cache;
         this.client = client;
         setLayout(new BorderLayout());

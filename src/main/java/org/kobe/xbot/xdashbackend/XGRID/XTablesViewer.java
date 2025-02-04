@@ -3,7 +3,10 @@ package org.kobe.xbot.xdashbackend.XGRID;
 
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import org.fife.ui.rsyntaxtextarea.Theme;
+import org.kobe.xbot.JClient.XTableContext;
 import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.Entities.XTableProto;
 import org.kobe.xbot.Utilities.XTablesByteUtils;
@@ -16,10 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class XTablesViewer extends JFrame {
     private static final XDashLogger logger = XDashLogger.getLogger();
     public XTablesDropdownViewer dropdownViewer;
+    public FieldPanel fieldPanel;
     public JPanel toolPanel;
     public String currentFileParentPath;
     public JMenuBar menuBar;
@@ -36,11 +37,11 @@ public class XTablesViewer extends JFrame {
             exitItem;
     private final XTablesData cache;
     private JButton reloadButton, addButton, rebootButton, expandButton, addValueLogButton, closeButton;
-    private final XTablesClient client;
+    private final XTableContext client;
     private Thread cacheThread;
     private final Theme theme;
 
-    public XTablesViewer(XTablesClient client) {
+    public XTablesViewer(XTableContext client) {
         this.client = client;
         this.cache = new XTablesData();
         InputStream nightStream = getClass().getResourceAsStream("/themes/monokai.xml");
@@ -63,7 +64,7 @@ public class XTablesViewer extends JFrame {
         }
         init();
         addComponent();
-        setStatus(client.getSocketMonitor().getSimplifiedMessage());
+        setStatus(client.getxTablesClient().getSocketMonitor().getSimplifiedMessage());
         cacheThread = new Thread(this::enableCache);
         cacheThread.setDaemon(true);
         cacheThread.start();
@@ -74,8 +75,8 @@ public class XTablesViewer extends JFrame {
         };
         ScheduledExecutorService daemonScheduler = Executors.newScheduledThreadPool(1, daemonThreadFactory);
         daemonScheduler.scheduleAtFixedRate(() -> {
-            setStatus(client.getSocketMonitor().getSimplifiedMessage());
-            if (client.getSocketMonitor().isConnected("REQUEST")) {
+            setStatus(client.getxTablesClient().getSocketMonitor().getSimplifiedMessage());
+            if (client.getxTablesClient().getSocketMonitor().isConnected("REQUEST-VIEWER")) {
                 rebootButton.setEnabled(true);
                 addButton.setEnabled(true);
                 reloadButton.setEnabled(true);
@@ -108,7 +109,6 @@ public class XTablesViewer extends JFrame {
             dropdownViewer.populateTable();
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Failed to Load Cache: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -126,7 +126,7 @@ public class XTablesViewer extends JFrame {
     }
 
     private boolean subscribeToCacheUpdates() {
-        boolean responseStatus = client.subscribe((updateEvent) -> {
+        boolean responseStatus = client.getxTablesClient().subscribe((updateEvent) -> {
             cache.put(updateEvent.getKey(), updateEvent.getValue().toByteArray(), updateEvent.getType());
             SwingUtilities.invokeLater(() -> {
                 dropdownViewer.updateNode(updateEvent.getKey(),
@@ -148,7 +148,8 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        dropdownViewer = new XTablesDropdownViewer(this, client, cache);
+        fieldPanel = new FieldPanel();
+        dropdownViewer = new XTablesDropdownViewer(client, cache);
 
         toolPanel = new JPanel();
         toolPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -233,6 +234,14 @@ public class XTablesViewer extends JFrame {
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
             try {
+                fieldPanel.setEnemyClickCallback((a) -> {
+                    System.out.println(XTablesByteUtils.pose2dToString(a));
+                });
+                Map<Pose2d, Double> enemies = new HashMap<>();
+                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
+                enemies.put(new Pose2d(10, 6, new Rotation2d(Math.PI)), 0.45); // 45% probability
+                fieldPanel.setEnemyRobots(enemies);
+
                 XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
                 if (dataProto == null) {
                     throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
@@ -389,7 +398,13 @@ public class XTablesViewer extends JFrame {
 
         settingsMenu.add(exitItem);
         this.add(toolPanel, BorderLayout.NORTH);
-        this.add(dropdownViewer, BorderLayout.CENTER);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dropdownViewer,fieldPanel);
+        splitPane.setContinuousLayout(true);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(0.1);
+        splitPane.setResizeWeight(0.1);
+
+        this.add(splitPane, BorderLayout.CENTER);
         setJMenuBar(menuBar);
 
         revalidate();

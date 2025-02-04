@@ -9,7 +9,12 @@ import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Timer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +25,7 @@ public class XTablesValueLogs extends JFrame {
     private final JList<String> logList;
     private final JScrollPane scrollPane;
     private final JPanel toolPanel;
-    private final JButton clearButton, closeButton, lockScrollButton;
+    private final JButton clearButton, closeButton, lockScrollButton, saveButton;
     private boolean isScrollLocked = true;
     public static final Map<String, XTablesValueLogs> logWindows = new ConcurrentHashMap<>();
     private final String key;
@@ -68,9 +73,13 @@ public class XTablesValueLogs extends JFrame {
         });
         lockScrollButton = new JButton("Unlock Scroll");
         lockScrollButton.addActionListener(e -> toggleScrollLock());
+        saveButton = new JButton("Save As File");
+        saveButton.addActionListener(e -> saveLogsToFile());
 
         toolPanel.add(clearButton);
         toolPanel.add(lockScrollButton);
+        toolPanel.add(saveButton);
+
         toolPanel.add(closeButton);
 
         add(toolPanel, BorderLayout.NORTH);
@@ -117,6 +126,80 @@ public class XTablesValueLogs extends JFrame {
             }
         });
     }
+    /**
+     * Saves the log entries to a text file with a progress bar.
+     */
+    private void saveLogsToFile() {
+        SwingUtilities.invokeLater(() -> {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+            String filename = key + "-" + dateFormat.format(new Date()) + ".txt";
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Save Log File");
+            fileChooser.setSelectedFile(new File(filename));
+
+            int userSelection = fileChooser.showSaveDialog(this);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                int totalLogs = logModel.getSize();
+
+                // Create a progress dialog
+                JDialog progressDialog = new JDialog(this, "Saving Logs", true);
+                progressDialog.setSize(300, 100);
+                progressDialog.setLayout(new BorderLayout());
+                JProgressBar progressBar = new JProgressBar(0, totalLogs);
+                progressBar.setStringPainted(true);
+                progressDialog.add(progressBar, BorderLayout.CENTER);
+                progressDialog.setLocationRelativeTo(this);
+
+                // SwingWorker to handle file writing
+                SwingWorker<Void, Integer> worker = new SwingWorker<>() {
+                    @Override
+                    protected Void doInBackground() {
+                        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                            for (int i = 0; i < totalLogs; i++) {
+                                if (isCancelled()) break;
+                                writer.write(logModel.getElementAt(i));
+                                writer.newLine();
+                                publish(i + 1); // Update progress
+                            }
+                        } catch (IOException e) {
+                            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                    XTablesValueLogs.this,
+                                    "Error saving logs!",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            ));
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void process(List<Integer> chunks) {
+                        progressBar.setValue(chunks.get(chunks.size() - 1));
+                    }
+
+                    @Override
+                    protected void done() {
+                        progressDialog.dispose();
+                        if (!isCancelled()) {
+                            JOptionPane.showMessageDialog(
+                                    XTablesValueLogs.this,
+                                    "Logs saved successfully!",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    }
+                };
+
+                worker.execute();
+                progressDialog.setVisible(true);
+                worker.cancel(true);
+            }
+        });
+    }
+
     @Override
     public void dispose() {
         logger.info("Disposing XTablesValueLogs");

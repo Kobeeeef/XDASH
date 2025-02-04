@@ -5,6 +5,7 @@ import com.formdev.flatlaf.fonts.inter.FlatInterFont;
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import org.kobe.xbot.JClient.XTableContext;
 import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
@@ -188,7 +189,8 @@ public class XdashbackendApplication {
                 XTablesLogger.setLoggingLevel(Level.OFF);
                 client.addVersionProperty("XDASH");
                 clientRef.set(client);
-                xTablesViewerRef.set(new XTablesViewer(client));
+                XTableContext context = client.registerXTableContext("VIEWER");
+                xTablesViewerRef.set(new XTablesViewer(context));
             }
 
         });
