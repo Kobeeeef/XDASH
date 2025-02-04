@@ -38,9 +38,13 @@ public class FieldPanel extends JPanel {
     // Field dimensions in meters
     private final double fieldWidthMeters = 16.54;
     private final double fieldHeightMeters = 8.02;
+    private final FieldPanel instance = this;
+    private final XTablesViewer viewer;
 
-    public FieldPanel() {
+    public FieldPanel(XTablesViewer xTablesViewer) {
         preloadSounds();
+        ToolTipManager.sharedInstance().setInitialDelay(0);
+        this.viewer = xTablesViewer;
         // Load images from resources
         fieldImage = loadImage("/2025field.png");
         robotImage = loadImage("/icon.png"); // Main robot image
@@ -49,9 +53,14 @@ public class FieldPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                System.out.println(e.getButton());
                 Pose2d clickedPose = getClickedEnemyPose(e.getX(), e.getY());
                 if (clickedPose != null && enemyClickCallback != null) {
-                    playDing();
+//                    SwingUtilities.invokeLater(() -> {
+//                        playDing();
+//                        viewer.showNotification("Command sent", 3000);
+//                    });
+
                     enemyClickCallback.accept(clickedPose);
                 }
             }
@@ -60,6 +69,7 @@ public class FieldPanel extends JPanel {
             @Override
             public void mouseMoved(MouseEvent e) {
                 Pose2d hoveredPose = getClickedEnemyPose(e.getX(), e.getY());
+
                 if (hoveredPose != null) {
                     double probability = enemyRobots.get(hoveredPose);
                     setToolTipText("Enemy Robot: " + (int) (probability * 100) + "%\nClick to go.");
@@ -129,7 +139,6 @@ public class FieldPanel extends JPanel {
         }
     }
 
-    // Method to draw the main robot using an image
     private void drawRobot(Graphics2D g2d, Pose2d pose, BufferedImage image, double scaleX, double scaleY) {
         if (image == null) return;
 
@@ -140,19 +149,32 @@ public class FieldPanel extends JPanel {
         robotX = Math.max(0, Math.min(getWidth(), robotX));
         robotY = Math.max(0, Math.min(getHeight(), robotY));
 
-        int robotSize = 40; // Adjust as needed
+        int robotSize = 80; // Adjust as needed
 
         AffineTransform oldTransform = g2d.getTransform();
+        Composite oldComposite = g2d.getComposite(); // Save original composite
 
         // Move to robot position
         g2d.translate(robotX, robotY);
         g2d.rotate(-pose.getRotation().getRadians());
 
+        // Set transparency (0.0f = fully transparent, 1.0f = fully opaque)
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+
         // Draw the robot image centered on its position
         g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
 
+        // Reset to full opacity for other drawings
+        g2d.setComposite(oldComposite);
+
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.setStroke(new BasicStroke(3)); // Adjust thickness
+        g2d.drawRect(-robotSize / 2, -robotSize / 2, robotSize, robotSize);
+
         g2d.setTransform(oldTransform); // Restore transform
     }
+
+
 
     // Method to draw an enemy robot as a red outlined square with probability inside
     private void drawEnemyRobot(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY) {
@@ -163,7 +185,7 @@ public class FieldPanel extends JPanel {
         enemyX = Math.max(0, Math.min(getWidth(), enemyX));
         enemyY = Math.max(0, Math.min(getHeight(), enemyY));
 
-        int enemySize = 40; // Adjust size if needed
+        int enemySize = 80; // Adjust size if needed
 
         AffineTransform oldTransform = g2d.getTransform();
 
@@ -196,7 +218,7 @@ public class FieldPanel extends JPanel {
     private Pose2d getClickedEnemyPose(int clickX, int clickY) {
         double scaleX = getWidth() / fieldWidthMeters;
         double scaleY = getHeight() / fieldHeightMeters;
-        int enemySize = 40; // Same as in drawing
+        int enemySize = 80; // Same as in drawing
 
         for (Pose2d pose : enemyRobots.keySet()) {
             double enemyX = pose.getX() * scaleX;

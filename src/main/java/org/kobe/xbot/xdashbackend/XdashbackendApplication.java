@@ -7,7 +7,6 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.kobe.xbot.JClient.XTableContext;
 import org.kobe.xbot.JClient.XTablesClient;
-import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.entities.Notification;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
@@ -31,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 
 @SpringBootApplication
 public class XdashbackendApplication {
@@ -55,18 +53,18 @@ public class XdashbackendApplication {
         System.setProperty("file.encoding", "UTF-8");
         SpringApplication.run(XdashbackendApplication.class, args);
         logger.info("\n" + """                                                                                                                         
-                             ███████ ███████  ██████████████████                                                                                                                             \s
-                                 █████  █████████  ███████   █████                                                                                                                           \s
-                                   █████  █████   ██████████   █████      ████   ███ ███████      ██████   ██████████    ███████            ████                     ███                     \s
-                                    █████   ██   █████  █████   █████      ████ ███  █████████  ██████████ ██████████    █████████          ████                ███  ███                     \s
-                                     █████  ██  █████    █████   ████       ██████   ███  ████ ████    ████   ███        ███   ███  ██████  ████████   ██████  █████████   █████  █████      \s
-                     ████    ████     ████ ████ ████      ████    ████       ████    █████████ ███      ███   ███        ████████  ████ ███ █████████ ████ ████ ███  ████████ ███ ██████     \s
-                      ████   █████   █████  ██  █████                       ███████  ███   ███ ████    ████   ███        ███████  ████  ████████  ███████  ████ ███  ███████      ██████     \s
-                       ████   █████ █████   ██   █████                    ████  ████ █████████  ██████████    ███        ███ ████  ████████ █████████ ████████  ███  ████ ███████ ███████    \s
-                       ██████  █████████  █████   █████                   ███    ███████████       ████       ███        ███   ███   ████    ██████     ████     ██  ███    ████   ████      \s
-                         ██████ ███████ █████████   █████                                                                                                                                    \s
-                            ███████████████   ███████ ███████                                                                                                                                                                                                                                                                                                \s
-                    \s""");
+                         ███████ ███████  ██████████████████                                                                                                                             \s
+                             █████  █████████  ███████   █████                                                                                                                           \s
+                               █████  █████   ██████████   █████      ████   ███ ███████      ██████   ██████████    ███████            ████                     ███                     \s
+                                █████   ██   █████  █████   █████      ████ ███  █████████  ██████████ ██████████    █████████          ████                ███  ███                     \s
+                                 █████  ██  █████    █████   ████       ██████   ███  ████ ████    ████   ███        ███   ███  ██████  ████████   ██████  █████████   █████  █████      \s
+                 ████    ████     ████ ████ ████      ████    ████       ████    █████████ ███      ███   ███        ████████  ████ ███ █████████ ████ ████ ███  ████████ ███ ██████     \s
+                  ████   █████   █████  ██  █████                       ███████  ███   ███ ████    ████   ███        ███████  ████  ████████  ███████  ████ ███  ███████      ██████     \s
+                   ████   █████ █████   ██   █████                    ████  ████ █████████  ██████████    ███        ███ ████  ████████ █████████ ████████  ███  ████ ███████ ███████    \s
+                   ██████  █████████  █████   █████                   ███    ███████████       ████       ███        ███   ███   ████    ██████     ████     ██  ███    ████   ████      \s
+                     ██████ ███████ █████████   █████                                                                                                                                    \s
+                        ███████████████   ███████ ███████                                                                                                                                                                                                                                                                                                \s
+                \s""");
         FlatMacDarkLaf.setup();
         FlatMacLightLaf.setup();
         FlatJetBrainsMonoFont.install();
@@ -186,7 +184,6 @@ public class XdashbackendApplication {
             if (clientRef.get() == null && !lock.get()) {
                 lock.set(true);
                 XTablesClient client = new XTablesClient();
-                XTablesLogger.setLoggingLevel(Level.OFF);
                 client.addVersionProperty("XDASH");
                 clientRef.set(client);
                 XTableContext context = client.registerXTableContext("VIEWER");
@@ -212,7 +209,10 @@ public class XdashbackendApplication {
         });
 
         try {
-            Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+            if (args.length == 0)
+                Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+            else
+                logger.warning("Open the website here: http://localhost:8080/");
         } catch (Exception e) {
             logger.warning("Failed to open web browser");
             logger.warning("Open the website here: http://localhost:8080/");

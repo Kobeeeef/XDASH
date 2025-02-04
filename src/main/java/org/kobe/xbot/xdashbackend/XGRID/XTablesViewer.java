@@ -26,6 +26,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class XTablesViewer extends JFrame {
+
+
+    private static final String ROBOT_POSE_TABLE = "PoseSubsystem.RobotPose";
+
     private static final XDashLogger logger = XDashLogger.getLogger();
     public XTablesDropdownViewer dropdownViewer;
     public FieldPanel fieldPanel;
@@ -106,6 +110,13 @@ public class XTablesViewer extends JFrame {
                 throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
             }
             cache.fromProto(dataProto);
+            byte[] robotPose = cache.get(ROBOT_POSE_TABLE);
+            if(robotPose != null) {
+                try {
+                    fieldPanel.setRobotPose(XTablesByteUtils.unpackPose2d(robotPose));
+                } catch (Exception ignored) {
+                }
+            }
             dropdownViewer.populateTable();
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,6 +142,12 @@ public class XTablesViewer extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 dropdownViewer.updateNode(updateEvent.getKey(),
                         XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
+                if(updateEvent.getKey().equals(ROBOT_POSE_TABLE)) {
+                    try {
+                        fieldPanel.setRobotPose(XTablesByteUtils.unpackPose2d(updateEvent.getValue().toByteArray()));
+                    } catch (Exception ignored) {
+                    }
+                }
                 if (XTablesValueLogs.logWindows.containsKey(updateEvent.getKey())) {
                     XTablesValueLogs.addLogToKey(updateEvent.getKey(), updateEvent);
                 }
@@ -148,7 +165,7 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        fieldPanel = new FieldPanel();
+        fieldPanel = new FieldPanel(this);
         dropdownViewer = new XTablesDropdownViewer(client, cache);
 
         toolPanel = new JPanel();
@@ -247,6 +264,13 @@ public class XTablesViewer extends JFrame {
                     throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
                 }
                 cache.fromProto(dataProto);
+                byte[] robotPose = cache.get(ROBOT_POSE_TABLE);
+                if(robotPose != null) {
+                    try {
+                        fieldPanel.setRobotPose(XTablesByteUtils.unpackPose2d(robotPose));
+                    } catch (Exception ignored) {
+                    }
+                }
                 dropdownViewer.populateTable();
                 reloadButton.setEnabled(true);
             } catch (Exception ec) {
@@ -464,7 +488,9 @@ public class XTablesViewer extends JFrame {
     private static java.util.List<Boolean> parseBooleanList(java.util.List<String> value) {
         return value.stream().map(Boolean::parseBoolean).toList();
     }
-
+    public void showNotification(String msg, int ti) {
+        SwingNotification.showNotification(this, msg, ti);
+    }
 
 }
 
