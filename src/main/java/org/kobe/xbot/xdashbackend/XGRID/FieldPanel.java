@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class FieldPanel extends JPanel {
@@ -31,7 +32,7 @@ public class FieldPanel extends JPanel {
     // Field dimensions in meters
     private final double fieldWidthMeters = 17.55;
     private final double fieldHeightMeters = 8.05;
-
+    private final List<Pose2d> waypoints = new ArrayList<>();
     // Field image boundaries (from config.json)
     private final int fieldPixelX1 = 421;   // Left boundary
     private final int fieldPixelY1 = 1437;  // Bottom boundary (flipped from top-left)
@@ -71,7 +72,13 @@ public class FieldPanel extends JPanel {
             return null;
         }
     }
-
+    public void setWaypoints(List<Pose2d> newWaypoints) {
+        this.waypoints.clear();
+        if (newWaypoints != null) {
+            this.waypoints.addAll(newWaypoints);
+        }
+        repaint();
+    }
     public void setRobotPose(Pose2d pose) {
         this.robotPose = pose;
         repaint();
@@ -137,11 +144,52 @@ public class FieldPanel extends JPanel {
                 drawOtherRobot(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
             }
             for (Map.Entry<Pose2d, Double> entry : notes.entrySet()) {
-                drawNote(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
+                drawNote(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, (int) (scaledRobotSize / 1.3), xOffset, yOffset, scaleFactor);
+            }
+            int scaledWaypointSize = (int) Math.max(8, Math.min(15, fieldImageWidth * 0.03));
+            for (int i = 0; i < waypoints.size(); i++) {
+                drawWaypoint(g2d, waypoints.get(i), i, fieldScaleX, fieldScaleY, scaledWaypointSize, xOffset, yOffset, scaleFactor);
             }
         }
     }
+    private void drawWaypoint(Graphics2D g2d, Pose2d pose, int index, double scaleX, double scaleY, int waypointSize, int xOffset, int yOffset, double scaleFactor) {
+        // Compute the displayed boundaries of the field
+        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
 
+        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+
+        // Convert field (meter) coordinates to pixel coordinates
+        double computedX = leftBound + (pose.getX() * pixelsPerMeterX);
+        double computedY = bottomBound - (pose.getY() * pixelsPerMeterY);
+
+        // Clamp the waypoint position within the field
+        double waypointX = Math.max(leftBound, Math.min(rightBound, computedX));
+        double waypointY = Math.max(topBound,   Math.min(bottomBound, computedY));
+
+        AffineTransform oldTransform = g2d.getTransform();
+        g2d.translate(waypointX, waypointY);
+
+        // Draw a filled circle (dot) for the waypoint
+        g2d.setColor(Color.GREEN);
+        g2d.setStroke(new BasicStroke(3));
+        g2d.drawOval(-waypointSize / 2, (-waypointSize / 2) -1, waypointSize, waypointSize);
+
+        // Draw the index number (starting at 1) over the dot
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        String label = String.valueOf(index + 1);
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(label);
+        int textHeight = fm.getAscent();
+        g2d.drawString(label, -textWidth / 2, textHeight / 4);
+        g2d.setTransform(oldTransform);
+    }
 
     private void drawRobot(Graphics2D g2d, Pose2d pose, BufferedImage image, double scaleX, double scaleY, int robotSize, int xOffset, int yOffset, double scaleFactor) {
         if (image == null) return;
@@ -254,12 +302,10 @@ public class FieldPanel extends JPanel {
 
         // Optionally, draw a thin outline around the note.
         g2d.setColor(Color.getHSBColor(30f / 360f, 1.0f, 1.0f));
-
-
         g2d.setStroke(new BasicStroke(6));
         g2d.drawOval(-noteSize / 2, -noteSize / 2, noteSize, noteSize);
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        g2d.setFont(new Font("Arial", Font.BOLD, 12));
         String probabilityText = String.format("%.0f%%", probability * 100);
         FontMetrics fm = g2d.getFontMetrics();
         int textWidth = fm.stringWidth(probabilityText);

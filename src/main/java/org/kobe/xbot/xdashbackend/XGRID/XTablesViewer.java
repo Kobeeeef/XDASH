@@ -12,6 +12,7 @@ import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.kobe.xbot.xdashbackend.utilities.AudioUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,6 +20,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -244,7 +246,7 @@ public class XTablesViewer extends JFrame {
                 JOptionPane.showMessageDialog(null, "Failed to expand: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-        reloadButton = new JButton("Reload Data");
+        reloadButton = new JButton("Reload");
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
             try {
@@ -255,7 +257,11 @@ public class XTablesViewer extends JFrame {
 //                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
 //                enemies.put(new Pose2d(8.27, 4, new Rotation2d(Math.PI)), 0.45); // 45% probability
 //                fieldPanel.setNotes(enemies);
-
+//                List<Pose2d> waypoints = new ArrayList<>();
+//                waypoints.add(new Pose2d(8,2, Rotation2d.fromDegrees(Math.PI)));
+//                waypoints.add(new Pose2d(7,4, Rotation2d.fromDegrees(Math.PI)));
+//                waypoints.add(new Pose2d(7,5, Rotation2d.fromDegrees(Math.PI)));
+//                fieldPanel.setWaypoints(waypoints);
                 XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
                 if (dataProto == null) {
                     throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
@@ -269,9 +275,13 @@ public class XTablesViewer extends JFrame {
                     }
                 }
                 dropdownViewer.populateTable();
+                AudioUtil.playSuccessSound();
+                AudioUtil.playSuccessSound();
+                showNotification("Reloaded all data from server successfully.", 1500);
                 reloadButton.setEnabled(true);
             } catch (Exception ec) {
                 ec.printStackTrace();
+                AudioUtil.playErrorSound();
                 reloadButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "Failed to reload Cache: " + ec.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -335,6 +345,8 @@ public class XTablesViewer extends JFrame {
             rebootButton.setEnabled(false);
             try {
                 client.reboot();
+                AudioUtil.playSuccessSound();
+                AudioUtil.playSuccessSound();
                 rebootButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "The server is now rebooting. Please wait.", "Server Rebooting!", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ec) {
@@ -423,13 +435,13 @@ public class XTablesViewer extends JFrame {
 
         settingsMenu.add(exitItem);
         this.add(toolPanel, BorderLayout.NORTH);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dropdownViewer,fieldPanel);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dropdownViewer, fieldPanel);
         splitPane.setContinuousLayout(false);
         splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(0.1);
-        splitPane.setResizeWeight(0.1);
-
+        splitPane.setDividerLocation(0);
         this.add(splitPane, BorderLayout.CENTER);
+
+
         setJMenuBar(menuBar);
 
         revalidate();
