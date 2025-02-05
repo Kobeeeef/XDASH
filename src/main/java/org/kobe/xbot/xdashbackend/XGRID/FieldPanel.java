@@ -8,13 +8,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class FieldPanel extends JPanel {
@@ -23,14 +21,16 @@ public class FieldPanel extends JPanel {
     // Robot pose
     private Pose2d robotPose = new Pose2d(0, 0, new Rotation2d());
     private final Map<Pose2d, Double> enemyRobots = new HashMap<>();
+    private final Map<Pose2d, Double> notes = new HashMap<>();
 
-    private Consumer<Pose2d> enemyClickCallback;
+    private Consumer< Map.Entry<Pose2d, Double>> clickCallback;
+
     private BufferedImage fieldImage;
     private BufferedImage robotImage;
 
     // Field dimensions in meters
-    private final double fieldWidthMeters = 16.54;
-    private final double fieldHeightMeters = 8.02;
+    private final double fieldWidthMeters = 17.55;
+    private final double fieldHeightMeters = 8.05;
 
     // Field image boundaries (from config.json)
     private final int fieldPixelX1 = 421;   // Left boundary
@@ -41,29 +41,27 @@ public class FieldPanel extends JPanel {
     public FieldPanel() {
         fieldImage = loadImage("/2025field.png");
         robotImage = loadImage("/icon.png");
+        ToolTipManager.sharedInstance().setInitialDelay(0);
+
+
+
+
 
         addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                Pose2d clickedPose = getClickedEnemyPose(e.getX(), e.getY());
-                if (clickedPose != null && enemyClickCallback != null) {
-                    enemyClickCallback.accept(clickedPose);
+            public void mousePressed(MouseEvent e) {
+                Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(e.getX(), e.getY());
+                Map.Entry<Pose2d, Double> clickedNote = getClickedNote(e.getX(), e.getY());
+
+                if (clickedEnemy != null && clickCallback != null) {
+                    clickCallback.accept(clickedEnemy);
+                } else if (clickedNote != null && clickCallback != null) {
+                    clickCallback.accept(clickedNote);
                 }
             }
         });
 
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                Pose2d hoveredPose = getClickedEnemyPose(e.getX(), e.getY());
-                if (hoveredPose != null) {
-                    double probability = enemyRobots.get(hoveredPose);
-                    setToolTipText("Enemy Robot: " + (int) (probability * 100) + "%\nClick to go.");
-                } else {
-                    setToolTipText(null);
-                }
-            }
-        });
+
     }
 
     private BufferedImage loadImage(String path) {
@@ -85,8 +83,14 @@ public class FieldPanel extends JPanel {
         repaint();
     }
 
-    public void setEnemyClickCallback(Consumer<Pose2d> callback) {
-        this.enemyClickCallback = callback;
+    public void setNotes(Map<Pose2d, Double> enemies) {
+        this.notes.clear();
+        this.notes.putAll(enemies);
+        repaint();
+    }
+
+    public void setClickCallback(Consumer< Map.Entry<Pose2d, Double>> callback) {
+        this.clickCallback = callback;
     }
 
     @Override
@@ -129,9 +133,12 @@ public class FieldPanel extends JPanel {
 
             drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
 
-//            for (Map.Entry<Pose2d, Double> entry : enemyRobots.entrySet()) {
-//                drawEnemyRobot(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset);
-//            }
+            for (Map.Entry<Pose2d, Double> entry : enemyRobots.entrySet()) {
+                drawOtherRobot(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
+            }
+            for (Map.Entry<Pose2d, Double> entry : notes.entrySet()) {
+                drawNote(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
+            }
         }
     }
 
@@ -139,8 +146,6 @@ public class FieldPanel extends JPanel {
     private void drawRobot(Graphics2D g2d, Pose2d pose, BufferedImage image, double scaleX, double scaleY, int robotSize, int xOffset, int yOffset, double scaleFactor) {
         if (image == null) return;
 
-        System.out.println(scaleX);
-        System.out.println(scaleY);
         // Compute displayed boundaries of the field
         int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
         int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
@@ -174,28 +179,39 @@ public class FieldPanel extends JPanel {
 
         g2d.setTransform(oldTransform);
     }
+    private void drawOtherRobot(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY, int robotSize, int xOffset, int yOffset, double scaleFactor) {
+        if (probability <= 0) return;
 
-    private void drawEnemyRobot(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY,
-                                int enemySize, int xOffset, int yOffset) {
-        double enemyX = xOffset + 100 + (pose.getX());
-        double enemyY = yOffset + 100 + (pose.getY()); // CORRECTED Y FLIP
+        // Compute displayed boundaries of the field
+        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
 
-        System.out.println(pose.getX());
-        System.out.println(pose.getY());
+        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
 
-//        enemyX = xOffset + ((enemyX - fieldPixelX1) * ((double) getWidth() / (fieldPixelX2 - fieldPixelX1)));
-//        enemyY = yOffset + ((enemyY - fieldPixelY2) * ((double) getHeight() / (fieldPixelY1 - fieldPixelY2)));
+
+        double computedX = leftBound + (pose.getX() * pixelsPerMeterX);
+        double computedY = bottomBound - (pose.getY() * pixelsPerMeterY);
+
+        double robotX = Math.max(leftBound, Math.min(rightBound, computedX));
+        double robotY = Math.max(topBound,   Math.min(bottomBound, computedY));
+
 
         AffineTransform oldTransform = g2d.getTransform();
-        g2d.translate(enemyX, enemyY);
+        g2d.translate(robotX, robotY);
         g2d.rotate(-pose.getRotation().getRadians());
 
-        // Draw red rounded rectangle (enemy indicator)
-        g2d.setColor(Color.RED);
-        g2d.setStroke(new BasicStroke(3));
-        g2d.drawRoundRect(-enemySize / 2, -enemySize / 2, enemySize, enemySize, 20, 20);
+//        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+//        g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
+//        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
-        // Draw probability inside the box
+        g2d.setColor(Color.RED);
+        g2d.setStroke(new BasicStroke(4));
+        g2d.drawRoundRect(-robotSize / 2, -robotSize / 2, robotSize, robotSize, 20, 20);
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 14));
         String probabilityText = String.format("%.0f%%", probability * 100);
@@ -203,23 +219,150 @@ public class FieldPanel extends JPanel {
         int textWidth = fm.stringWidth(probabilityText);
         int textHeight = fm.getAscent();
         g2d.drawString(probabilityText, -textWidth / 2, textHeight / 4);
+        g2d.setTransform(oldTransform);
+    }
+    private void drawNote(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY, int noteSize, int xOffset, int yOffset, double scaleFactor) {
+        // Only draw the note if probability > 0
+        if (probability <= 0) return;
 
-        // Restore transformation
+        // Compute the displayed boundaries of the field as before
+        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+
+        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+
+        // Convert field (meter) coordinates to pixel coordinates
+        double computedX = leftBound + (pose.getX() * pixelsPerMeterX);
+        double computedY = bottomBound - (pose.getY() * pixelsPerMeterY);
+
+        // Clamp the note position so it stays within the field boundaries
+        double noteX = Math.max(leftBound, Math.min(rightBound, computedX));
+        double noteY = Math.max(topBound,   Math.min(bottomBound, computedY));
+
+        // Save the original transform and translate to the note position.
+        AffineTransform oldTransform = g2d.getTransform();
+        g2d.translate(noteX, noteY);
+        // No need to rotate a circle.
+
+        // Draw the note: a filled orange circle.
+
+
+        // Optionally, draw a thin outline around the note.
+        g2d.setColor(Color.getHSBColor(30f / 360f, 1.0f, 1.0f));
+
+
+        g2d.setStroke(new BasicStroke(6));
+        g2d.drawOval(-noteSize / 2, -noteSize / 2, noteSize, noteSize);
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        String probabilityText = String.format("%.0f%%", probability * 100);
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(probabilityText);
+        int textHeight = fm.getAscent();
+        g2d.drawString(probabilityText, -textWidth / 2, textHeight / 4);
+        // Restore the original transform.
         g2d.setTransform(oldTransform);
     }
 
-    private Pose2d getClickedEnemyPose(int clickX, int clickY) {
-        // Compute scale factors for meters to pixels
-        double fieldScaleX = (double) (fieldPixelX2 - fieldPixelX1) / fieldWidthMeters;
-        double fieldScaleY = (double) (fieldPixelY1 - fieldPixelY2) / fieldHeightMeters;
 
-        double fieldX = (clickX - fieldPixelX1) / fieldScaleX;
-        double fieldY = (fieldPixelY1 - clickY) / fieldScaleY;
-        for (Pose2d pose : enemyRobots.keySet()) {
-            if (Math.abs(fieldX - pose.getX()) <= 0.3 && Math.abs(fieldY - pose.getY()) <= 0.3) {
+    private Map.Entry<Pose2d, Double> getClickedEnemyPose(int clickX, int clickY) {
+        // Get panel dimensions and compute the same scaling and offsets as in paintComponent
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+
+        double scaleXFull = (double) panelWidth / fieldImage.getWidth();
+        double scaleYFull = (double) panelHeight / fieldImage.getHeight();
+        double scaleFactor = Math.min(scaleXFull, scaleYFull);
+
+        int newFieldWidth = (int) (fieldImage.getWidth() * scaleFactor);
+        int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
+        int xOffset = (panelWidth - newFieldWidth) / 2;
+        int yOffset = (panelHeight - newFieldHeight) / 2;
+
+        // Compute the displayed boundaries of the actual field using config limits
+        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+
+        // (Optional) If the click is outside the field area, skip checking enemy robots.
+        if (clickX < leftBound || clickX > rightBound || clickY < topBound || clickY > bottomBound) {
+            return null;
+        }
+
+        // Calculate the displayed field dimensions and pixel-to-meter scale
+        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+
+        // Compute the robot size exactly as in paintComponent:
+        int fieldImageWidth = fieldPixelX2 - fieldPixelX1;
+        int scaledRobotSize = (int) Math.max(10, Math.min(MAX_ROBOT_SIZE, fieldImageWidth * 0.05));
+        int halfRobotSize = scaledRobotSize / 2;
+
+        // For each enemy robot, compute its drawn pixel coordinate and check if the click falls within its bounds.
+        for (Map.Entry<Pose2d, Double> pose : enemyRobots.entrySet()) {
+            // Convert the enemy robot's field (meter) coordinates to pixel coordinates.
+            double robotX = leftBound + (pose.getKey().getX() * pixelsPerMeterX);
+            double robotY = bottomBound - (pose.getKey().getY() * pixelsPerMeterY);
+
+            // Check if the click is within the drawn square centered at (robotX, robotY)
+            if (clickX >= robotX - halfRobotSize && clickX <= robotX + halfRobotSize &&
+                    clickY >= robotY - halfRobotSize && clickY <= robotY + halfRobotSize) {
                 return pose;
             }
         }
+
         return null;
     }
+    private Map.Entry<Pose2d, Double> getClickedNote(int clickX, int clickY) {
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+
+        double scaleXFull = (double) panelWidth / fieldImage.getWidth();
+        double scaleYFull = (double) panelHeight / fieldImage.getHeight();
+        double scaleFactor = Math.min(scaleXFull, scaleYFull);
+
+        int newFieldWidth = (int) (fieldImage.getWidth() * scaleFactor);
+        int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
+        int xOffset = (panelWidth - newFieldWidth) / 2;
+        int yOffset = (panelHeight - newFieldHeight) / 2;
+
+        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+
+        if (clickX < leftBound || clickX > rightBound || clickY < topBound || clickY > bottomBound) {
+            return null;
+        }
+
+        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+
+        int fieldImageWidth = fieldPixelX2 - fieldPixelX1;
+        int scaledNoteSize = (int) Math.max(10, Math.min(MAX_ROBOT_SIZE, fieldImageWidth * 0.05));
+        int halfNoteSize = scaledNoteSize / 2;
+
+        for (Map.Entry<Pose2d, Double> pose : notes.entrySet()) {
+            double noteX = leftBound + (pose.getKey().getX() * pixelsPerMeterX);
+            double noteY = bottomBound - (pose.getKey().getY() * pixelsPerMeterY);
+
+            if (clickX >= noteX - halfNoteSize && clickX <= noteX + halfNoteSize &&
+                    clickY >= noteY - halfNoteSize && clickY <= noteY + halfNoteSize) {
+                return pose;
+            }
+        }
+
+        return null;
+    }
+
 }

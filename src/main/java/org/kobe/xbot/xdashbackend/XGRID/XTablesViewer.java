@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.kobe.xbot.JClient.XTableContext;
-import org.kobe.xbot.JClient.XTablesClient;
 import org.kobe.xbot.Utilities.Entities.XTableProto;
 import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
@@ -249,13 +248,13 @@ public class XTablesViewer extends JFrame {
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
             try {
-                fieldPanel.setEnemyClickCallback((a) -> {
-                    System.out.println(XTablesByteUtils.pose2dToString(a));
-                });
-                Map<Pose2d, Double> enemies = new HashMap<>();
+//                fieldPanel.setClickCallback((a) -> {
+//                    System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
+//                });
+//                Map<Pose2d, Double> enemies = new HashMap<>();
 //                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
-                enemies.put(new Pose2d(0, 0, new Rotation2d(Math.PI)), 0.45); // 45% probability
-                fieldPanel.setEnemyRobots(enemies);
+//                enemies.put(new Pose2d(8.27, 4, new Rotation2d(Math.PI)), 0.45); // 45% probability
+//                fieldPanel.setNotes(enemies);
 
                 XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
                 if (dataProto == null) {
