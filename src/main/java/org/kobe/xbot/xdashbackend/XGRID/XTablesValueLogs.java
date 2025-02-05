@@ -15,7 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Timer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -88,13 +87,15 @@ public class XTablesValueLogs extends JFrame {
 
         setVisible(true);
     }
+
     private void toggleScrollLock() {
         isScrollLocked = !isScrollLocked;
         lockScrollButton.setText(isScrollLocked ? "Unlock Scroll" : "Lock Scroll");
     }
+
     public static void openLogWindow(String key, String type) {
         SwingUtilities.invokeLater(() -> {
-            logWindows.computeIfAbsent(key, (k) -> (new XTablesValueLogs(k,type)));
+            logWindows.computeIfAbsent(key, (k) -> (new XTablesValueLogs(k, type)));
         });
     }
 
@@ -120,12 +121,25 @@ public class XTablesValueLogs extends JFrame {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            } else if (this.type.equals("POSE2D")) {
+                try {
+                    logModel.addElement(XTablesByteUtils.pose2dToString(updateEvent.getValue().toByteArray()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (this.type.equals("POSE3D")) {
+                try {
+                    logModel.addElement(XTablesByteUtils.pose3dToString(updateEvent.getValue().toByteArray()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             if (isScrollLocked) {
                 logList.ensureIndexIsVisible(logModel.getSize() - 1);
             }
         });
     }
+
     /**
      * Saves the log entries to a text file with a progress bar.
      */

@@ -26,8 +26,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class XTablesViewer extends JFrame {
-
-
     private static final String ROBOT_POSE_TABLE = "PoseSubsystem.RobotPose";
 
     private static final XDashLogger logger = XDashLogger.getLogger();
@@ -165,7 +163,7 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        fieldPanel = new FieldPanel(this);
+        fieldPanel = new FieldPanel();
         dropdownViewer = new XTablesDropdownViewer(client, cache);
 
         toolPanel = new JPanel();
@@ -255,8 +253,8 @@ public class XTablesViewer extends JFrame {
                     System.out.println(XTablesByteUtils.pose2dToString(a));
                 });
                 Map<Pose2d, Double> enemies = new HashMap<>();
-                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
-                enemies.put(new Pose2d(10, 6, new Rotation2d(Math.PI)), 0.45); // 45% probability
+//                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
+                enemies.put(new Pose2d(0, 0, new Rotation2d(Math.PI)), 0.45); // 45% probability
                 fieldPanel.setEnemyRobots(enemies);
 
                 XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
@@ -349,7 +347,7 @@ public class XTablesViewer extends JFrame {
         addValueLogButton.addActionListener(e -> {
             Set<String> history = new HashSet<>(XdashbackendApplication.getConfigLoader().getPropertyList("XTABLE-VALUE-LOGS-HISTORY"));
             JComboBox<String> keyDropdown = new JComboBox<>(history.toArray(new String[0]));
-            JComboBox<String> typeDropdown = new JComboBox<>(new String[] { "JSON", "Coordinates", "Image"});
+            JComboBox<String> typeDropdown = new JComboBox<>(new String[] { "JSON", "Coordinates", "Pose2d", "Pose3d", "Image"});
             JPanel panel = new JPanel(new BorderLayout());
             keyDropdown.setEditable(true);
             panel.add(keyDropdown, BorderLayout.NORTH);
@@ -380,6 +378,10 @@ public class XTablesViewer extends JFrame {
                             XTablesValueLogs.openLogWindow(key, "JSON");
                         } else if(typeDropdown.getSelectedItem().toString().equals("Coordinates")) {
                             XTablesValueLogs.openLogWindow(key, "Coordinates");
+                        } else if(typeDropdown.getSelectedItem().toString().equals("Pose2d")) {
+                            XTablesValueLogs.openLogWindow(key, "POSE2D");
+                        } else if(typeDropdown.getSelectedItem().toString().equals("Pose3d")) {
+                            XTablesValueLogs.openLogWindow(key, "POSE3D");
                         }  else if (typeDropdown.getSelectedItem().toString().equals("Image")) {
                             XTablesImageViewer.openImageWindow(key);
                         }
@@ -423,7 +425,7 @@ public class XTablesViewer extends JFrame {
         settingsMenu.add(exitItem);
         this.add(toolPanel, BorderLayout.NORTH);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dropdownViewer,fieldPanel);
-        splitPane.setContinuousLayout(true);
+        splitPane.setContinuousLayout(false);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(0.1);
         splitPane.setResizeWeight(0.1);

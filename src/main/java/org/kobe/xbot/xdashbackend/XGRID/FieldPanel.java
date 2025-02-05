@@ -4,7 +4,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 import javax.imageio.ImageIO;
-import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -12,7 +11,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -20,95 +18,73 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class FieldPanel extends JPanel {
-    private static final Map<String, byte[]> soundDataMap = new HashMap<>();
+    private static final int MAX_ROBOT_SIZE = 65;
 
-    // Current robot pose
+    // Robot pose
     private Pose2d robotPose = new Pose2d(0, 0, new Rotation2d());
-
-    // Enemy robots and their associated probabilities
     private final Map<Pose2d, Double> enemyRobots = new HashMap<>();
 
-    // Callback function when an enemy robot is clicked
     private Consumer<Pose2d> enemyClickCallback;
-
-    // Field and robot images
     private BufferedImage fieldImage;
     private BufferedImage robotImage;
 
     // Field dimensions in meters
     private final double fieldWidthMeters = 16.54;
     private final double fieldHeightMeters = 8.02;
-    private final FieldPanel instance = this;
-    private final XTablesViewer viewer;
 
-    public FieldPanel(XTablesViewer xTablesViewer) {
-        preloadSounds();
-        ToolTipManager.sharedInstance().setInitialDelay(0);
-        this.viewer = xTablesViewer;
-        // Load images from resources
+    // Field image boundaries (from config.json)
+    private final int fieldPixelX1 = 421;   // Left boundary
+    private final int fieldPixelY1 = 1437;  // Bottom boundary (flipped from top-left)
+    private final int fieldPixelX2 = 3352;  // Right boundary
+    private final int fieldPixelY2 = 91;    // Top boundary (flipped from config)
+
+    public FieldPanel() {
         fieldImage = loadImage("/2025field.png");
-        robotImage = loadImage("/icon.png"); // Main robot image
+        robotImage = loadImage("/icon.png");
 
-        // Add mouse listener for clicking on enemy robots
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println(e.getButton());
                 Pose2d clickedPose = getClickedEnemyPose(e.getX(), e.getY());
                 if (clickedPose != null && enemyClickCallback != null) {
-//                    SwingUtilities.invokeLater(() -> {
-//                        playDing();
-//                        viewer.showNotification("Command sent", 3000);
-//                    });
-
                     enemyClickCallback.accept(clickedPose);
                 }
             }
         });
+
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 Pose2d hoveredPose = getClickedEnemyPose(e.getX(), e.getY());
-
                 if (hoveredPose != null) {
                     double probability = enemyRobots.get(hoveredPose);
                     setToolTipText("Enemy Robot: " + (int) (probability * 100) + "%\nClick to go.");
                 } else {
-                    setToolTipText(null); // Remove tooltip when not hovering over any robot
+                    setToolTipText(null);
                 }
             }
         });
     }
 
-    // Utility method to load images from resources
     private BufferedImage loadImage(String path) {
         try (InputStream is = getClass().getResourceAsStream(path)) {
-            if (is != null) {
-                return ImageIO.read(is);
-            } else {
-                System.err.println("Image not found: " + path);
-                return null;
-            }
+            return is != null ? ImageIO.read(is) : null;
         } catch (IOException ex) {
-            System.err.println("Error loading image " + path + ": " + ex.getMessage());
             return null;
         }
     }
 
-    // Update the main robot's pose
     public void setRobotPose(Pose2d pose) {
         this.robotPose = pose;
         repaint();
     }
 
-    // Set enemy robots with associated probabilities
     public void setEnemyRobots(Map<Pose2d, Double> enemies) {
         this.enemyRobots.clear();
         this.enemyRobots.putAll(enemies);
         repaint();
     }
 
-    // Set a callback function when an enemy robot is clicked
     public void setEnemyClickCallback(Consumer<Pose2d> callback) {
         this.enemyClickCallback = callback;
     }
@@ -118,87 +94,108 @@ public class FieldPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // Draw the field background
         if (fieldImage != null) {
-            g2d.drawImage(fieldImage, 0, 0, getWidth(), getHeight(), null);
-        } else {
-            g2d.setColor(new Color(0, 128, 0));
-            g2d.fillRect(0, 0, getWidth(), getHeight());
-        }
+            int panelWidth = getWidth();
+            int panelHeight = getHeight();
 
-        // Scaling factors: pixels per meter
-        double scaleX = getWidth() / fieldWidthMeters;
-        double scaleY = getHeight() / fieldHeightMeters;
+            // Compute valid field image size
+            int fieldImageWidth = fieldPixelX2 - fieldPixelX1;
+            int fieldImageHeight = fieldPixelY1 - fieldPixelY2;
 
-        // Draw the main robot
-        drawRobot(g2d, robotPose, robotImage, scaleX, scaleY);
+            // Maintain aspect ratio when scaling
+            double scaleX = (double) panelWidth / fieldImage.getWidth();
+            double scaleY = (double) panelHeight / fieldImage.getHeight();
+            double scaleFactor = Math.min(scaleX, scaleY);
 
-        // Draw enemy robots
-        for (Map.Entry<Pose2d, Double> entry : enemyRobots.entrySet()) {
-            drawEnemyRobot(g2d, entry.getKey(), entry.getValue(), scaleX, scaleY);
+            // Compute new field image size
+            int newFieldWidth = (int) (fieldImage.getWidth() * scaleFactor);
+            int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
+
+            // Center the image
+            int xOffset = (panelWidth - newFieldWidth) / 2;
+            int yOffset = (panelHeight - newFieldHeight) / 2;
+
+
+            // Draw scaled field image
+            g2d.drawImage(fieldImage, xOffset, yOffset, newFieldWidth, newFieldHeight, null);
+            // Compute scale factors for meters-to-pixels transformation
+
+            double fieldScaleX = ((double) fieldImageWidth * scaleFactor) / fieldWidthMeters;
+
+            double fieldScaleY = ((double) fieldImageHeight * scaleFactor) / fieldHeightMeters;
+
+
+            int scaledRobotSize = (int) Math.max(10, Math.min(MAX_ROBOT_SIZE, fieldImageWidth * 0.05));
+
+            drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
+
+//            for (Map.Entry<Pose2d, Double> entry : enemyRobots.entrySet()) {
+//                drawEnemyRobot(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset);
+//            }
         }
     }
 
-    private void drawRobot(Graphics2D g2d, Pose2d pose, BufferedImage image, double scaleX, double scaleY) {
+
+    private void drawRobot(Graphics2D g2d, Pose2d pose, BufferedImage image, double scaleX, double scaleY, int robotSize, int xOffset, int yOffset, double scaleFactor) {
         if (image == null) return;
 
-        double robotX = pose.getX() * scaleX;
-        double robotY = getHeight() - (pose.getY() * scaleY); // Invert Y-axis
+        System.out.println(scaleX);
+        System.out.println(scaleY);
+        // Compute displayed boundaries of the field
+        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
 
-        // Clamp values to prevent drawing outside the panel
-        robotX = Math.max(0, Math.min(getWidth(), robotX));
-        robotY = Math.max(0, Math.min(getHeight(), robotY));
+        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
 
-        int robotSize = 80; // Adjust as needed
+
+        double computedX = leftBound + (pose.getX() * pixelsPerMeterX);
+        double computedY = bottomBound - (pose.getY() * pixelsPerMeterY);
+
+        double robotX = Math.max(leftBound, Math.min(rightBound, computedX));
+        double robotY = Math.max(topBound,   Math.min(bottomBound, computedY));
+
 
         AffineTransform oldTransform = g2d.getTransform();
-        Composite oldComposite = g2d.getComposite(); // Save original composite
-
-        // Move to robot position
         g2d.translate(robotX, robotY);
         g2d.rotate(-pose.getRotation().getRadians());
 
-        // Set transparency (0.0f = fully transparent, 1.0f = fully opaque)
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-
-        // Draw the robot image centered on its position
         g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
-        // Reset to full opacity for other drawings
-        g2d.setComposite(oldComposite);
+        g2d.setColor(Color.RED);
+        g2d.setStroke(new BasicStroke(4));
+        g2d.drawRoundRect(-robotSize / 2, -robotSize / 2, robotSize, robotSize, 13, 13);
 
-        g2d.setColor(Color.LIGHT_GRAY);
-        g2d.setStroke(new BasicStroke(3)); // Adjust thickness
-        g2d.drawRect(-robotSize / 2, -robotSize / 2, robotSize, robotSize);
-
-        g2d.setTransform(oldTransform); // Restore transform
+        g2d.setTransform(oldTransform);
     }
 
+    private void drawEnemyRobot(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY,
+                                int enemySize, int xOffset, int yOffset) {
+        double enemyX = xOffset + 100 + (pose.getX());
+        double enemyY = yOffset + 100 + (pose.getY()); // CORRECTED Y FLIP
 
+        System.out.println(pose.getX());
+        System.out.println(pose.getY());
 
-    // Method to draw an enemy robot as a red outlined square with probability inside
-    private void drawEnemyRobot(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY) {
-        double enemyX = pose.getX() * scaleX;
-        double enemyY = getHeight() - (pose.getY() * scaleY); // Invert Y-axis
-
-        // Clamp values to prevent drawing outside the panel
-        enemyX = Math.max(0, Math.min(getWidth(), enemyX));
-        enemyY = Math.max(0, Math.min(getHeight(), enemyY));
-
-        int enemySize = 80; // Adjust size if needed
+//        enemyX = xOffset + ((enemyX - fieldPixelX1) * ((double) getWidth() / (fieldPixelX2 - fieldPixelX1)));
+//        enemyY = yOffset + ((enemyY - fieldPixelY2) * ((double) getHeight() / (fieldPixelY1 - fieldPixelY2)));
 
         AffineTransform oldTransform = g2d.getTransform();
-
-        // Move to enemy position
         g2d.translate(enemyX, enemyY);
         g2d.rotate(-pose.getRotation().getRadians());
 
-        // Draw a red outlined square (no fill)
+        // Draw red rounded rectangle (enemy indicator)
         g2d.setColor(Color.RED);
-        g2d.setStroke(new BasicStroke(3)); // Adjust thickness
-        g2d.drawRect(-enemySize / 2, -enemySize / 2, enemySize, enemySize);
+        g2d.setStroke(new BasicStroke(3));
+        g2d.drawRoundRect(-enemySize / 2, -enemySize / 2, enemySize, enemySize, 20, 20);
 
-        // Draw probability inside the square
+        // Draw probability inside the box
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 14));
         String probabilityText = String.format("%.0f%%", probability * 100);
@@ -207,94 +204,22 @@ public class FieldPanel extends JPanel {
         int textHeight = fm.getAscent();
         g2d.drawString(probabilityText, -textWidth / 2, textHeight / 4);
 
-        g2d.setTransform(oldTransform); // Restore transform
-
-        // Set tooltip for hovering
-
-        setToolTipText("Enemy Robot: " + probabilityText);
+        // Restore transformation
+        g2d.setTransform(oldTransform);
     }
 
-    // Detect if a click is near an enemy robot
     private Pose2d getClickedEnemyPose(int clickX, int clickY) {
-        double scaleX = getWidth() / fieldWidthMeters;
-        double scaleY = getHeight() / fieldHeightMeters;
-        int enemySize = 80; // Same as in drawing
+        // Compute scale factors for meters to pixels
+        double fieldScaleX = (double) (fieldPixelX2 - fieldPixelX1) / fieldWidthMeters;
+        double fieldScaleY = (double) (fieldPixelY1 - fieldPixelY2) / fieldHeightMeters;
 
+        double fieldX = (clickX - fieldPixelX1) / fieldScaleX;
+        double fieldY = (fieldPixelY1 - clickY) / fieldScaleY;
         for (Pose2d pose : enemyRobots.keySet()) {
-            double enemyX = pose.getX() * scaleX;
-            double enemyY = getHeight() - (pose.getY() * scaleY);
-            if (Math.abs(clickX - enemyX) <= enemySize / 2 && Math.abs(clickY - enemyY) <= enemySize / 2) {
+            if (Math.abs(fieldX - pose.getX()) <= 0.3 && Math.abs(fieldY - pose.getY()) <= 0.3) {
                 return pose;
             }
         }
         return null;
-    }
-
-    // ✅ Preload sounds into memory as byte arrays
-    public static void preloadSounds() {
-        loadSound("ding", "/audio/ding.wav");
-        loadSound("error", "/audio/error.wav");
-        loadSound("fatal", "/audio/fatal.wav");
-        loadSound("success", "/audio/success.wav");
-    }
-
-    // ✅ Load sounds as byte arrays (prevents stream closure issues)
-    private static void loadSound(String key, String resourcePath) {
-        try (InputStream inputStream = FieldPanel.class.getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                System.err.println("Sound file not found: " + resourcePath);
-                return;
-            }
-            byte[] soundBytes = inputStream.readAllBytes(); // Read sound into memory
-            soundDataMap.put(key, soundBytes);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    // ✅ Play a sound (fresh instance every time)
-    private static void playSound(String key) {
-        try {
-            if (!soundDataMap.containsKey(key)) {
-                System.err.println("Sound not preloaded: " + key);
-                return;
-            }
-
-            // Convert byte array back into an AudioInputStream
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(soundDataMap.get(key));
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(byteArrayInputStream);
-
-            // Create and play a new Clip every time
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioStream);
-            clip.start();
-
-            // Close the clip when done
-            clip.addLineListener(event -> {
-                if (event.getType() == LineEvent.Type.STOP) {
-                    clip.close();
-                }
-            });
-
-        } catch (IOException | LineUnavailableException | UnsupportedAudioFileException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    // ✅ Play methods for each preloaded sound
-    public static void playDing() {
-        playSound("ding");
-    }
-
-    public static void playError() {
-        playSound("error");
-    }
-
-    public static void playFatal() {
-        playSound("fatal");
-    }
-
-    public static void playSuccess() {
-        playSound("success");
     }
 }
