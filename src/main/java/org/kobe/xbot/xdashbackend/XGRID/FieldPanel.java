@@ -2,6 +2,7 @@ package org.kobe.xbot.xdashbackend.XGRID;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class FieldPanel extends JPanel {
-    private static final int MAX_ROBOT_SIZE = 65;
+    private static final int MAX_ROBOT_SIZE = 60;
 
     // Robot pose
     private Pose2d robotPose = new Pose2d(0, 0, new Rotation2d());
@@ -135,8 +136,7 @@ public class FieldPanel extends JPanel {
 
             double fieldScaleY = ((double) fieldImageHeight * scaleFactor) / fieldHeightMeters;
 
-
-            int scaledRobotSize = (int) Math.max(10, Math.min(MAX_ROBOT_SIZE, fieldImageWidth * 0.05));
+            int scaledRobotSize = (int) Math.max(3, Math.min(MAX_ROBOT_SIZE, fieldImageWidth * scaleFactor * 0.05));
 
             drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
 
@@ -146,7 +146,7 @@ public class FieldPanel extends JPanel {
             for (Map.Entry<Pose2d, Double> entry : notes.entrySet()) {
                 drawNote(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, (int) (scaledRobotSize / 1.3), xOffset, yOffset, scaleFactor);
             }
-            int scaledWaypointSize = (int) Math.max(8, Math.min(15, fieldImageWidth * 0.03));
+            int scaledWaypointSize = (int) Math.max(8, Math.min(15,  fieldImageWidth * scaleFactor * 0.05));
             for (int i = 0; i < waypoints.size(); i++) {
                 drawWaypoint(g2d, waypoints.get(i), i, fieldScaleX, fieldScaleY, scaledWaypointSize, xOffset, yOffset, scaleFactor);
             }
@@ -176,13 +176,13 @@ public class FieldPanel extends JPanel {
         g2d.translate(waypointX, waypointY);
 
         // Draw a filled circle (dot) for the waypoint
-        g2d.setColor(Color.GREEN);
-        g2d.setStroke(new BasicStroke(3));
-        g2d.drawOval(-waypointSize / 2, (-waypointSize / 2) -1, waypointSize, waypointSize);
+//        g2d.setColor(Color.GREEN);
+//        g2d.setStroke(new BasicStroke(3));
+//        g2d.drawOval(-waypointSize / 2, (-waypointSize / 2) -1, waypointSize, waypointSize);
 
         // Draw the index number (starting at 1) over the dot
-        g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        g2d.setColor(Color.GREEN);
+        g2d.setFont(new Font("Arial", Font.BOLD,waypointSize));
         String label = String.valueOf(index + 1);
         FontMetrics fm = g2d.getFontMetrics();
         int textWidth = fm.stringWidth(label);
@@ -215,7 +215,7 @@ public class FieldPanel extends JPanel {
 
         AffineTransform oldTransform = g2d.getTransform();
         g2d.translate(robotX, robotY);
-        g2d.rotate(-pose.getRotation().getRadians());
+        g2d.rotate(-pose.getRotation().getRadians() + Units.degreesToRadians(90));
 
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
         g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
@@ -305,7 +305,7 @@ public class FieldPanel extends JPanel {
         g2d.setStroke(new BasicStroke(6));
         g2d.drawOval(-noteSize / 2, -noteSize / 2, noteSize, noteSize);
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 12));
+        g2d.setFont(new Font("Arial", Font.BOLD, (int) (noteSize / 2.7)));
         String probabilityText = String.format("%.0f%%", probability * 100);
         FontMetrics fm = g2d.getFontMetrics();
         int textWidth = fm.stringWidth(probabilityText);

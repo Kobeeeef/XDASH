@@ -250,18 +250,18 @@ public class XTablesViewer extends JFrame {
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
             try {
-//                fieldPanel.setClickCallback((a) -> {
-//                    System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
-//                });
-//                Map<Pose2d, Double> enemies = new HashMap<>();
-//                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
-//                enemies.put(new Pose2d(8.27, 4, new Rotation2d(Math.PI)), 0.45); // 45% probability
-//                fieldPanel.setNotes(enemies);
-//                List<Pose2d> waypoints = new ArrayList<>();
-//                waypoints.add(new Pose2d(8,2, Rotation2d.fromDegrees(Math.PI)));
-//                waypoints.add(new Pose2d(7,4, Rotation2d.fromDegrees(Math.PI)));
-//                waypoints.add(new Pose2d(7,5, Rotation2d.fromDegrees(Math.PI)));
-//                fieldPanel.setWaypoints(waypoints);
+                fieldPanel.setClickCallback((a) -> {
+                    System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
+                });
+                Map<Pose2d, Double> enemies = new HashMap<>();
+                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
+                enemies.put(new Pose2d(8.27, 4, new Rotation2d(Math.PI)), 0.45); // 45% probability
+                fieldPanel.setNotes(enemies);
+                List<Pose2d> waypoints = new ArrayList<>();
+                waypoints.add(new Pose2d(8,2, Rotation2d.fromDegrees(Math.PI)));
+                waypoints.add(new Pose2d(7,4, Rotation2d.fromDegrees(Math.PI)));
+                waypoints.add(new Pose2d(7,5, Rotation2d.fromDegrees(Math.PI)));
+                fieldPanel.setWaypoints(waypoints);
                 XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
                 if (dataProto == null) {
                     throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
@@ -275,8 +275,6 @@ public class XTablesViewer extends JFrame {
                     }
                 }
                 dropdownViewer.populateTable();
-                AudioUtil.playSuccessSound();
-                AudioUtil.playSuccessSound();
                 showNotification("Reloaded all data from server successfully.", 1500);
                 reloadButton.setEnabled(true);
             } catch (Exception ec) {
@@ -345,7 +343,6 @@ public class XTablesViewer extends JFrame {
             rebootButton.setEnabled(false);
             try {
                 client.reboot();
-                AudioUtil.playSuccessSound();
                 AudioUtil.playSuccessSound();
                 rebootButton.setEnabled(true);
                 JOptionPane.showMessageDialog(null, "The server is now rebooting. Please wait.", "Server Rebooting!", JOptionPane.INFORMATION_MESSAGE);
