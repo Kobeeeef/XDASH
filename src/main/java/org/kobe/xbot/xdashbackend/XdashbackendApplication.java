@@ -7,6 +7,8 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.kobe.xbot.JClient.XTableContext;
 import org.kobe.xbot.JClient.XTablesClient;
+import org.kobe.xbot.Utilities.Logger.XTablesLogger;
+import org.kobe.xbot.xdashbackend.XGRID.XDashServer;
 import org.kobe.xbot.xdashbackend.XGRID.XTablesViewer;
 import org.kobe.xbot.xdashbackend.entities.Notification;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
@@ -18,18 +20,17 @@ import org.kobe.xbot.xdashbackend.websocket.WebSocketHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.jmdns.ServiceEvent;
-import javax.jmdns.ServiceInfo;
-import javax.jmdns.ServiceListener;
-import javax.jmdns.ServiceTypeListener;
+import javax.jmdns.*;
 import java.awt.*;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @SpringBootApplication
 public class XdashbackendApplication {
@@ -39,7 +40,7 @@ public class XdashbackendApplication {
     private static final AtomicBoolean lock = new AtomicBoolean(false);
     private static final Map<String, SSHHostAddress> resolvedXCASTERServices = new ConcurrentHashMap<>();
     private static final Map<String, TransientServiceInfo> services = new ConcurrentHashMap<>();
-
+    private static XDashServer server;
     private static XJmDNS xJmDNS;
     private static final ConfigLoader configLoader = new ConfigLoader();
 
@@ -69,7 +70,20 @@ public class XdashbackendApplication {
         FlatMacLightLaf.setup();
         FlatJetBrainsMonoFont.install();
         FlatInterFont.install();
+        server = new XDashServer();
+        server.start();
+
         xJmDNS = new XJmDNS();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Shutting down XJmDNS..");
+            try {
+                xJmDNS.close();
+                logger.info("XJmDNS unregistered and closed .");
+                server.interrupt();
+            } catch (Exception e) {
+                logger.fatal("FAILED TO SHUTDOWN MDNS: " + e.getMessage());
+            }
+        }));
         xJmDNS.addServiceTypeListener(new ServiceTypeListener() {
             @Override
             public void serviceTypeAdded(ServiceEvent serviceEvent) {
@@ -98,20 +112,9 @@ public class XdashbackendApplication {
                         int port = info.getPort();
                         String address = info.getInet4Addresses()[0].getHostAddress();
                         if (services.containsKey(name)) {
-                            services.get(name).setAddress(address)
-                                    .setType(type)
-                                    .setPort(port)
-                                    .setServer(server)
-                                    .setHostname(hostname)
-                                    .setApplication(application);
+                            services.get(name).setAddress(address).setType(type).setPort(port).setServer(server).setHostname(hostname).setApplication(application);
                         } else {
-                            TransientServiceInfo transientServiceInfo = new TransientServiceInfo(event.getName())
-                                    .setAddress(address)
-                                    .setType(type)
-                                    .setPort(port)
-                                    .setServer(server)
-                                    .setHostname(hostname)
-                                    .setApplication(application);
+                            TransientServiceInfo transientServiceInfo = new TransientServiceInfo(event.getName()).setAddress(address).setType(type).setPort(port).setServer(server).setHostname(hostname).setApplication(application);
                             services.put(event.getName(), transientServiceInfo);
                         }
                     }
@@ -185,6 +188,7 @@ public class XdashbackendApplication {
                 lock.set(true);
                 XTablesClient client = new XTablesClient();
                 client.addVersionProperty("XDASH");
+                XTablesLogger.setLoggingLevel(Level.OFF);
                 clientRef.set(client);
                 XTableContext context = client.registerXTableContext("VIEWER");
                 xTablesViewerRef.set(new XTablesViewer(context));
@@ -196,23 +200,15 @@ public class XdashbackendApplication {
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             try {
                 logger.fatal("UNCAUGHT EXCEPTION: " + Utilities.formatError(throwable));
-                WebSocketHandler.broadcastNotification(new Notification(Notification.NotificationType.fatal)
-                        .setDetail(throwable.getMessage())
-                        .setCause(throwable.getCause().toString())
-                        .setExceptionType(throwable.getClass().getName())
-                        .setStackTrace(Arrays.stream(throwable.getStackTrace())
-                                .map(StackTraceElement::toString)
-                                .toArray(String[]::new))
-                        .setSummary("Uncaught Exception: " + thread.getName()));
+                WebSocketHandler.broadcastNotification(new Notification(Notification.NotificationType.fatal).setDetail(throwable.getMessage()).setCause(throwable.getCause().toString()).setExceptionType(throwable.getClass().getName()).setStackTrace(Arrays.stream(throwable.getStackTrace()).map(StackTraceElement::toString).toArray(String[]::new)).setSummary("Uncaught Exception: " + thread.getName()));
             } catch (Exception ignored) {
             }
         });
 
+
         try {
-            if (args.length == 0)
-                Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
-            else
-                logger.warning("Open the website here: http://localhost:8080/");
+            if (args.length == 0) Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+            else logger.warning("Open the website here: http://localhost:8080/");
         } catch (Exception e) {
             logger.warning("Failed to open web browser");
             logger.warning("Open the website here: http://localhost:8080/");

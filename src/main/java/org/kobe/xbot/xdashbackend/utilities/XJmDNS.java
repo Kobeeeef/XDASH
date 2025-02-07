@@ -6,12 +6,13 @@ import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceListener;
 import javax.jmdns.ServiceTypeListener;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class XJmDNS {
+public class XJmDNS implements AutoCloseable {
 
     private static final XDashLogger logger = XDashLogger.getLogger();
     private JmDNS jmdns;
@@ -23,11 +24,19 @@ public class XJmDNS {
         startAddressMonitor();
     }
 
+
+
+    @Override
+    public void close() throws Exception {
+        jmdns.unregisterAllServices();
+        jmdns.close();
+    }
+
     private void setupMDNS() {
         try {
             InetAddress addr = Utilities.getLocalInetAddress();
             previousAddress = addr;
-            jmdns = JmDNS.create(addr);
+            jmdns = JmDNS.create(addr, "XDASH");
 
             logger.info("mDNS initialized successfully.");
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

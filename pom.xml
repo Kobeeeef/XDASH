@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.kobe.xbot</groupId>
     <artifactId>XDASH</artifactId>
-    <version>3.3.0-BETA</version>
+    <version>3.3.2-BETA</version>
     <name>xdashbackend</name>
     <description>xdashbackend</description>
     <url/>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.kobe.xbot</groupId>
             <artifactId>xtables</artifactId>
-            <version>5.1.2</version>
+            <version>5.1.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
