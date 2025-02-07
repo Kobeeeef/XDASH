@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.kobe.xbot.JClient.XTableContext;
 import org.kobe.xbot.Utilities.Entities.XTableProto;
+import org.kobe.xbot.Utilities.Entities.XTableValues;
 import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 public class XTablesViewer extends JFrame {
     private static final String ROBOT_POSE_TABLE = "PoseSubsystem.RobotPose";
+    private static final String TARGET_WAYPOINTS_TABLE = "target_waypoints";
 
     private static final XDashLogger logger = XDashLogger.getLogger();
     public XTablesDropdownViewer dropdownViewer;
@@ -147,6 +149,11 @@ public class XTablesViewer extends JFrame {
                     } catch (Exception ignored) {
                     }
                 }
+                if (updateEvent.getKey().equals(TARGET_WAYPOINTS_TABLE)) {
+                   List<XTableValues.Coordinate> cords = XTablesByteUtils.unpack_coordinates_list(updateEvent.getValue().toByteArray());
+                   if(cords != null)
+                       fieldPanel.setWaypoints(cords.stream().map(m -> new Pose2d(m.getX(), m.getY(), new Rotation2d())).toList());
+                }
                 if (XTablesValueLogs.logWindows.containsKey(updateEvent.getKey())) {
                     XTablesValueLogs.addLogToKey(updateEvent.getKey(), updateEvent);
                 }
@@ -250,18 +257,18 @@ public class XTablesViewer extends JFrame {
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
             try {
-                fieldPanel.setClickCallback((a) -> {
-                    System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
-                });
-                Map<Pose2d, Double> enemies = new HashMap<>();
-                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
-                enemies.put(new Pose2d(8.27, 4, new Rotation2d(Math.PI)), 0.45); // 45% probability
-                fieldPanel.setNotes(enemies);
-                List<Pose2d> waypoints = new ArrayList<>();
-                waypoints.add(new Pose2d(8,2, Rotation2d.fromDegrees(Math.PI)));
-                waypoints.add(new Pose2d(7,4, Rotation2d.fromDegrees(Math.PI)));
-                waypoints.add(new Pose2d(7,5, Rotation2d.fromDegrees(Math.PI)));
-                fieldPanel.setWaypoints(waypoints);
+//                fieldPanel.setClickCallback((a) -> {
+//                    System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
+//                });
+//                Map<Pose2d, Double> enemies = new HashMap<>();
+//                enemies.put(new Pose2d(4.63, 6.99, new Rotation2d(23)), 0.75); // 75% probability
+//                enemies.put(new Pose2d(8.27, 4, new Rotation2d(Math.PI)), 0.45); // 45% probability
+//                fieldPanel.setNotes(enemies);
+//                List<Pose2d> waypoints = new ArrayList<>();
+//                waypoints.add(new Pose2d(8,2, Rotation2d.fromDegrees(Math.PI)));
+//                waypoints.add(new Pose2d(7,4, Rotation2d.fromDegrees(Math.PI)));
+//                waypoints.add(new Pose2d(7,5, Rotation2d.fromDegrees(Math.PI)));
+//                fieldPanel.setWaypoints(waypoints);
                 XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
                 if (dataProto == null) {
                     throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
@@ -273,6 +280,12 @@ public class XTablesViewer extends JFrame {
                         fieldPanel.setRobotPose(XTablesByteUtils.unpackPose2d(robotPose));
                     } catch (Exception ignored) {
                     }
+                }
+                byte[] targetWaypoints = cache.get(TARGET_WAYPOINTS_TABLE);
+                if (targetWaypoints != null) {
+                    List<XTableValues.Coordinate> cords = XTablesByteUtils.unpack_coordinates_list(targetWaypoints);
+                    if (cords != null)
+                        fieldPanel.setWaypoints(cords.stream().map(m -> new Pose2d(m.getX(), m.getY(), new Rotation2d())).toList());
                 }
                 dropdownViewer.populateTable();
                 showNotification("Reloaded all data from server successfully.", 1500);
