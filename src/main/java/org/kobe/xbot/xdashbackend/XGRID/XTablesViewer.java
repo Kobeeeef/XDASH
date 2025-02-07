@@ -118,6 +118,12 @@ public class XTablesViewer extends JFrame {
                 } catch (Exception ignored) {
                 }
             }
+            byte[] targetWaypoints = cache.get(TARGET_WAYPOINTS_TABLE);
+            if (targetWaypoints != null) {
+                List<XTableValues.Coordinate> cords = XTablesByteUtils.unpack_coordinates_list(targetWaypoints);
+                if (cords != null)
+                    fieldPanel.setWaypoints(cords);
+            }
             dropdownViewer.populateTable();
         } catch (Exception e) {
             e.printStackTrace();

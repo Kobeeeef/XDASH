@@ -6,8 +6,8 @@ import edu.wpi.first.math.util.Units;
 import org.kobe.xbot.Utilities.Entities.XTableValues;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,8 +15,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class FieldPanel extends JPanel {
@@ -27,7 +27,7 @@ public class FieldPanel extends JPanel {
     private final Map<Pose2d, Double> enemyRobots = new HashMap<>();
     private final Map<Pose2d, Double> notes = new HashMap<>();
 
-    private Consumer< Map.Entry<Pose2d, Double>> clickCallback;
+    private Consumer<Map.Entry<Pose2d, Double>> clickCallback;
 
     private BufferedImage fieldImage;
     private BufferedImage robotImage;
@@ -43,6 +43,7 @@ public class FieldPanel extends JPanel {
     private final int fieldPixelY2 = 91;    // Top boundary (flipped from config)
     private final CustomTooltip tooltip;
     private final Timer hideTimer;
+
     public FieldPanel() {
         fieldImage = loadImage("/2025field.png");
         robotImage = loadImage("/icon.png");
@@ -72,18 +73,18 @@ public class FieldPanel extends JPanel {
                 int yOffset = (panelHeight - newFieldHeight) / 2;
 
                 // Calculate the displayed field boundaries
-                int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-                int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-                int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-                int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+                int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+                int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+                int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+                int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
 
                 // Check if the mouse is outside the field bounds
-                if(e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
+                if (e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
                     tooltip.setVisible(false);
                 } else {
                     // Your existing logic for showing tooltips, etc.
-                    Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(e.getX(), e.getY());
-                    Map.Entry<Pose2d, Double> clickedNote = getClickedNote(e.getX(), e.getY());
+                    Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
+                    Map.Entry<Pose2d, Double> clickedNote = getClickedNote(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
                     if (clickedEnemy != null && clickCallback != null) {
                         showTooltip(e, "Click to go to robot.");
                     } else if (clickedNote != null && clickCallback != null) {
@@ -99,33 +100,37 @@ public class FieldPanel extends JPanel {
             public void mouseExited(MouseEvent e) {
                 tooltip.setVisible(false);
             }
+
             @Override
             public void mousePressed(MouseEvent e) {
-                Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(e.getX(), e.getY());
-                Map.Entry<Pose2d, Double> clickedNote = getClickedNote(e.getX(), e.getY());
-                if(clickCallback != null) {
+                int panelWidth = getWidth();
+                int panelHeight = getHeight();
+                double scaleXFull = (double) panelWidth / fieldImage.getWidth();
+                double scaleYFull = (double) panelHeight / fieldImage.getHeight();
+                double scaleFactor = Math.min(scaleXFull, scaleYFull);
+
+                int newFieldWidth = (int) (fieldImage.getWidth() * scaleFactor);
+                int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
+                int xOffset = (panelWidth - newFieldWidth) / 2;
+                int yOffset = (panelHeight - newFieldHeight) / 2;
+
+                int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+                int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+                int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+                int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
+
+                Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
+                Map.Entry<Pose2d, Double> clickedNote = getClickedNote(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
+                if (clickCallback != null) {
                     if (clickedEnemy != null) {
                         clickCallback.accept(clickedEnemy);
                     } else if (clickedNote != null) {
                         clickCallback.accept(clickedNote);
                     } else {
-                        int panelWidth = getWidth();
-                        int panelHeight = getHeight();
-                        double scaleXFull = (double) panelWidth / fieldImage.getWidth();
-                        double scaleYFull = (double) panelHeight / fieldImage.getHeight();
-                        double scaleFactor = Math.min(scaleXFull, scaleYFull);
-
-                        int newFieldWidth  = (int) (fieldImage.getWidth() * scaleFactor);
-                        int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
-                        int xOffset = (panelWidth - newFieldWidth) / 2;
-                        int yOffset = (panelHeight - newFieldHeight) / 2;
-
-                        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-                        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-                        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-                        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
-
-                        double displayFieldWidth  = rightBound - leftBound;
+                        if (e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
+                            return;
+                        }
+                        double displayFieldWidth = rightBound - leftBound;
                         double displayFieldHeight = bottomBound - topBound;
                         double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
                         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
@@ -140,6 +145,7 @@ public class FieldPanel extends JPanel {
 
 
     }
+
     private void showTooltip(MouseEvent e, String text) {
         tooltip.setText(text);
         tooltip.setSize(tooltip.getPreferredSize());
@@ -147,6 +153,7 @@ public class FieldPanel extends JPanel {
         tooltip.setVisible(true);
         hideTimer.restart();
     }
+
     private BufferedImage loadImage(String path) {
         try (InputStream is = getClass().getResourceAsStream(path)) {
             return is != null ? ImageIO.read(is) : null;
@@ -154,6 +161,7 @@ public class FieldPanel extends JPanel {
             return null;
         }
     }
+
     public void setWaypoints(List<XTableValues.Coordinate> newWaypoints) {
         this.waypoints.clear();
         if (newWaypoints != null) {
@@ -161,6 +169,7 @@ public class FieldPanel extends JPanel {
         }
         repaint();
     }
+
     public void setRobotPose(Pose2d pose) {
         this.robotPose = pose;
         repaint();
@@ -178,7 +187,7 @@ public class FieldPanel extends JPanel {
         repaint();
     }
 
-    public void setClickCallback(Consumer< Map.Entry<Pose2d, Double>> callback) {
+    public void setClickCallback(Consumer<Map.Entry<Pose2d, Double>> callback) {
         this.clickCallback = callback;
     }
 
@@ -227,20 +236,21 @@ public class FieldPanel extends JPanel {
             for (Map.Entry<Pose2d, Double> entry : notes.entrySet()) {
                 drawNote(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, (int) (scaledRobotSize / 1.3), xOffset, yOffset, scaleFactor);
             }
-            int scaledWaypointSize = (int) Math.max(8, Math.min(15,  fieldImageWidth * scaleFactor * 0.05));
+            int scaledWaypointSize = (int) Math.max(8, Math.min(15, fieldImageWidth * scaleFactor * 0.05));
             for (int i = 0; i < waypoints.size(); i++) {
                 drawWaypoint(g2d, waypoints.get(i), i, fieldScaleX, fieldScaleY, scaledWaypointSize, xOffset, yOffset, scaleFactor);
             }
         }
     }
+
     private void drawWaypoint(Graphics2D g2d, XTableValues.Coordinate pose, int index, double scaleX, double scaleY, int waypointSize, int xOffset, int yOffset, double scaleFactor) {
         // Compute the displayed boundaries of the field
-        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+        int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+        int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+        int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
 
-        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldWidth = rightBound - leftBound;
         double displayFieldHeight = bottomBound - topBound;
         double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
@@ -251,7 +261,7 @@ public class FieldPanel extends JPanel {
 
         // Clamp the waypoint position within the field
         double waypointX = Math.max(leftBound, Math.min(rightBound, computedX));
-        double waypointY = Math.max(topBound,   Math.min(bottomBound, computedY));
+        double waypointY = Math.max(topBound, Math.min(bottomBound, computedY));
 
         AffineTransform oldTransform = g2d.getTransform();
         g2d.translate(waypointX, waypointY);
@@ -263,7 +273,7 @@ public class FieldPanel extends JPanel {
 
         // Draw the index number (starting at 1) over the dot
         g2d.setColor(Color.GREEN);
-        g2d.setFont(new Font("Arial", Font.BOLD,waypointSize));
+        g2d.setFont(new Font("Arial", Font.BOLD, waypointSize));
         String label = String.valueOf(index + 1);
         FontMetrics fm = g2d.getFontMetrics();
         int textWidth = fm.stringWidth(label);
@@ -276,12 +286,12 @@ public class FieldPanel extends JPanel {
         if (image == null) return;
 
         // Compute displayed boundaries of the field
-        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+        int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+        int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+        int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
 
-        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldWidth = rightBound - leftBound;
         double displayFieldHeight = bottomBound - topBound;
         double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
@@ -291,7 +301,7 @@ public class FieldPanel extends JPanel {
         double computedY = bottomBound - (pose.getY() * pixelsPerMeterY);
 
         double robotX = Math.max(leftBound, Math.min(rightBound, computedX));
-        double robotY = Math.max(topBound,   Math.min(bottomBound, computedY));
+        double robotY = Math.max(topBound, Math.min(bottomBound, computedY));
 
 
         AffineTransform oldTransform = g2d.getTransform();
@@ -308,16 +318,17 @@ public class FieldPanel extends JPanel {
 
         g2d.setTransform(oldTransform);
     }
+
     private void drawOtherRobot(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY, int robotSize, int xOffset, int yOffset, double scaleFactor) {
         if (probability <= 0) return;
 
         // Compute displayed boundaries of the field
-        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+        int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+        int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+        int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
 
-        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldWidth = rightBound - leftBound;
         double displayFieldHeight = bottomBound - topBound;
         double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
@@ -327,7 +338,7 @@ public class FieldPanel extends JPanel {
         double computedY = bottomBound - (pose.getY() * pixelsPerMeterY);
 
         double robotX = Math.max(leftBound, Math.min(rightBound, computedX));
-        double robotY = Math.max(topBound,   Math.min(bottomBound, computedY));
+        double robotY = Math.max(topBound, Math.min(bottomBound, computedY));
 
 
         AffineTransform oldTransform = g2d.getTransform();
@@ -350,17 +361,18 @@ public class FieldPanel extends JPanel {
         g2d.drawString(probabilityText, -textWidth / 2, textHeight / 4);
         g2d.setTransform(oldTransform);
     }
+
     private void drawNote(Graphics2D g2d, Pose2d pose, double probability, double scaleX, double scaleY, int noteSize, int xOffset, int yOffset, double scaleFactor) {
         // Only draw the note if probability > 0
         if (probability <= 0) return;
 
         // Compute the displayed boundaries of the field as before
-        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+        int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+        int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+        int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
 
-        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldWidth = rightBound - leftBound;
         double displayFieldHeight = bottomBound - topBound;
         double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
@@ -371,7 +383,7 @@ public class FieldPanel extends JPanel {
 
         // Clamp the note position so it stays within the field boundaries
         double noteX = Math.max(leftBound, Math.min(rightBound, computedX));
-        double noteY = Math.max(topBound,   Math.min(bottomBound, computedY));
+        double noteY = Math.max(topBound, Math.min(bottomBound, computedY));
 
         // Save the original transform and translate to the note position.
         AffineTransform oldTransform = g2d.getTransform();
@@ -397,25 +409,8 @@ public class FieldPanel extends JPanel {
     }
 
 
-    private Map.Entry<Pose2d, Double> getClickedEnemyPose(int clickX, int clickY) {
-        // Get panel dimensions and compute the same scaling and offsets as in paintComponent
-        int panelWidth = getWidth();
-        int panelHeight = getHeight();
+    private Map.Entry<Pose2d, Double> getClickedEnemyPose(int leftBound, int rightBound, int topBound, int bottomBound, int clickX, int clickY) {
 
-        double scaleXFull = (double) panelWidth / fieldImage.getWidth();
-        double scaleYFull = (double) panelHeight / fieldImage.getHeight();
-        double scaleFactor = Math.min(scaleXFull, scaleYFull);
-
-        int newFieldWidth = (int) (fieldImage.getWidth() * scaleFactor);
-        int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
-        int xOffset = (panelWidth - newFieldWidth) / 2;
-        int yOffset = (panelHeight - newFieldHeight) / 2;
-
-        // Compute the displayed boundaries of the actual field using config limits
-        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
 
         // (Optional) If the click is outside the field area, skip checking enemy robots.
         if (clickX < leftBound || clickX > rightBound || clickY < topBound || clickY > bottomBound) {
@@ -423,7 +418,7 @@ public class FieldPanel extends JPanel {
         }
 
         // Calculate the displayed field dimensions and pixel-to-meter scale
-        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldWidth = rightBound - leftBound;
         double displayFieldHeight = bottomBound - topBound;
         double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
@@ -448,29 +443,14 @@ public class FieldPanel extends JPanel {
 
         return null;
     }
-    private Map.Entry<Pose2d, Double> getClickedNote(int clickX, int clickY) {
-        int panelWidth = getWidth();
-        int panelHeight = getHeight();
 
-        double scaleXFull = (double) panelWidth / fieldImage.getWidth();
-        double scaleYFull = (double) panelHeight / fieldImage.getHeight();
-        double scaleFactor = Math.min(scaleXFull, scaleYFull);
-
-        int newFieldWidth = (int) (fieldImage.getWidth() * scaleFactor);
-        int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
-        int xOffset = (panelWidth - newFieldWidth) / 2;
-        int yOffset = (panelHeight - newFieldHeight) / 2;
-
-        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
-        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
-        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
-        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+    private Map.Entry<Pose2d, Double> getClickedNote(int leftBound, int rightBound, int topBound, int bottomBound, int clickX, int clickY) {
 
         if (clickX < leftBound || clickX > rightBound || clickY < topBound || clickY > bottomBound) {
             return null;
         }
 
-        double displayFieldWidth  = rightBound - leftBound;
+        double displayFieldWidth = rightBound - leftBound;
         double displayFieldHeight = bottomBound - topBound;
         double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
@@ -491,6 +471,7 @@ public class FieldPanel extends JPanel {
 
         return null;
     }
+
     /**
      * Custom tooltip with rounded corners, shadow, and modern styling.
      */
