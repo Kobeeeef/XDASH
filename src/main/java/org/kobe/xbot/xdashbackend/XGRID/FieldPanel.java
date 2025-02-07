@@ -3,9 +3,11 @@ package org.kobe.xbot.xdashbackend.XGRID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import org.kobe.xbot.Utilities.Entities.XTableValues;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -33,39 +35,118 @@ public class FieldPanel extends JPanel {
     // Field dimensions in meters
     private final double fieldWidthMeters = 17.55;
     private final double fieldHeightMeters = 8.05;
-    private final List<Pose2d> waypoints = new ArrayList<>();
+    private final List<XTableValues.Coordinate> waypoints = new ArrayList<>();
     // Field image boundaries (from config.json)
     private final int fieldPixelX1 = 421;   // Left boundary
     private final int fieldPixelY1 = 1437;  // Bottom boundary (flipped from top-left)
     private final int fieldPixelX2 = 3352;  // Right boundary
     private final int fieldPixelY2 = 91;    // Top boundary (flipped from config)
-
+    private final CustomTooltip tooltip;
+    private final Timer hideTimer;
     public FieldPanel() {
         fieldImage = loadImage("/2025field.png");
         robotImage = loadImage("/icon.png");
-        ToolTipManager.sharedInstance().setInitialDelay(0);
+        ToolTipManager.sharedInstance().setEnabled(false);
 
+        // Create a custom tooltip label
+        tooltip = new CustomTooltip();
+        tooltip.setVisible(false);
+        add(tooltip);
 
+        // Timer to hide tooltip after a delay
+        hideTimer = new Timer(2000, e -> tooltip.setVisible(false));
+        hideTimer.setRepeats(false);
 
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                // Compute scaling and offsets (same as in paintComponent)
+                int panelWidth = getWidth();
+                int panelHeight = getHeight();
+                double scaleXFull = (double) panelWidth / fieldImage.getWidth();
+                double scaleYFull = (double) panelHeight / fieldImage.getHeight();
+                double scaleFactor = Math.min(scaleXFull, scaleYFull);
+                int newFieldWidth = (int) (fieldImage.getWidth() * scaleFactor);
+                int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
+                int xOffset = (panelWidth - newFieldWidth) / 2;
+                int yOffset = (panelHeight - newFieldHeight) / 2;
 
+                // Calculate the displayed field boundaries
+                int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+                int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+                int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+                int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
 
+                // Check if the mouse is outside the field bounds
+                if(e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
+                    tooltip.setVisible(false);
+                } else {
+                    // Your existing logic for showing tooltips, etc.
+                    Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(e.getX(), e.getY());
+                    Map.Entry<Pose2d, Double> clickedNote = getClickedNote(e.getX(), e.getY());
+                    if (clickedEnemy != null && clickCallback != null) {
+                        showTooltip(e, "Click to go to robot.");
+                    } else if (clickedNote != null && clickCallback != null) {
+                        showTooltip(e, "Click to go to note.");
+                    } else {
+                        showTooltip(e, "Click to go.");
+                    }
+                }
+            }
+        });
         addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                tooltip.setVisible(false);
+            }
             @Override
             public void mousePressed(MouseEvent e) {
                 Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(e.getX(), e.getY());
                 Map.Entry<Pose2d, Double> clickedNote = getClickedNote(e.getX(), e.getY());
+                if(clickCallback != null) {
+                    if (clickedEnemy != null) {
+                        clickCallback.accept(clickedEnemy);
+                    } else if (clickedNote != null) {
+                        clickCallback.accept(clickedNote);
+                    } else {
+                        int panelWidth = getWidth();
+                        int panelHeight = getHeight();
+                        double scaleXFull = (double) panelWidth / fieldImage.getWidth();
+                        double scaleYFull = (double) panelHeight / fieldImage.getHeight();
+                        double scaleFactor = Math.min(scaleXFull, scaleYFull);
 
-                if (clickedEnemy != null && clickCallback != null) {
-                    clickCallback.accept(clickedEnemy);
-                } else if (clickedNote != null && clickCallback != null) {
-                    clickCallback.accept(clickedNote);
+                        int newFieldWidth  = (int) (fieldImage.getWidth() * scaleFactor);
+                        int newFieldHeight = (int) (fieldImage.getHeight() * scaleFactor);
+                        int xOffset = (panelWidth - newFieldWidth) / 2;
+                        int yOffset = (panelHeight - newFieldHeight) / 2;
+
+                        int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
+                        int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
+                        int topBound    = yOffset + (int)(fieldPixelY2 * scaleFactor);
+                        int bottomBound = yOffset + (int)(fieldPixelY1 * scaleFactor);
+
+                        double displayFieldWidth  = rightBound - leftBound;
+                        double displayFieldHeight = bottomBound - topBound;
+                        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+                        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+                        double fieldX = (e.getX() - leftBound) / pixelsPerMeterX;
+                        double fieldY = (bottomBound - e.getY()) / pixelsPerMeterY;
+                        Pose2d clickedPose = new Pose2d(fieldX, fieldY, new Rotation2d());
+                        clickCallback.accept(new AbstractMap.SimpleEntry<>(clickedPose, 100.0));
+                    }
                 }
             }
         });
 
 
     }
-
+    private void showTooltip(MouseEvent e, String text) {
+        tooltip.setText(text);
+        tooltip.setSize(tooltip.getPreferredSize());
+        tooltip.setLocation(e.getX() + 15, e.getY() + 15);
+        tooltip.setVisible(true);
+        hideTimer.restart();
+    }
     private BufferedImage loadImage(String path) {
         try (InputStream is = getClass().getResourceAsStream(path)) {
             return is != null ? ImageIO.read(is) : null;
@@ -73,7 +154,7 @@ public class FieldPanel extends JPanel {
             return null;
         }
     }
-    public void setWaypoints(List<Pose2d> newWaypoints) {
+    public void setWaypoints(List<XTableValues.Coordinate> newWaypoints) {
         this.waypoints.clear();
         if (newWaypoints != null) {
             this.waypoints.addAll(newWaypoints);
@@ -152,7 +233,7 @@ public class FieldPanel extends JPanel {
             }
         }
     }
-    private void drawWaypoint(Graphics2D g2d, Pose2d pose, int index, double scaleX, double scaleY, int waypointSize, int xOffset, int yOffset, double scaleFactor) {
+    private void drawWaypoint(Graphics2D g2d, XTableValues.Coordinate pose, int index, double scaleX, double scaleY, int waypointSize, int xOffset, int yOffset, double scaleFactor) {
         // Compute the displayed boundaries of the field
         int leftBound   = xOffset + (int)(fieldPixelX1 * scaleFactor);
         int rightBound  = xOffset + (int)(fieldPixelX2 * scaleFactor);
@@ -410,5 +491,63 @@ public class FieldPanel extends JPanel {
 
         return null;
     }
+    /**
+     * Custom tooltip with rounded corners, shadow, and modern styling.
+     */
+    private static class CustomTooltip extends JPanel {
+        private String text = "";
 
+        public CustomTooltip() {
+            setOpaque(false);
+        }
+
+        public void setText(String text) {
+            this.text = text;
+            repaint();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            FontMetrics fm = getFontMetrics(getFont());
+            int width = fm.stringWidth(text) + 100;
+            int height = fm.getHeight() + 10;
+            return new Dimension(width, height);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            Font font = new Font("Arial", Font.BOLD, 14);
+            g2.setFont(font);
+            FontMetrics fm = g2.getFontMetrics();
+
+            int textWidth = fm.stringWidth(text);
+            int textHeight = fm.getHeight();
+
+            int paddingX = 16; // Space around text
+            int paddingY = 10;
+
+            int width = textWidth + paddingX;
+            int height = textHeight + paddingY;
+
+            int arc = 15; // Rounded corner radius
+            int shadowOffset = 4;
+
+            // Shadow effect
+            g2.setColor(new Color(0, 0, 0, 80));
+            g2.fillRoundRect(shadowOffset, shadowOffset, width, height, arc, arc);
+
+            // Main tooltip background
+            g2.setColor(Color.BLACK);
+            g2.fillRoundRect(0, 0, (width - shadowOffset), height - shadowOffset, arc, arc);
+
+            // Draw text centered
+            g2.setColor(Color.WHITE);
+            int textX = paddingX / 2;
+            int textY = (height - fm.getHeight()) / 2 + fm.getAscent();
+            g2.drawString(text, textX, textY);
+        }
+    }
 }
