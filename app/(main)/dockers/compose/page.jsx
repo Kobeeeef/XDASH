@@ -514,6 +514,7 @@ const Dashboard = () => {
                 playSuccessNotificationSound();
 
                 if (onlyBuild === true) {
+                    setDockerfilePreviewDialogVisible(false)
                     toast.current.show({
                         severity: 'info',
                         summary: 'Build Finished!',
