@@ -171,6 +171,7 @@ public class FieldPanel extends JPanel {
     }
 
     public void setRobotPose(Pose2d pose) {
+
         this.robotPose = pose;
         repaint();
     }
@@ -190,6 +191,7 @@ public class FieldPanel extends JPanel {
     public void setClickCallback(Consumer<Map.Entry<Pose2d, Double>> callback) {
         this.clickCallback = callback;
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -227,6 +229,7 @@ public class FieldPanel extends JPanel {
             double fieldScaleY = ((double) fieldImageHeight * scaleFactor) / fieldHeightMeters;
 
             int scaledRobotSize = (int) Math.max(3, Math.min(MAX_ROBOT_SIZE, fieldImageWidth * scaleFactor * 0.05));
+
 
             drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, scaledRobotSize, xOffset, yOffset, scaleFactor);
 
@@ -305,16 +308,35 @@ public class FieldPanel extends JPanel {
 
 
         AffineTransform oldTransform = g2d.getTransform();
+
         g2d.translate(robotX, robotY);
         g2d.rotate(-pose.getRotation().getRadians() + Units.degreesToRadians(90));
 
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+
+
         g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
         g2d.setColor(Color.RED);
         g2d.setStroke(new BasicStroke(4));
         g2d.drawRoundRect(-robotSize / 2, -robotSize / 2, robotSize, robotSize, 13, 13);
+
+        int totalArrowLength = (int) (robotSize / 1.5);
+        int arrowHalfLength = totalArrowLength / 2;
+        int arrowHeadSize = Math.max(totalArrowLength / 4, 1);
+
+        BasicStroke roundedStroke = new BasicStroke(
+                4,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND
+        );
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(roundedStroke);
+        g2d.drawLine(0, arrowHalfLength, 0, -arrowHalfLength);
+        g2d.drawLine(0, -arrowHalfLength, -arrowHeadSize, -arrowHalfLength + arrowHeadSize);
+        g2d.drawLine(0, -arrowHalfLength, arrowHeadSize, -arrowHalfLength + arrowHeadSize);
+
 
         g2d.setTransform(oldTransform);
     }
@@ -531,4 +553,6 @@ public class FieldPanel extends JPanel {
             g2.drawString(text, textX, textY);
         }
     }
+
+
 }
