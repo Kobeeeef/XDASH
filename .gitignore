@@ -19,6 +19,9 @@ target/
 *.iml
 *.ipr
 /XDASH-DOCKER-IMAGES/*
+/xdash-docker-images/*
+/docker/*
+/XDASH_LOGS/*
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
