@@ -16,7 +16,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import {
     playErrorNotificationSound,
-    playFatalNotificationSound,
+    playFatalNotificationSound, playNotificationSound,
     playSuccessNotificationSound
 } from '../../../../utilities/notification';
 import { TabPanel, TabView } from 'primereact/tabview';
@@ -166,6 +166,7 @@ const Dashboard = () => {
             message: type
         }, vFunc, 20000);
     }
+
     async function preview_dockerfile() {
         try {
             let response = await sendMessageAndWaitForCondition({
@@ -203,6 +204,7 @@ const Dashboard = () => {
             setDockerfilePreview(null);
         }
     }
+
     async function preview_compose() {
         try {
             let response = await sendMessageAndWaitForCondition({
@@ -423,13 +425,13 @@ const Dashboard = () => {
         });
     }
 
-    async function build() {
+    async function build(onlyBuild) {
         stepperRef.current.setActiveStep(1);
         setFinished(false);
         setBuildStatus({});
         setLoading(true);
 
-        await preview_dockerfile()
+        await preview_dockerfile();
 
         sendMessageAndWaitForConditionWithManage('DOCKER-BUILD', {
             type: 'DOCKER-BUILD', message: JSON.stringify({
@@ -509,8 +511,20 @@ const Dashboard = () => {
                 playFatalNotificationSound();
                 setLoading(false);
             } else if (msg?.message.success === true) {
-                setLoading(true);
                 playSuccessNotificationSound();
+
+                if (onlyBuild === true) {
+                    toast.current.show({
+                        severity: 'info',
+                        summary: 'Build Finished!',
+                        life: 6000,
+                        detail: 'The pipeline is no longer continuing.'
+                    });
+                    playNotificationSound();
+                    setLoading(false);
+                    return;
+                }
+                setLoading(true);
                 stepperRef.current.setActiveStep(2);
                 setSetup((prev) => ({
                     ...prev,
@@ -745,14 +759,14 @@ const Dashboard = () => {
             <Dialog position={'top'} modal={false} header={'Compose Preview'} closeOnEscape={true}
                     style={{ width: '50%' }}
                     visible={composePreviewDialogVisible} onHide={() => setComposePreviewDialogVisible(false)}>
-                <SyntaxHighlighter language={"yml"} showLineNumbers={true} wrapLines={true} style={vs2015}>
+                <SyntaxHighlighter language={'yml'} showLineNumbers={true} wrapLines={true} style={vs2015}>
                     {composePreview}
                 </SyntaxHighlighter>
             </Dialog>
             <Dialog position={'top'} modal={false} header={'Dockerfile Preview'} closeOnEscape={true}
                     style={{ width: '50%' }}
                     visible={dockerfilePreviewDialogVisible} onHide={() => setDockerfilePreviewDialogVisible(false)}>
-                <SyntaxHighlighter language={"dockerfile"} showLineNumbers={true} wrapLines={true} style={vs2015}>
+                <SyntaxHighlighter language={'dockerfile'} showLineNumbers={true} wrapLines={true} style={vs2015}>
                     {dockerfilePreview}
                 </SyntaxHighlighter>
             </Dialog>
@@ -830,7 +844,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                 )}
-             onHide={() => setShutdownPreviousThreadsDialogVisible(false)}/>
+                onHide={() => setShutdownPreviousThreadsDialogVisible(false)} />
             <ConfirmDialog
                 group="headless"
                 content={({ headerRef, contentRef, footerRef, hide, message }) => (
@@ -999,16 +1013,17 @@ const Dashboard = () => {
                                                 <label htmlFor="Project_DIRECTORY" className={'text-sm'}>Project
                                                     Directory</label>
                                                 <div className="p-inputgroup flex-1">
-                                                <InputText disabled={!isConnected || loading} value={projectDirectory}
-                                                           readOnly={true} className={'w-full'}
-                                                           placeholder={'There is no project directory configured.'} />
-                                                <Button onClick={() => {
-                                                    setLoading(true);
-                                                    preview_dockerfile().then(() => setLoading(false))
-                                                        .catch(() => setLoading(false))
-                                                        .finally(() => setLoading(false));
-                                                }} icon="pi pi-search" disabled={!isConnected || !projectDirectory}
-                                                        loading={loading} />
+                                                    <InputText disabled={!isConnected || loading}
+                                                               value={projectDirectory}
+                                                               readOnly={true} className={'w-full'}
+                                                               placeholder={'There is no project directory configured.'} />
+                                                    <Button onClick={() => {
+                                                        setLoading(true);
+                                                        preview_dockerfile().then(() => setLoading(false))
+                                                            .catch(() => setLoading(false))
+                                                            .finally(() => setLoading(false));
+                                                    }} icon="pi pi-search" disabled={!isConnected || !projectDirectory}
+                                                            loading={loading} />
                                                 </div>
                                             </div>
                                         </div>
@@ -1198,9 +1213,22 @@ const Dashboard = () => {
                             </Accordion>
                         </div>
                         <div className={'col-12'}>
-                            <Button onClick={start} disabled={!isConnected || selectedDevices.length < 1}
-                                    className={'w-full'} loading={loading} severity={'danger'}
-                                    label={'Execute Docker Pipeline'} />
+                            <div className={'grid'}>
+                                <div className={'col-12 lg:col-6'}>
+                                    <Button onClick={start} disabled={!isConnected || selectedDevices.length < 1}
+                                            className={'w-full'} loading={loading} severity={'danger'}
+                                            label={'Execute Docker Pipeline'} />
+                                </div>
+                                <div className={'col-12 lg:col-6'}>
+                                    <Button onClick={() => build(true)}
+                                            disabled={!isConnected}
+                                            className={'w-full'}
+                                            severity={'secondary'}
+                                            label={'Build'} />
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
