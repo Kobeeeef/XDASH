@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.kobe.xbot</groupId>
     <artifactId>XDASH</artifactId>
-    <version>3.3.2.5-BETA</version>
+    <version>3.3.2.6-BETA</version>
     <name>xdashbackend</name>
     <description>xdashbackend</description>
     <url/>
