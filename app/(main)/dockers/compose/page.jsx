@@ -1223,6 +1223,7 @@ const Dashboard = () => {
                                 <div className={'col-12 lg:col-6'}>
                                     <Button onClick={() => build(true)}
                                             disabled={!isConnected}
+                                            loading={loading}
                                             className={'w-full'}
                                             severity={'secondary'}
                                             label={'Build'} />
