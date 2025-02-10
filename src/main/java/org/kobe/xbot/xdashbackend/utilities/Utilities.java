@@ -1,11 +1,18 @@
 package org.kobe.xbot.xdashbackend.utilities;
 
-import org.kobe.xbot.xdashbackend.XdashbackendApplication;
-import org.kobe.xbot.xdashbackend.entities.*;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import org.kobe.xbot.xdashbackend.entities.FormattedByteResult;
+import org.kobe.xbot.xdashbackend.entities.FormattedTimeResult;
+import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
+import org.kobe.xbot.xdashbackend.entities.TransferProgress;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,13 +25,15 @@ public class Utilities {
         InputStream inputStream = SSHHostAddress.class.getResourceAsStream("/docker/xdash-docker-watchdog.sh");
 
 
-            String dockerComposeContent = Files.readString(Path.of("D:\\stuff\\PyCharmProjects\\Alt\\docker-compose.yml"), StandardCharsets.UTF_8);
-            String script = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        String dockerComposeContent = Files.readString(Path.of("D:\\stuff\\PyCharmProjects\\Alt\\docker-compose.yml"), StandardCharsets.UTF_8);
+        String script = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
         script = script.replace("${DOCKER_COMPOSE}", dockerComposeContent).replace("${TIMEOUT}", "2");
         String command = "bash -c '" + script + "'";
-            System.out.println(command);
+        System.out.println(command);
     }
+
+
 
     public static InetAddress getLocalInetAddressOrNull() {
         try {
@@ -33,6 +42,7 @@ public class Utilities {
             return null;
         }
     }
+
     public static double roundToDecimalPlaces(double value, int decimalPlaces) {
         double scale = Math.pow(10, decimalPlaces);
         return Math.round(value * scale) / scale;
@@ -45,6 +55,7 @@ public class Utilities {
         }
         return "";  // No extension
     }
+
     public static FormattedByteResult formatBytes(int bytes, boolean longFormat) {
         // Define byte size units
         String[] units = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
@@ -89,6 +100,7 @@ public class Utilities {
         // Return an instance of FormattedByteResult
         return new FormattedByteResult(roundedValue, unit);
     }
+
     public static FormattedTimeResult formatTime(long ms, boolean longFormat) {
         // Define time units and their relative factors
         String[] units = {"ms", "s", "min", "h", "d", "w", "mo", "y"};
@@ -116,25 +128,38 @@ public class Utilities {
         // Apply long format if requested
         if (longFormat) {
             switch (unit) {
-                case "ms":  unit = "Milliseconds"; break;
-                case "s":   unit = "Seconds"; break;
-                case "min": unit = "Minutes"; break;
-                case "h":   unit = "Hours"; break;
-                case "d":   unit = "Days"; break;
-                case "w":   unit = "Weeks"; break;
-                case "mo":  unit = "Months"; break;
-                case "y":   unit = "Years"; break;
-                default:    break;
+                case "ms":
+                    unit = "Milliseconds";
+                    break;
+                case "s":
+                    unit = "Seconds";
+                    break;
+                case "min":
+                    unit = "Minutes";
+                    break;
+                case "h":
+                    unit = "Hours";
+                    break;
+                case "d":
+                    unit = "Days";
+                    break;
+                case "w":
+                    unit = "Weeks";
+                    break;
+                case "mo":
+                    unit = "Months";
+                    break;
+                case "y":
+                    unit = "Years";
+                    break;
+                default:
+                    break;
             }
         }
 
         // Return the result
         return new FormattedTimeResult(ms, unit, longFormat);
     }
-
-
-
-
 
 
     public static String formatError(Throwable throwable) {
@@ -154,6 +179,7 @@ public class Utilities {
 
         return sb.toString();
     }
+
     public static boolean createTar(String sourcePath, String outputTarFile, Consumer<TransferProgress> consumer) {
         try {
             ProcessBuilder pb;
@@ -172,7 +198,7 @@ public class Utilities {
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             int fileCount = 0;
-            TransferProgress progress = new TransferProgress("Creating TAR file now..." , 0, 0, 0);
+            TransferProgress progress = new TransferProgress("Creating TAR file now...", 0, 0, 0);
             consumer.accept(progress);
             while ((line = reader.readLine()) != null) {
                 fileCount++;
@@ -203,6 +229,7 @@ public class Utilities {
         DecimalFormat decimalFormat = new DecimalFormat(pattern.toString());
         return decimalFormat.format(value);
     }
+
     public static String formatDirectoryPath(String inputPath) {
         String normalizedPath = inputPath.replace("\\", "/");
 
@@ -226,6 +253,7 @@ public class Utilities {
         File directory = new File(path);
         return directory.exists() && directory.canRead();
     }
+
     /**
      * Estimates the memory size of a String in bytes using mathematical constants.
      *
@@ -241,12 +269,13 @@ public class Utilities {
 
     public static String getLocalIPAddress() throws SocketException {
 
-            return findBestNetworkAddress().getHostAddress();
+        return findBestNetworkAddress().getHostAddress();
 
     }
+
     public static InetAddress getLocalInetAddress() throws SocketException {
 
-            return findBestNetworkAddress();
+        return findBestNetworkAddress();
 
 
     }
@@ -304,12 +333,13 @@ public class Utilities {
     private static boolean isDockerSubnet(String ip) {
         return (ip.startsWith("172.") && isWithinRange(ip, 16, 31)) || ip.startsWith("169.254");
     }
+
     /**
      * Helper method to determine if an IP's second octet is within a specific range.
      *
-     * @param ip       The IP address as a string.
-     * @param start    The start of the range (inclusive).
-     * @param end      The end of the range (inclusive).
+     * @param ip    The IP address as a string.
+     * @param start The start of the range (inclusive).
+     * @param end   The end of the range (inclusive).
      * @return true if within range; false otherwise.
      */
     private static boolean isWithinRange(String ip, int start, int end) {

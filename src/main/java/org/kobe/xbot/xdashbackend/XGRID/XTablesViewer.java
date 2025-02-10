@@ -178,9 +178,9 @@ public class XTablesViewer extends JFrame {
 
     public void init() {
         fieldPanel = new FieldPanel();
-        fieldPanel.setClickCallback((a) -> {
-            System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
-        });
+//        fieldPanel.setClickCallback((a) -> {
+//            System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
+//        });
         dropdownViewer = new XTablesDropdownViewer(client, cache);
 
         toolPanel = new JPanel();
@@ -266,7 +266,9 @@ public class XTablesViewer extends JFrame {
         reloadButton.addActionListener(e -> {
             reloadButton.setEnabled(false);
             try {
-
+//                Map<Pose2d, Double> notes = new HashMap<>();
+//                notes.put(new Pose2d(2,2, new Rotation2d()),0.93d);
+//                fieldPanel.setNotes(notes);
                 XTableProto.XTableMessage.XTablesData dataProto = client._getXTablesDataProto();
                 if (dataProto == null) {
                     throw new Exception("XTABLES Server returned null proto. Maybe not connected yet?");
