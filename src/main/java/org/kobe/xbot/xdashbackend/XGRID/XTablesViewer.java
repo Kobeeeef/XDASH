@@ -4,7 +4,6 @@ package org.kobe.xbot.xdashbackend.XGRID;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.kobe.xbot.JClient.XTableContext;
 import org.kobe.xbot.Utilities.Entities.XTableProto;
@@ -14,14 +13,19 @@ import org.kobe.xbot.Utilities.XTablesData;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.utilities.AudioUtil;
+import org.kobe.xbot.xdashbackend.utilities.BezierCurveProto;
+import org.kobe.xbot.xdashbackend.utilities.Utilities;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -45,9 +49,17 @@ public class XTablesViewer extends JFrame {
     private final XTableContext client;
     private Thread cacheThread;
     private final Theme theme;
+    private ZMQ.Socket socket;
+    private ZContext context;
 
     public XTablesViewer(XTableContext client) {
         this.client = client;
+        this.context = new ZContext();
+
+        this.socket = context.createSocket(SocketType.REQ);
+        this.socket.connect("tcp://127.0.0.1:8531");
+
+
         this.cache = new XTablesData();
         InputStream nightStream = getClass().getResourceAsStream("/themes/monokai.xml");
         try {
@@ -112,7 +124,7 @@ public class XTablesViewer extends JFrame {
             }
             cache.fromProto(dataProto);
             byte[] robotPose = cache.get(ROBOT_POSE_TABLE);
-            if(robotPose != null) {
+            if (robotPose != null) {
                 try {
                     fieldPanel.setRobotPose(XTablesByteUtils.unpackPose2d(robotPose));
                 } catch (Exception ignored) {
@@ -149,16 +161,16 @@ public class XTablesViewer extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 dropdownViewer.updateNode(updateEvent.getKey(),
                         XTablesByteUtils.convertXTableUpdateToJsonString(updateEvent));
-                if(updateEvent.getKey().equals(ROBOT_POSE_TABLE)) {
+                if (updateEvent.getKey().equals(ROBOT_POSE_TABLE)) {
                     try {
                         fieldPanel.setRobotPose(XTablesByteUtils.unpackPose2d(updateEvent.getValue().toByteArray()));
                     } catch (Exception ignored) {
                     }
                 }
                 if (updateEvent.getKey().equals(TARGET_WAYPOINTS_TABLE)) {
-                   List<XTableValues.Coordinate> cords = XTablesByteUtils.unpack_coordinates_list(updateEvent.getValue().toByteArray());
-                   if(cords != null)
-                       fieldPanel.setWaypoints(cords);
+                    List<XTableValues.Coordinate> cords = XTablesByteUtils.unpack_coordinates_list(updateEvent.getValue().toByteArray());
+                    if (cords != null)
+                        fieldPanel.setWaypoints(cords);
                 }
                 if (XTablesValueLogs.logWindows.containsKey(updateEvent.getKey())) {
                     XTablesValueLogs.addLogToKey(updateEvent.getKey(), updateEvent);
@@ -178,9 +190,41 @@ public class XTablesViewer extends JFrame {
 
     public void init() {
         fieldPanel = new FieldPanel();
-//        fieldPanel.setClickCallback((a) -> {
-//            System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
-//        });
+        fieldPanel.setClickCallback((a) -> {
+            try {
+                System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
+                Pose2d goalPose = a.getKey();
+                Pose2d robotPose = fieldPanel.getRobotPose();
+                BezierCurveProto.ControlPoint start = BezierCurveProto.ControlPoint.newBuilder()
+                        .setX(robotPose.getX())
+                        .setY(robotPose.getY())
+                        .build();
+                BezierCurveProto.ControlPoint goal = BezierCurveProto.ControlPoint.newBuilder()
+                        .setX(goalPose.getX())
+                        .setY(goalPose.getY())
+                        .build();
+                BezierCurveProto.PlanBezierPathRequest request = BezierCurveProto.PlanBezierPathRequest.newBuilder()
+                        .setSafeRadiusInches(15)
+                        .setStart(start)
+                        .setGoal(goal)
+                        .setMetersPerSecond(2)
+                        .build();
+
+                socket.send(request.toByteArray());
+
+                byte[] response = socket.recv();
+                BezierCurveProto.BezierCurves responseProto = BezierCurveProto.BezierCurves.parseFrom(response);
+                if(!responseProto.getPathFound()) {
+                    fieldPanel.setBezierCurves(null);
+                    return;
+                }
+                List<BezierCurveProto.BezierCurve> curves = responseProto.getCurvesList();
+                fieldPanel.setBezierCurves(Utilities.to3DArray(curves));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        });
         dropdownViewer = new XTablesDropdownViewer(client, cache);
 
         toolPanel = new JPanel();
@@ -275,7 +319,7 @@ public class XTablesViewer extends JFrame {
                 }
                 cache.fromProto(dataProto);
                 byte[] robotPose = cache.get(ROBOT_POSE_TABLE);
-                if(robotPose != null) {
+                if (robotPose != null) {
                     try {
                         fieldPanel.setRobotPose(XTablesByteUtils.unpackPose2d(robotPose));
                     } catch (Exception ignored) {
@@ -368,7 +412,7 @@ public class XTablesViewer extends JFrame {
         addValueLogButton.addActionListener(e -> {
             Set<String> history = new HashSet<>(XdashbackendApplication.getConfigLoader().getPropertyList("XTABLE-VALUE-LOGS-HISTORY"));
             JComboBox<String> keyDropdown = new JComboBox<>(history.toArray(new String[0]));
-            JComboBox<String> typeDropdown = new JComboBox<>(new String[] { "JSON", "Coordinates", "Pose2d", "Pose3d", "Image"});
+            JComboBox<String> typeDropdown = new JComboBox<>(new String[]{"JSON", "Coordinates", "Pose2d", "Pose3d", "Image"});
             JPanel panel = new JPanel(new BorderLayout());
             keyDropdown.setEditable(true);
             panel.add(keyDropdown, BorderLayout.NORTH);
@@ -395,15 +439,15 @@ public class XTablesViewer extends JFrame {
                         } catch (Exception err) {
                             JOptionPane.showMessageDialog(null, "Failed to store value: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                        if(typeDropdown.getSelectedItem().toString().equals("JSON")) {
+                        if (typeDropdown.getSelectedItem().toString().equals("JSON")) {
                             XTablesValueLogs.openLogWindow(key, "JSON");
-                        } else if(typeDropdown.getSelectedItem().toString().equals("Coordinates")) {
+                        } else if (typeDropdown.getSelectedItem().toString().equals("Coordinates")) {
                             XTablesValueLogs.openLogWindow(key, "Coordinates");
-                        } else if(typeDropdown.getSelectedItem().toString().equals("Pose2d")) {
+                        } else if (typeDropdown.getSelectedItem().toString().equals("Pose2d")) {
                             XTablesValueLogs.openLogWindow(key, "POSE2D");
-                        } else if(typeDropdown.getSelectedItem().toString().equals("Pose3d")) {
+                        } else if (typeDropdown.getSelectedItem().toString().equals("Pose3d")) {
                             XTablesValueLogs.openLogWindow(key, "POSE3D");
-                        }  else if (typeDropdown.getSelectedItem().toString().equals("Image")) {
+                        } else if (typeDropdown.getSelectedItem().toString().equals("Image")) {
                             XTablesImageViewer.openImageWindow(key);
                         }
                     }
@@ -511,6 +555,7 @@ public class XTablesViewer extends JFrame {
     private static java.util.List<Boolean> parseBooleanList(java.util.List<String> value) {
         return value.stream().map(Boolean::parseBoolean).toList();
     }
+
     public void showNotification(String msg, int ti) {
         SwingNotification.showNotification(this, msg, ti);
     }

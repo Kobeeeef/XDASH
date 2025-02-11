@@ -1,0 +1,25 @@
+syntax = "proto3";
+package org.kobe.xbot.xdashbackend.utilities;
+
+message ControlPoint {
+  double x = 1;
+  double y = 2;
+}
+
+message BezierCurve {
+  double timeToTraverse = 1;
+  repeated ControlPoint controlPoints = 2;
+}
+
+message BezierCurves {
+  repeated BezierCurve curves = 1;
+  bool pathFound = 2;
+}
+
+message PlanBezierPathRequest {
+  ControlPoint start = 1;
+  ControlPoint goal = 2;
+  double safeRadiusInches = 3;
+  double metersPerSecond = 4;
+
+}

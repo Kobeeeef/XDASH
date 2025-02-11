@@ -27,16 +27,7 @@
         private static final double NOTE_METERS = 0.3556;
         private static final double ROBOT_METERS = 0.762;
 
-        private double[][][] bezierCurves = {
-                {
-                        {1.2095189355168885, 2.159026745913819},
-                        {1.2095189355168885, 4.3330052005943545},
-                        {1.2095189355168885, 6.506983655274889},
-                        {8.763024564994883, 6.506983655274889},
-                        {16.31653019447288, 6.506983655274889}
-                }
-        };
-
+        private double[][][] bezierCurves = new double[][][] {};
 
         // Robot pose
         private Pose2d robotPose = new Pose2d(0, 0, new Rotation2d());
@@ -665,5 +656,7 @@
             }
         }
 
-
+        public Pose2d getRobotPose() {
+            return robotPose;
+        }
     }
