@@ -34,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 public class XTablesViewer extends JFrame {
     private static final String ROBOT_POSE_TABLE = "PoseSubsystem.RobotPose";
     private static final String TARGET_WAYPOINTS_TABLE = "target_waypoints";
+    private static final String BEZIER_CURVES_TABLE = "bezier_path";
+
 
     private static final XDashLogger logger = XDashLogger.getLogger();
     public XTablesDropdownViewer dropdownViewer;
@@ -52,13 +54,24 @@ public class XTablesViewer extends JFrame {
     private ZMQ.Socket socket;
     private ZContext context;
 
+    private void reconnectSocket() {
+        if (this.socket != null) {
+            this.socket.close();
+        }
+        this.socket = context.createSocket(SocketType.REQ);
+        this.socket.connect("tcp://127.0.0.1:8531");
+        this.socket.setReceiveTimeOut(3000);
+        this.socket.setSendTimeOut(3000);
+    }
+
     public XTablesViewer(XTableContext client) {
         this.client = client;
         this.context = new ZContext();
 
         this.socket = context.createSocket(SocketType.REQ);
         this.socket.connect("tcp://127.0.0.1:8531");
-
+        this.socket.setReceiveTimeOut(3000);
+        this.socket.setSendTimeOut(3000);
 
         this.cache = new XTablesData();
         InputStream nightStream = getClass().getResourceAsStream("/themes/monokai.xml");
@@ -195,16 +208,16 @@ public class XTablesViewer extends JFrame {
                 System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
                 Pose2d goalPose = a.getKey();
                 Pose2d robotPose = fieldPanel.getRobotPose();
-                BezierCurveProto.ControlPoint start = BezierCurveProto.ControlPoint.newBuilder()
+                BezierCurveProto.Point start = BezierCurveProto.Point.newBuilder()
                         .setX(robotPose.getX())
                         .setY(robotPose.getY())
                         .build();
-                BezierCurveProto.ControlPoint goal = BezierCurveProto.ControlPoint.newBuilder()
+                BezierCurveProto.Point goal = BezierCurveProto.Point.newBuilder()
                         .setX(goalPose.getX())
                         .setY(goalPose.getY())
                         .build();
                 BezierCurveProto.PlanBezierPathRequest request = BezierCurveProto.PlanBezierPathRequest.newBuilder()
-                        .setSafeRadiusInches(15)
+                        .setSafeRadiusInches(30)
                         .setStart(start)
                         .setGoal(goal)
                         .setMetersPerSecond(2)
@@ -213,17 +226,22 @@ public class XTablesViewer extends JFrame {
                 socket.send(request.toByteArray());
 
                 byte[] response = socket.recv();
-                BezierCurveProto.BezierCurves responseProto = BezierCurveProto.BezierCurves.parseFrom(response);
-                if(!responseProto.getPathFound()) {
+                if(response == null) {
+                    throw new Exception("Socket not connected.");
+                }
+                XTableValues.BezierCurves responseProto = XTableValues.BezierCurves.parseFrom(response);
+                if (!responseProto.getPathFound()) {
                     fieldPanel.setBezierCurves(null);
+                    client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, XTableValues.BezierCurves.newBuilder().buildPartial());
                     return;
                 }
-                List<BezierCurveProto.BezierCurve> curves = responseProto.getCurvesList();
+                List<XTableValues.BezierCurve> curves = responseProto.getCurvesList();
                 fieldPanel.setBezierCurves(Utilities.to3DArray(curves));
+                client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, responseProto);
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Reconnecting to socket...");
+                reconnectSocket();
             }
-
         });
         dropdownViewer = new XTablesDropdownViewer(client, cache);
 

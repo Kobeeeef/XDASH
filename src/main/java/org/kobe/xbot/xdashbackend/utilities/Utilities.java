@@ -3,6 +3,7 @@ package org.kobe.xbot.xdashbackend.utilities;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import org.kobe.xbot.Utilities.Entities.XTableValues;
 import org.kobe.xbot.xdashbackend.entities.FormattedByteResult;
 import org.kobe.xbot.xdashbackend.entities.FormattedTimeResult;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
@@ -34,15 +35,15 @@ public class Utilities {
     }
 
 
-    public static double[][][] to3DArray(List<BezierCurveProto.BezierCurve> curves) {
+    public static double[][][] to3DArray(List<XTableValues.BezierCurve> curves) {
         double[][][] result = new double[curves.size()][][];
 
         for (int i = 0; i < curves.size(); i++) {
-            BezierCurveProto.BezierCurve curve = curves.get(i);
+            XTableValues.BezierCurve curve = curves.get(i);
             result[i] = new double[curve.getControlPointsCount()][2];
 
             for (int j = 0; j < curve.getControlPointsCount(); j++) {
-                BezierCurveProto.ControlPoint cp = curve.getControlPoints(j);
+                XTableValues.ControlPoint cp = curve.getControlPoints(j);
                 result[i][j][0] = cp.getX();
                 result[i][j][1] = cp.getY();
             }
