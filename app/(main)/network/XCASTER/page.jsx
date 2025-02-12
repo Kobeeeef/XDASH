@@ -37,7 +37,7 @@ const Dashboard = () => {
     const [message, setMessage] = useState('Start the scanner to begin XCASTER subnet scanning.');
     const [totalScanned, setTotalScanned] = useState(0);
 
-    const [threads, setThreads] = useState(10);
+    const [threads, setThreads] = useState(50);
     const [minMax, setMinMax] = useState([1, 256]);
     const [port, setPort] = useState(4567);
     const [subnet, setSubnet] = useState('10.4.88');

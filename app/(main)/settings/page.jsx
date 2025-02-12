@@ -432,6 +432,22 @@ const Dashboard = () => {
                                            SERVERS_PASSWORD: e.target.value
                                        }))} />
                             <Divider align="center">
+                                <Badge value="Sync Host Directory"></Badge>
+                            </Divider>
+                            <InputText invalid={!isValidPath(newData?.SYNC_DIRECTORY)}className={'w-full'} placeholder={'Host Directory'} value={newData?.SYNC_DIRECTORY}
+                                       onChange={(e) => setNewData(prev => ({
+                                           ...prev,
+                                           SYNC_DIRECTORY: e.target.value
+                                       }))} />
+                            <Divider align="center">
+                                <Badge value="Sync Target Directory"></Badge>
+                            </Divider>
+                            <InputText invalid={!isValidPath(newData?.SYNC_TARGET_DIRECTORY)} className={'w-full'} placeholder={'Target Directory'} value={newData?.SYNC_TARGET_DIRECTORY}
+                                       onChange={(e) => setNewData(prev => ({
+                                           ...prev,
+                                           SYNC_TARGET_DIRECTORY: e.target.value
+                                       }))} />
+                            <Divider align="center">
                                 <Badge value="Services"></Badge>
                             </Divider>
                             <div className="p-fluid">

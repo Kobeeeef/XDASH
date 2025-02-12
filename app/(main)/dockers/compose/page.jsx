@@ -91,6 +91,19 @@ const Dashboard = () => {
     const [composeDirectory, setComposeDirectory] = useState(null);
     const [finalSummary, setFinalSummary] = useState([]);
     const [shutdownPreviousThreadsDialogVisible, setShutdownPreviousThreadsDialogVisible] = useState(false);
+    const [os, setOs] = useState(null);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userAgent = window.navigator.userAgent.toLowerCase();
+            if (userAgent.includes("win")) setOs("Windows");
+            else if (userAgent.includes("mac")) setOs("macOS");
+            else if (userAgent.includes("linux")) setOs("Linux");
+            else if (userAgent.includes("android")) setOs("Android");
+            else if (userAgent.includes("iphone") || userAgent.includes("ipad")) setOs("iOS");
+            else setOs("Unknown OS");
+        }
+    }, []);
     useEffect(() => {
         isMounted.current = true; // Set the mounted flag
         let isRequestInProgress = false;
@@ -250,7 +263,7 @@ const Dashboard = () => {
         stepperRef.current.setActiveStep(5);
     }
 
-    async function transfer_import() {
+    async function transfer_import(sync_only) {
         setFinished(false);
         setTransferData({});
         setTransferMessages({});
@@ -277,6 +290,7 @@ const Dashboard = () => {
                 architecture: additionalArguments?.ARCHITECTURE,
                 flashType: additionalArguments?.FLASH_TYPE,
                 useCompose: true,
+                syncOnly: sync_only === true,
                 wasGZFile: additionalArguments?.COMPRESSION !== 0
             })
         }, (m) => {
@@ -288,7 +302,7 @@ const Dashboard = () => {
                     setTransferMessages((prev) => {
                         const updatedMessages = { ...prev };
                         const array = updatedMessages[msg.server] ?? [];
-                        updatedMessages[msg.server] = [msg?.response || `Unknown message while importing on machine: ${msg.server}...`, ...array];
+                        updatedMessages[msg.server] = [msg?.response || "", ...array];
                         return updatedMessages; // Return the updated object
                     });
 
@@ -1221,6 +1235,28 @@ const Dashboard = () => {
                                             label={'Execute Docker Pipeline'} />
                                 </div>
                                 <div className={'col-12 lg:col-6'}>
+                                    <Button onClick={() => {
+                                        if(os !== "Linux") {
+                                            playFatalNotificationSound()
+                                            toast.current.show({
+                                                severity: 'error',
+                                                summary: 'Unsupported OS!',
+                                                detail: `You are running ${os}, which is not supported!`,
+                                                life: 6000
+                                            });
+                                        } else {
+                                            setFinished(false);
+                                            setFinalSummary([]);
+                                            transfer_import(true)
+                                        }
+                                    }}
+                                            disabled={!isConnected|| selectedDevices.length < 1}
+                                            loading={loading}
+                                            className={'w-full'}
+                                            severity={'warning'}
+                                            label={'Synchronize'} />
+                                </div>
+                                <div className={'col-12'}>
                                     <Button onClick={() => build(true)}
                                             disabled={!isConnected}
                                             loading={loading}
