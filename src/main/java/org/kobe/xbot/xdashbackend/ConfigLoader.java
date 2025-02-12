@@ -224,6 +224,12 @@ public class ConfigLoader {
     public String getProjectDirectory() {
         return getProperty("project.directory");
     }
+    public String getSyncDirectory() {
+        return getProperty("sync.directory");
+    }
+    public String getSyncTargetDirectory() {
+        return getProperty("sync.target.directory");
+    }
     public String getDockerComposeFileDirectory() {
         return getProperty("docker.compose.file.directory");
     }
@@ -251,6 +257,8 @@ public class ConfigLoader {
                 .setROBORIO_USERNAME(getRoboRIOUsername())
                 .setDOCKER_ALT_IMPORT_TIMEOUT(String.valueOf(getDockerAltBaseImageImportTimeout()))
                 .setALT_BASE_IMAGE_URL(getDockerAltBaseImageURL())
+                .setSYNC_DIRECTORY(getSyncDirectory())
+                .setSYNC_TARGET_DIRECTORY(getSyncTargetDirectory())
                 .setPROJECT_DIRECTORY(getProjectDirectory())
                 .setROBORIO_SERVER(getRoboRIOServer())
                 .setDOCKER_COMPOSE_FILE_DIRECTORY(getDockerComposeFileDirectory())
@@ -272,6 +280,16 @@ public class ConfigLoader {
             properties.setProperty("project.directory", configProperties.getPROJECT_DIRECTORY());
         } else {
             properties.remove("project.directory");
+        }
+        if (configProperties.getSYNC_DIRECTORY() != null && !configProperties.getSYNC_DIRECTORY().isEmpty()) {
+            properties.setProperty("sync.directory", configProperties.getSYNC_DIRECTORY());
+        } else {
+            properties.remove("sync.directory");
+        }
+        if (configProperties.getSYNC_TARGET_DIRECTORY() != null && !configProperties.getSYNC_TARGET_DIRECTORY().isEmpty()) {
+            properties.setProperty("sync.target.directory", configProperties.getSYNC_TARGET_DIRECTORY());
+        } else {
+            properties.remove("sync.target.directory");
         }
         if (configProperties.getDOCKER_COMPOSE_FILE_DIRECTORY() != null && !configProperties.getDOCKER_COMPOSE_FILE_DIRECTORY().isEmpty()) {
             properties.setProperty("docker.compose.file.directory", configProperties.getDOCKER_COMPOSE_FILE_DIRECTORY());

@@ -8,6 +8,11 @@ public class DockerImportRequest {
     private String flashType;
     private boolean useCompose;
     private boolean wasGZFile;
+    private boolean syncOnly;
+
+    public boolean isSyncOnly() {
+        return syncOnly;
+    }
 
     public String getFlashType() {
         return flashType;

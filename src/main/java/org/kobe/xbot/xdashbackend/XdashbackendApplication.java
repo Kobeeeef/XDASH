@@ -188,7 +188,6 @@ public class XdashbackendApplication {
                 lock.set(true);
                 XTablesClient client = new XTablesClient();
                 client.addVersionProperty("XDASH");
-                XTablesLogger.setLoggingLevel(Level.OFF);
                 clientRef.set(client);
                 XTableContext context = client.registerXTableContext("VIEWER");
                 xTablesViewerRef.set(new XTablesViewer(context));

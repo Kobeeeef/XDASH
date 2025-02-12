@@ -127,7 +127,52 @@ public class SSHHostAddress {
             return false;
         }
     }
+    /**
+     * Runs the rsync command with SSH, piping in the password, and processes updates with a Consumer.
+     *
+     * @param hostDir    The local directory to sync.
+     * @param targetDir  The remote directory to sync to.
+     * @param consumer   The Consumer that processes updates.
+     * @throws IOException If an I/O error occurs.
+     */
+    public boolean runRsync(String hostDir, String targetDir,
+                                Consumer<DockerImportReturn> consumer) {
+        try {
+            // Construct the rsync command with sshpass for password authentication
+            String command = String.format(
+                    "sshpass -p '%s' rsync -avzp -e ssh %s %s@%s:%s",
+                    this.password, hostDir, this.username, this.address, targetDir
+            );
 
+            // Execute the command
+            ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+
+            // Read and output the command output, passing each line to the consumer
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    consumer.accept(new DockerImportReturn(line, this.server, true, false)); // Ongoing updates
+                }
+            }
+
+            // Wait for the process to complete
+            boolean success = false;
+            try {
+                int exitCode = process.waitFor();
+                success = (exitCode == 0);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Rsync process was interrupted", e);
+            }
+            return success;
+        } catch (Exception e) {
+            consumer.accept(new DockerImportReturn("There was a exception: " + e.getMessage(), this.server, false, false));
+            return false;
+        }
+        // Notify consumer that process has finished
+    }
     public String sendCommandWithSudoPermissions(String command, Consumer<String> lineConsumer) {
         return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", password, command), lineConsumer);
     }

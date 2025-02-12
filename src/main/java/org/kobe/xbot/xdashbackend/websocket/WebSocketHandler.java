@@ -276,6 +276,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         ready = false;
                         response = "The project directory has not been configured.";
                     }
+                    if (XdashbackendApplication.getConfigLoader().getSyncDirectory() == null || XdashbackendApplication.getConfigLoader().getSyncDirectory().isEmpty()) {
+                        ready = false;
+                        response = "The host sync directory has not been configured.";
+                    }
+                    if (XdashbackendApplication.getConfigLoader().getSyncTargetDirectory() == null || XdashbackendApplication.getConfigLoader().getSyncTargetDirectory().isEmpty()) {
+                        ready = false;
+                        response = "The target sync directory has not been configured.";
+                    }
 
                     session.sendMessage(new TextMessage(new Message(new DockerPageReturn(gson.toJson(dataList), ready, response, XdashbackendApplication.getConfigLoader().getProjectDirectory(), XdashbackendApplication.getConfigLoader().getDockerComposeFileDirectory(), machineThreadManager != null && machineThreadManager.isRunning()), message.getType()).toJSON()));
                 } else if (message.getType().equals("DEVICE-DATA")) {
@@ -472,7 +480,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         String filePath = XdashbackendApplication.getConfigLoader().getProjectDirectory();
 
                         if (filePath != null && !filePath.isEmpty() && !filePath.isBlank()) {
-                            filePath = filePath  + File.separator + "Dockerfile";
+                            filePath = filePath + File.separator + "Dockerfile";
                             Path path = Paths.get(filePath);
                             long fileSize = Files.size(path);
 
@@ -498,7 +506,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         ));
                     }
 
-                }else if (message.getType().equals("DOCKER-BUILD")) {
+                } else if (message.getType().equals("DOCKER-BUILD")) {
                     String msg = message.getMessage();
                     if (msg != null) {
                         try {
@@ -774,7 +782,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     }
                 } else if (message.getType().equals("DEVICES-DOCKER-IMPORT-SHUTDOWN-THREADS")) {
                     try {
-                        if(machineThreadManager != null) {
+                        if (machineThreadManager != null) {
                             machineThreadManager.shutdownInstantly(5);
                             machineThreadManager = null;
                         }
@@ -821,8 +829,20 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
                         String imagePath = XdashbackendApplication.getConfigLoader().getDockerImagesDirectory() + "/" + imageName + ".tar" + (devicesTransferFiles.isWasGZFile() ? ".gz" : "");
                         File imageFile = new File(imagePath);
-                        if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
+                        if ((!imageFile.exists() || !imageFile.isFile()) && !devicesTransferFiles.isSyncOnly()) {
                             session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid image found at: " + imagePath, null, false, true), message.getType()).toJSON()));
+                            return;
+                        }
+
+                        String hostPathSync = XdashbackendApplication.getConfigLoader().getSyncDirectory();
+                        File hostPathSyncFile = new File(hostPathSync);
+                        if (!hostPathSyncFile.exists() || !hostPathSyncFile.isDirectory()) {
+                            session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid directory found at host: " + hostPathSync, null, false, true), message.getType()).toJSON()));
+                            return;
+                        }
+                        String targetDirectory =  XdashbackendApplication.getConfigLoader().getSyncTargetDirectory();
+                        if (targetDirectory == null || targetDirectory.isEmpty()) {
+                            session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid target sync directory found.", null, false, true), message.getType()).toJSON()));
                             return;
                         }
                         File composeFile;
@@ -849,20 +869,38 @@ public class WebSocketHandler extends TextWebSocketHandler {
                             for (String server : servers) {
                                 SSHHostAddress sshHostAddress = XdashbackendApplication.getResolvedXCASTERServices().get(server);
                                 if (sshHostAddress != null) {
-                                    machineThreadManager.execute(server, "Deploying docker image on " + sshHostAddress.getAddress(), () -> {
-                                        if (sshHostAddress.forceIsConnected()) {
-                                            sshHostAddress.uploadDockerImage(imageFile, containerName, flashType, composeFile, (v) -> {
+                                    if (devicesTransferFiles.isSyncOnly()) {
+                                        machineThreadManager.execute(server, "Synchronizing file directories on " + sshHostAddress.getAddress(), () -> {
+                                          boolean success =  sshHostAddress.runRsync(hostPathSyncFile.getAbsolutePath(), targetDirectory, (updates) -> {
                                                 try {
-                                                    WebSocketHandler.getBroadcastService().queueBroadcast(new Message(v, message.getType()));
+                                                    WebSocketHandler.getBroadcastService().queueBroadcast(new Message(updates, message.getType()));
                                                 } catch (Exception ignored) {
                                                 }
                                             });
-                                            WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("Docker pipeline finished for host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, true, false), message.getType()));
-                                        } else {
-                                            failures.incrementAndGet();
-                                            WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("The machine server is not connected: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, false, false), message.getType()));
-                                        }
-                                    });
+                                            if(success) {
+                                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("Docker synchronization finished for host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, true, false), message.getType()));
+                                            } else {
+                                                failures.incrementAndGet();
+                                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("Docker synchronization has FAILED for host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, false, false), message.getType()));
+                                            }
+                                        });
+
+                                    } else {
+                                        machineThreadManager.execute(server, "Deploying docker image on " + sshHostAddress.getAddress(), () -> {
+                                            if (sshHostAddress.forceIsConnected()) {
+                                                sshHostAddress.uploadDockerImage(imageFile, containerName, flashType, composeFile, (v) -> {
+                                                    try {
+                                                        WebSocketHandler.getBroadcastService().queueBroadcast(new Message(v, message.getType()));
+                                                    } catch (Exception ignored) {
+                                                    }
+                                                });
+                                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("Docker pipeline finished for host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, true, false), message.getType()));
+                                            } else {
+                                                failures.incrementAndGet();
+                                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("The machine server is not connected: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, false, false), message.getType()));
+                                            }
+                                        });
+                                    }
                                 } else {
                                     failures.incrementAndGet();
                                     WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("The machine server was not found: %s", server), server, true, false), message.getType()));

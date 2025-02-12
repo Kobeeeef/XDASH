@@ -18,6 +18,9 @@ public class ConfigProperties {
     private String ROBORIO_ADDRESS;
     private String WIFI_SSID;
     private String PROJECT_DIRECTORY;
+    private String SYNC_DIRECTORY;
+    private String SYNC_TARGET_DIRECTORY;
+
     private String ALT_BASE_IMAGE_URL;
     private String DOCKER_IMAGES_DIRECTORY;
     private String DOCKER_COMPOSE_FILE_DIRECTORY;
@@ -191,5 +194,23 @@ public class ConfigProperties {
 
     public String[] getSERVICES() {
         return SERVICES;
+    }
+
+    public String getSYNC_DIRECTORY() {
+        return SYNC_DIRECTORY;
+    }
+
+    public ConfigProperties setSYNC_DIRECTORY(String SYNC_DIRECTORY) {
+        this.SYNC_DIRECTORY = SYNC_DIRECTORY;
+        return this;
+    }
+
+    public String getSYNC_TARGET_DIRECTORY() {
+        return SYNC_TARGET_DIRECTORY;
+    }
+
+    public ConfigProperties setSYNC_TARGET_DIRECTORY(String SYNC_TARGET_DIRECTORY) {
+        this.SYNC_TARGET_DIRECTORY = SYNC_TARGET_DIRECTORY;
+        return this;
     }
 }
