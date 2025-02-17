@@ -35,6 +35,10 @@ public class XTablesViewer extends JFrame {
     private static final String ROBOT_POSE_TABLE = "PoseSubsystem.RobotPose";
     private static final String TARGET_WAYPOINTS_TABLE = "target_waypoints";
     private static final String BEZIER_CURVES_TABLE = "bezier_path";
+    private static double SPEED_METERS_PER_SECOND = 4;
+    private static double ACCELERATION_METERS_PER_SECOND = 0.5;
+
+    private static double SAFE_RADIUS_INCHES = 5;
 
 
     private static final XDashLogger logger = XDashLogger.getLogger();
@@ -43,9 +47,9 @@ public class XTablesViewer extends JFrame {
     public JPanel toolPanel;
     public String currentFileParentPath;
     public JMenuBar menuBar;
-    public JMenu settingsMenu, themeItem;
+    public JMenu settingsMenu, themeItem, plannerItem;
     public JMenuItem darkThemeItem, lightThemeItem,
-            exitItem;
+            exitItem, speedMPSItem, accelerationItem, safeRadiusInches;
     private final XTablesData cache;
     private JButton reloadButton, addButton, rebootButton, expandButton, addValueLogButton, closeButton;
     private final XTableContext client;
@@ -203,10 +207,8 @@ public class XTablesViewer extends JFrame {
 
     public void init() {
         fieldPanel = new FieldPanel();
-        fieldPanel.setClickCallback((a) -> {
+        fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {
-                System.out.println(XTablesByteUtils.pose2dToString(a.getKey()));
-                Pose2d goalPose = a.getKey();
                 Pose2d robotPose = fieldPanel.getRobotPose();
                 BezierCurveProto.Point start = BezierCurveProto.Point.newBuilder()
                         .setX(robotPose.getX())
@@ -217,16 +219,15 @@ public class XTablesViewer extends JFrame {
                         .setY(goalPose.getY())
                         .build();
                 BezierCurveProto.PlanBezierPathRequest request = BezierCurveProto.PlanBezierPathRequest.newBuilder()
-                        .setSafeRadiusInches(30)
+                        .setSafeRadiusInches(SAFE_RADIUS_INCHES)
                         .setStart(start)
                         .setGoal(goal)
-                        .setMetersPerSecond(2)
                         .build();
 
                 socket.send(request.toByteArray());
 
                 byte[] response = socket.recv();
-                if(response == null) {
+                if (response == null) {
                     throw new Exception("Socket not connected.");
                 }
                 XTableValues.BezierCurves responseProto = XTableValues.BezierCurves.parseFrom(response);
@@ -237,7 +238,11 @@ public class XTablesViewer extends JFrame {
                 }
                 List<XTableValues.BezierCurve> curves = responseProto.getCurvesList();
                 fieldPanel.setBezierCurves(Utilities.to3DArray(curves));
-                client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, responseProto);
+                client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, responseProto
+                        .toBuilder()
+                                .setMetersPerSecond(SPEED_METERS_PER_SECOND)
+                                .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND  )
+                        .setFinalRotationDegrees(goalPose.getRotation().getDegrees()).build());
             } catch (Exception e) {
                 System.out.println("Reconnecting to socket...");
                 reconnectSocket();
@@ -254,9 +259,42 @@ public class XTablesViewer extends JFrame {
         themeItem = new JMenu("Theme");
         darkThemeItem = new JMenuItem("Dark");
         lightThemeItem = new JMenuItem("Light");
+        plannerItem = new JMenu("Planner");
+        accelerationItem = new JMenuItem("Acceleration");
+        speedMPSItem = new JMenuItem("Meters Per Second");
+        safeRadiusInches = new JMenuItem("Safe Radius Inches");
         toolPanel.add(createControlPanel());
 
-
+        safeRadiusInches.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(this, "Enter value:", SAFE_RADIUS_INCHES);
+            if (input != null) {
+                try {
+                    SAFE_RADIUS_INCHES = Double.parseDouble(input);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        speedMPSItem.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(this, "Enter value:", SPEED_METERS_PER_SECOND);
+            if (input != null) {
+                try {
+                    SPEED_METERS_PER_SECOND = Double.parseDouble(input);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        accelerationItem.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(this, "Enter value:", ACCELERATION_METERS_PER_SECOND);
+            if (input != null) {
+                try {
+                    ACCELERATION_METERS_PER_SECOND = Double.parseDouble(input);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
         darkThemeItem.addActionListener(e -> {
             try {
 
@@ -503,7 +541,11 @@ public class XTablesViewer extends JFrame {
 
         themeItem.add(darkThemeItem);
         themeItem.add(lightThemeItem);
-
+        settingsMenu.addSeparator();
+        settingsMenu.add(plannerItem);
+        plannerItem.add(speedMPSItem);
+        plannerItem.add(accelerationItem);
+        plannerItem.add(safeRadiusInches);
 
         settingsMenu.add(exitItem);
         this.add(toolPanel, BorderLayout.NORTH);

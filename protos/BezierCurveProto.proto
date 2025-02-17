@@ -11,5 +11,4 @@ message PlanBezierPathRequest {
   Point start = 1;
   Point goal = 2;
   double safeRadiusInches = 3;
-  double metersPerSecond = 4;
 }

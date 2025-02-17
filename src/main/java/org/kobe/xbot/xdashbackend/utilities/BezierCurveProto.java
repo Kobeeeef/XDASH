@@ -567,6 +567,1570 @@ public final class BezierCurveProto {
 
   }
 
+  public interface BezierCurveOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:org.kobe.xbot.xdashbackend.utilities.BezierCurve)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point> 
+        getControlPointsList();
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point getControlPoints(int index);
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    int getControlPointsCount();
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    java.util.List<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder> 
+        getControlPointsOrBuilderList();
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder getControlPointsOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.kobe.xbot.xdashbackend.utilities.BezierCurve}
+   */
+  public static final class BezierCurve extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:org.kobe.xbot.xdashbackend.utilities.BezierCurve)
+      BezierCurveOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use BezierCurve.newBuilder() to construct.
+    private BezierCurve(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private BezierCurve() {
+      controlPoints_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new BezierCurve();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.class, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder.class);
+    }
+
+    public static final int CONTROLPOINTS_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point> controlPoints_;
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point> getControlPointsList() {
+      return controlPoints_;
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder> 
+        getControlPointsOrBuilderList() {
+      return controlPoints_;
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    @java.lang.Override
+    public int getControlPointsCount() {
+      return controlPoints_.size();
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    @java.lang.Override
+    public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point getControlPoints(int index) {
+      return controlPoints_.get(index);
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+     */
+    @java.lang.Override
+    public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder getControlPointsOrBuilder(
+        int index) {
+      return controlPoints_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < controlPoints_.size(); i++) {
+        output.writeMessage(1, controlPoints_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < controlPoints_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, controlPoints_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve)) {
+        return super.equals(obj);
+      }
+      org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve other = (org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve) obj;
+
+      if (!getControlPointsList()
+          .equals(other.getControlPointsList())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (getControlPointsCount() > 0) {
+        hash = (37 * hash) + CONTROLPOINTS_FIELD_NUMBER;
+        hash = (53 * hash) + getControlPointsList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.kobe.xbot.xdashbackend.utilities.BezierCurve}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:org.kobe.xbot.xdashbackend.utilities.BezierCurve)
+        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.class, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder.class);
+      }
+
+      // Construct using org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        if (controlPointsBuilder_ == null) {
+          controlPoints_ = java.util.Collections.emptyList();
+        } else {
+          controlPoints_ = null;
+          controlPointsBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_descriptor;
+      }
+
+      @java.lang.Override
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve getDefaultInstanceForType() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve build() {
+        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve buildPartial() {
+        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve result = new org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve(this);
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve result) {
+        if (controlPointsBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0)) {
+            controlPoints_ = java.util.Collections.unmodifiableList(controlPoints_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.controlPoints_ = controlPoints_;
+        } else {
+          result.controlPoints_ = controlPointsBuilder_.build();
+        }
+      }
+
+      private void buildPartial0(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve result) {
+        int from_bitField0_ = bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve) {
+          return mergeFrom((org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve other) {
+        if (other == org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.getDefaultInstance()) return this;
+        if (controlPointsBuilder_ == null) {
+          if (!other.controlPoints_.isEmpty()) {
+            if (controlPoints_.isEmpty()) {
+              controlPoints_ = other.controlPoints_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureControlPointsIsMutable();
+              controlPoints_.addAll(other.controlPoints_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.controlPoints_.isEmpty()) {
+            if (controlPointsBuilder_.isEmpty()) {
+              controlPointsBuilder_.dispose();
+              controlPointsBuilder_ = null;
+              controlPoints_ = other.controlPoints_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              controlPointsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getControlPointsFieldBuilder() : null;
+            } else {
+              controlPointsBuilder_.addAllMessages(other.controlPoints_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point m =
+                    input.readMessage(
+                        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.parser(),
+                        extensionRegistry);
+                if (controlPointsBuilder_ == null) {
+                  ensureControlPointsIsMutable();
+                  controlPoints_.add(m);
+                } else {
+                  controlPointsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point> controlPoints_ =
+        java.util.Collections.emptyList();
+      private void ensureControlPointsIsMutable() {
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          controlPoints_ = new java.util.ArrayList<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point>(controlPoints_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder> controlPointsBuilder_;
+
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point> getControlPointsList() {
+        if (controlPointsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(controlPoints_);
+        } else {
+          return controlPointsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public int getControlPointsCount() {
+        if (controlPointsBuilder_ == null) {
+          return controlPoints_.size();
+        } else {
+          return controlPointsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point getControlPoints(int index) {
+        if (controlPointsBuilder_ == null) {
+          return controlPoints_.get(index);
+        } else {
+          return controlPointsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder setControlPoints(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point value) {
+        if (controlPointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureControlPointsIsMutable();
+          controlPoints_.set(index, value);
+          onChanged();
+        } else {
+          controlPointsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder setControlPoints(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder builderForValue) {
+        if (controlPointsBuilder_ == null) {
+          ensureControlPointsIsMutable();
+          controlPoints_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          controlPointsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder addControlPoints(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point value) {
+        if (controlPointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureControlPointsIsMutable();
+          controlPoints_.add(value);
+          onChanged();
+        } else {
+          controlPointsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder addControlPoints(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point value) {
+        if (controlPointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureControlPointsIsMutable();
+          controlPoints_.add(index, value);
+          onChanged();
+        } else {
+          controlPointsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder addControlPoints(
+          org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder builderForValue) {
+        if (controlPointsBuilder_ == null) {
+          ensureControlPointsIsMutable();
+          controlPoints_.add(builderForValue.build());
+          onChanged();
+        } else {
+          controlPointsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder addControlPoints(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder builderForValue) {
+        if (controlPointsBuilder_ == null) {
+          ensureControlPointsIsMutable();
+          controlPoints_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          controlPointsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder addAllControlPoints(
+          java.lang.Iterable<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point> values) {
+        if (controlPointsBuilder_ == null) {
+          ensureControlPointsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, controlPoints_);
+          onChanged();
+        } else {
+          controlPointsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder clearControlPoints() {
+        if (controlPointsBuilder_ == null) {
+          controlPoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          controlPointsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public Builder removeControlPoints(int index) {
+        if (controlPointsBuilder_ == null) {
+          ensureControlPointsIsMutable();
+          controlPoints_.remove(index);
+          onChanged();
+        } else {
+          controlPointsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder getControlPointsBuilder(
+          int index) {
+        return getControlPointsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder getControlPointsOrBuilder(
+          int index) {
+        if (controlPointsBuilder_ == null) {
+          return controlPoints_.get(index);  } else {
+          return controlPointsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public java.util.List<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder> 
+           getControlPointsOrBuilderList() {
+        if (controlPointsBuilder_ != null) {
+          return controlPointsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(controlPoints_);
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder addControlPointsBuilder() {
+        return getControlPointsFieldBuilder().addBuilder(
+            org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder addControlPointsBuilder(
+          int index) {
+        return getControlPointsFieldBuilder().addBuilder(
+            index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.Point controlPoints = 1;</code>
+       */
+      public java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder> 
+           getControlPointsBuilderList() {
+        return getControlPointsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder> 
+          getControlPointsFieldBuilder() {
+        if (controlPointsBuilder_ == null) {
+          controlPointsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.Point.Builder, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.PointOrBuilder>(
+                  controlPoints_,
+                  ((bitField0_ & 0x00000001) != 0),
+                  getParentForChildren(),
+                  isClean());
+          controlPoints_ = null;
+        }
+        return controlPointsBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:org.kobe.xbot.xdashbackend.utilities.BezierCurve)
+    }
+
+    // @@protoc_insertion_point(class_scope:org.kobe.xbot.xdashbackend.utilities.BezierCurve)
+    private static final org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve();
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<BezierCurve>
+        PARSER = new com.google.protobuf.AbstractParser<BezierCurve>() {
+      @java.lang.Override
+      public BezierCurve parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<BezierCurve> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<BezierCurve> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface BezierCurvesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:org.kobe.xbot.xdashbackend.utilities.BezierCurves)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve> 
+        getCurvesList();
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve getCurves(int index);
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    int getCurvesCount();
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    java.util.List<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder> 
+        getCurvesOrBuilderList();
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder getCurvesOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.kobe.xbot.xdashbackend.utilities.BezierCurves}
+   */
+  public static final class BezierCurves extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:org.kobe.xbot.xdashbackend.utilities.BezierCurves)
+      BezierCurvesOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use BezierCurves.newBuilder() to construct.
+    private BezierCurves(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private BezierCurves() {
+      curves_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new BezierCurves();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves.class, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves.Builder.class);
+    }
+
+    public static final int CURVES_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve> curves_;
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve> getCurvesList() {
+      return curves_;
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder> 
+        getCurvesOrBuilderList() {
+      return curves_;
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    @java.lang.Override
+    public int getCurvesCount() {
+      return curves_.size();
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    @java.lang.Override
+    public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve getCurves(int index) {
+      return curves_.get(index);
+    }
+    /**
+     * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+     */
+    @java.lang.Override
+    public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder getCurvesOrBuilder(
+        int index) {
+      return curves_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < curves_.size(); i++) {
+        output.writeMessage(1, curves_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < curves_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, curves_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves)) {
+        return super.equals(obj);
+      }
+      org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves other = (org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves) obj;
+
+      if (!getCurvesList()
+          .equals(other.getCurvesList())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (getCurvesCount() > 0) {
+        hash = (37 * hash) + CURVES_FIELD_NUMBER;
+        hash = (53 * hash) + getCurvesList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.kobe.xbot.xdashbackend.utilities.BezierCurves}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:org.kobe.xbot.xdashbackend.utilities.BezierCurves)
+        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurvesOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves.class, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves.Builder.class);
+      }
+
+      // Construct using org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        if (curvesBuilder_ == null) {
+          curves_ = java.util.Collections.emptyList();
+        } else {
+          curves_ = null;
+          curvesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_descriptor;
+      }
+
+      @java.lang.Override
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves getDefaultInstanceForType() {
+        return org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves build() {
+        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves buildPartial() {
+        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves result = new org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves(this);
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves result) {
+        if (curvesBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0)) {
+            curves_ = java.util.Collections.unmodifiableList(curves_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.curves_ = curves_;
+        } else {
+          result.curves_ = curvesBuilder_.build();
+        }
+      }
+
+      private void buildPartial0(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves result) {
+        int from_bitField0_ = bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves) {
+          return mergeFrom((org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves other) {
+        if (other == org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves.getDefaultInstance()) return this;
+        if (curvesBuilder_ == null) {
+          if (!other.curves_.isEmpty()) {
+            if (curves_.isEmpty()) {
+              curves_ = other.curves_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureCurvesIsMutable();
+              curves_.addAll(other.curves_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.curves_.isEmpty()) {
+            if (curvesBuilder_.isEmpty()) {
+              curvesBuilder_.dispose();
+              curvesBuilder_ = null;
+              curves_ = other.curves_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              curvesBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getCurvesFieldBuilder() : null;
+            } else {
+              curvesBuilder_.addAllMessages(other.curves_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve m =
+                    input.readMessage(
+                        org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.parser(),
+                        extensionRegistry);
+                if (curvesBuilder_ == null) {
+                  ensureCurvesIsMutable();
+                  curves_.add(m);
+                } else {
+                  curvesBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve> curves_ =
+        java.util.Collections.emptyList();
+      private void ensureCurvesIsMutable() {
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          curves_ = new java.util.ArrayList<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve>(curves_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder> curvesBuilder_;
+
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve> getCurvesList() {
+        if (curvesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(curves_);
+        } else {
+          return curvesBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public int getCurvesCount() {
+        if (curvesBuilder_ == null) {
+          return curves_.size();
+        } else {
+          return curvesBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve getCurves(int index) {
+        if (curvesBuilder_ == null) {
+          return curves_.get(index);
+        } else {
+          return curvesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder setCurves(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve value) {
+        if (curvesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureCurvesIsMutable();
+          curves_.set(index, value);
+          onChanged();
+        } else {
+          curvesBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder setCurves(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder builderForValue) {
+        if (curvesBuilder_ == null) {
+          ensureCurvesIsMutable();
+          curves_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          curvesBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder addCurves(org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve value) {
+        if (curvesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureCurvesIsMutable();
+          curves_.add(value);
+          onChanged();
+        } else {
+          curvesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder addCurves(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve value) {
+        if (curvesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureCurvesIsMutable();
+          curves_.add(index, value);
+          onChanged();
+        } else {
+          curvesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder addCurves(
+          org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder builderForValue) {
+        if (curvesBuilder_ == null) {
+          ensureCurvesIsMutable();
+          curves_.add(builderForValue.build());
+          onChanged();
+        } else {
+          curvesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder addCurves(
+          int index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder builderForValue) {
+        if (curvesBuilder_ == null) {
+          ensureCurvesIsMutable();
+          curves_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          curvesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder addAllCurves(
+          java.lang.Iterable<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve> values) {
+        if (curvesBuilder_ == null) {
+          ensureCurvesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, curves_);
+          onChanged();
+        } else {
+          curvesBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder clearCurves() {
+        if (curvesBuilder_ == null) {
+          curves_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          curvesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public Builder removeCurves(int index) {
+        if (curvesBuilder_ == null) {
+          ensureCurvesIsMutable();
+          curves_.remove(index);
+          onChanged();
+        } else {
+          curvesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder getCurvesBuilder(
+          int index) {
+        return getCurvesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder getCurvesOrBuilder(
+          int index) {
+        if (curvesBuilder_ == null) {
+          return curves_.get(index);  } else {
+          return curvesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public java.util.List<? extends org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder> 
+           getCurvesOrBuilderList() {
+        if (curvesBuilder_ != null) {
+          return curvesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(curves_);
+        }
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder addCurvesBuilder() {
+        return getCurvesFieldBuilder().addBuilder(
+            org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder addCurvesBuilder(
+          int index) {
+        return getCurvesFieldBuilder().addBuilder(
+            index, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.kobe.xbot.xdashbackend.utilities.BezierCurve curves = 1;</code>
+       */
+      public java.util.List<org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder> 
+           getCurvesBuilderList() {
+        return getCurvesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder> 
+          getCurvesFieldBuilder() {
+        if (curvesBuilder_ == null) {
+          curvesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurve.Builder, org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurveOrBuilder>(
+                  curves_,
+                  ((bitField0_ & 0x00000001) != 0),
+                  getParentForChildren(),
+                  isClean());
+          curves_ = null;
+        }
+        return curvesBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:org.kobe.xbot.xdashbackend.utilities.BezierCurves)
+    }
+
+    // @@protoc_insertion_point(class_scope:org.kobe.xbot.xdashbackend.utilities.BezierCurves)
+    private static final org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves();
+    }
+
+    public static org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<BezierCurves>
+        PARSER = new com.google.protobuf.AbstractParser<BezierCurves>() {
+      @java.lang.Override
+      public BezierCurves parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<BezierCurves> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<BezierCurves> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.kobe.xbot.xdashbackend.utilities.BezierCurveProto.BezierCurves getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface PlanBezierPathRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:org.kobe.xbot.xdashbackend.utilities.PlanBezierPathRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -606,12 +2170,6 @@ public final class BezierCurveProto {
      * @return The safeRadiusInches.
      */
     double getSafeRadiusInches();
-
-    /**
-     * <code>double metersPerSecond = 4;</code>
-     * @return The metersPerSecond.
-     */
-    double getMetersPerSecond();
   }
   /**
    * Protobuf type {@code org.kobe.xbot.xdashbackend.utilities.PlanBezierPathRequest}
@@ -712,17 +2270,6 @@ public final class BezierCurveProto {
       return safeRadiusInches_;
     }
 
-    public static final int METERSPERSECOND_FIELD_NUMBER = 4;
-    private double metersPerSecond_ = 0D;
-    /**
-     * <code>double metersPerSecond = 4;</code>
-     * @return The metersPerSecond.
-     */
-    @java.lang.Override
-    public double getMetersPerSecond() {
-      return metersPerSecond_;
-    }
-
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -746,9 +2293,6 @@ public final class BezierCurveProto {
       if (java.lang.Double.doubleToRawLongBits(safeRadiusInches_) != 0) {
         output.writeDouble(3, safeRadiusInches_);
       }
-      if (java.lang.Double.doubleToRawLongBits(metersPerSecond_) != 0) {
-        output.writeDouble(4, metersPerSecond_);
-      }
       getUnknownFields().writeTo(output);
     }
 
@@ -769,10 +2313,6 @@ public final class BezierCurveProto {
       if (java.lang.Double.doubleToRawLongBits(safeRadiusInches_) != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeDoubleSize(3, safeRadiusInches_);
-      }
-      if (java.lang.Double.doubleToRawLongBits(metersPerSecond_) != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(4, metersPerSecond_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -802,9 +2342,6 @@ public final class BezierCurveProto {
       if (java.lang.Double.doubleToLongBits(getSafeRadiusInches())
           != java.lang.Double.doubleToLongBits(
               other.getSafeRadiusInches())) return false;
-      if (java.lang.Double.doubleToLongBits(getMetersPerSecond())
-          != java.lang.Double.doubleToLongBits(
-              other.getMetersPerSecond())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -827,9 +2364,6 @@ public final class BezierCurveProto {
       hash = (37 * hash) + SAFERADIUSINCHES_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
           java.lang.Double.doubleToLongBits(getSafeRadiusInches()));
-      hash = (37 * hash) + METERSPERSECOND_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-          java.lang.Double.doubleToLongBits(getMetersPerSecond()));
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -979,7 +2513,6 @@ public final class BezierCurveProto {
           goalBuilder_ = null;
         }
         safeRadiusInches_ = 0D;
-        metersPerSecond_ = 0D;
         return this;
       }
 
@@ -1028,9 +2561,6 @@ public final class BezierCurveProto {
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
           result.safeRadiusInches_ = safeRadiusInches_;
-        }
-        if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.metersPerSecond_ = metersPerSecond_;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -1088,9 +2618,6 @@ public final class BezierCurveProto {
         if (other.getSafeRadiusInches() != 0D) {
           setSafeRadiusInches(other.getSafeRadiusInches());
         }
-        if (other.getMetersPerSecond() != 0D) {
-          setMetersPerSecond(other.getMetersPerSecond());
-        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -1136,11 +2663,6 @@ public final class BezierCurveProto {
                 bitField0_ |= 0x00000004;
                 break;
               } // case 25
-              case 33: {
-                metersPerSecond_ = input.readDouble();
-                bitField0_ |= 0x00000008;
-                break;
-              } // case 33
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -1431,38 +2953,6 @@ public final class BezierCurveProto {
         onChanged();
         return this;
       }
-
-      private double metersPerSecond_ ;
-      /**
-       * <code>double metersPerSecond = 4;</code>
-       * @return The metersPerSecond.
-       */
-      @java.lang.Override
-      public double getMetersPerSecond() {
-        return metersPerSecond_;
-      }
-      /**
-       * <code>double metersPerSecond = 4;</code>
-       * @param value The metersPerSecond to set.
-       * @return This builder for chaining.
-       */
-      public Builder setMetersPerSecond(double value) {
-
-        metersPerSecond_ = value;
-        bitField0_ |= 0x00000008;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>double metersPerSecond = 4;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearMetersPerSecond() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        metersPerSecond_ = 0D;
-        onChanged();
-        return this;
-      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -1533,6 +3023,16 @@ public final class BezierCurveProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_org_kobe_xbot_xdashbackend_utilities_Point_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_org_kobe_xbot_xdashbackend_utilities_PlanBezierPathRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -1548,12 +3048,16 @@ public final class BezierCurveProto {
     java.lang.String[] descriptorData = {
       "\n\035protos/BezierCurveProto.proto\022$org.kob" +
       "e.xbot.xdashbackend.utilities\"\035\n\005Point\022\t" +
-      "\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\"\301\001\n\025PlanBezierPathR" +
-      "equest\022:\n\005start\030\001 \001(\0132+.org.kobe.xbot.xd" +
-      "ashbackend.utilities.Point\0229\n\004goal\030\002 \001(\013" +
-      "2+.org.kobe.xbot.xdashbackend.utilities." +
-      "Point\022\030\n\020safeRadiusInches\030\003 \001(\001\022\027\n\017meter" +
-      "sPerSecond\030\004 \001(\001b\006proto3"
+      "\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\"Q\n\013BezierCurve\022B\n\rc" +
+      "ontrolPoints\030\001 \003(\0132+.org.kobe.xbot.xdash" +
+      "backend.utilities.Point\"Q\n\014BezierCurves\022" +
+      "A\n\006curves\030\001 \003(\01321.org.kobe.xbot.xdashbac" +
+      "kend.utilities.BezierCurve\"\250\001\n\025PlanBezie" +
+      "rPathRequest\022:\n\005start\030\001 \001(\0132+.org.kobe.x" +
+      "bot.xdashbackend.utilities.Point\0229\n\004goal" +
+      "\030\002 \001(\0132+.org.kobe.xbot.xdashbackend.util" +
+      "ities.Point\022\030\n\020safeRadiusInches\030\003 \001(\001b\006p" +
+      "roto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1565,12 +3069,24 @@ public final class BezierCurveProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_org_kobe_xbot_xdashbackend_utilities_Point_descriptor,
         new java.lang.String[] { "X", "Y", });
-    internal_static_org_kobe_xbot_xdashbackend_utilities_PlanBezierPathRequest_descriptor =
+    internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_descriptor =
       getDescriptor().getMessageTypes().get(1);
+    internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurve_descriptor,
+        new java.lang.String[] { "ControlPoints", });
+    internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_org_kobe_xbot_xdashbackend_utilities_BezierCurves_descriptor,
+        new java.lang.String[] { "Curves", });
+    internal_static_org_kobe_xbot_xdashbackend_utilities_PlanBezierPathRequest_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_org_kobe_xbot_xdashbackend_utilities_PlanBezierPathRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_org_kobe_xbot_xdashbackend_utilities_PlanBezierPathRequest_descriptor,
-        new java.lang.String[] { "Start", "Goal", "SafeRadiusInches", "MetersPerSecond", });
+        new java.lang.String[] { "Start", "Goal", "SafeRadiusInches", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

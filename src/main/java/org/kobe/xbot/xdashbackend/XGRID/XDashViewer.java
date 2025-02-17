@@ -13,7 +13,7 @@ import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class XDashViewer extends JFrame {
+public class    XDashViewer extends JFrame {
     private static final XDashLogger logger = XDashLogger.getLogger();
     private final JLabel imageLabel;
     private final JLabel timestampLabel;  // Label for timestamp

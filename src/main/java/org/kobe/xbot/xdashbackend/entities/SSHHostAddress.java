@@ -140,7 +140,7 @@ public class SSHHostAddress {
         try {
             // Construct the rsync command with sshpass for password authentication
             String command = String.format(
-                    "sshpass -p '%s' rsync -avzp -e ssh %s %s@%s:%s",
+                    "sshpass -p '%s' rsync -avzp -e \"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null\" %s %s@%s:%s",
                     this.password, hostDir, this.username, this.address, targetDir
             );
 
