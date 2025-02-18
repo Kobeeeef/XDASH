@@ -27,9 +27,10 @@ public class FieldPanel extends JPanel {
     private static final int MAX_ROBOT_SIZE = 60;
 
     private static final double NOTE_METERS = 0.3556;
-    private static final double ROBOT_METERS = 0.762;
+    private static final double ROBOT_METERS = 0.889;
 
-    private double[][][] bezierCurves = new double[][][]{};
+    private double[][][] bezierCurves;
+    private double finalRotation;
 
     // Robot pose
     private Pose2d robotPose = new Pose2d(0, 0, new Rotation2d());
@@ -54,8 +55,10 @@ public class FieldPanel extends JPanel {
     private final int fieldPixelY2 = 91;    // Top boundary (flipped from config)
     private final CustomTooltip tooltip;
     private final Timer hideTimer;
+    private final XTablesViewer root;
 
-    public FieldPanel() {
+    public FieldPanel(XTablesViewer viewer) {
+        this.root = viewer;
         fieldImage = loadImage("/2025field.png");
         robotImage = loadImage("/icon.png");
         ToolTipManager.sharedInstance().setEnabled(false);
@@ -107,7 +110,6 @@ public class FieldPanel extends JPanel {
                     } else if (relativeX < 700 && relativeY > 1225) {
                         showTooltip(e, "Click to go to coral station."); // bottom blue left
                     } else {
-                        System.out.println(e.getX() + " " + e.getY());
                         showTooltip(e, "Click to go.");
                     }
                 }
@@ -159,7 +161,7 @@ public class FieldPanel extends JPanel {
                         double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
                         double fieldX = (e.getX() - leftBound) / pixelsPerMeterX;
                         double fieldY = (bottomBound - e.getY()) / pixelsPerMeterY;
-                        Pose2d clickedPose = new Pose2d(fieldX, fieldY, new Rotation2d());
+                        Pose2d clickedPose = new Pose2d(fieldX, fieldY, Rotation2d.fromDegrees(root.FINAL_ROTATION_DEFAULT));
                         clickCallback.accept(clickedPose, 100.0, e);
                     }
                 }
@@ -168,6 +170,8 @@ public class FieldPanel extends JPanel {
 
 
     }
+
+
 
     private void showTooltip(MouseEvent e, String text) {
         tooltip.setText(text);
@@ -193,8 +197,9 @@ public class FieldPanel extends JPanel {
         repaint();
     }
 
-    public void setBezierCurves(double[][][] curves) {
+    public void setBezierCurves(double[][][] curves, double finalRotation) {
         this.bezierCurves = curves;
+        this.finalRotation = finalRotation;
         repaint();
     }
 
@@ -279,7 +284,13 @@ public class FieldPanel extends JPanel {
             double displayFieldHeight = bottomBound - topBound;
             double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
             double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+            double fieldScaleX = ((double) fieldImageWidth * scaleFactor) / fieldWidthMeters;
 
+            double fieldScaleY = ((double) fieldImageHeight * scaleFactor) / fieldHeightMeters;
+
+
+            int robotPixelSize = (int) (ROBOT_METERS * pixelsPerMeterX);
+            int notePixelSize = (int) (NOTE_METERS * pixelsPerMeterX);
             if (bezierCurves != null) {
                 g2d.setColor(Color.BLUE);
                 g2d.setStroke(new BasicStroke(4));
@@ -333,22 +344,21 @@ public class FieldPanel extends JPanel {
                             }
                         }
                     }
-
                     g2d.draw(path);
                 }
+                double[][] lastSegment = bezierCurves[bezierCurves.length - 1];
+                double[] lastPoints = lastSegment[lastSegment.length - 1];
+                double lastX = lastPoints[0];
+                double lastY = lastPoints[1];
+                drawRobot(g2d, new Pose2d(lastX, lastY, Rotation2d.fromDegrees(this.finalRotation)), robotImage, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, true, Color.WHITE);
+
             }
 
 
-            double fieldScaleX = ((double) fieldImageWidth * scaleFactor) / fieldWidthMeters;
-
-            double fieldScaleY = ((double) fieldImageHeight * scaleFactor) / fieldHeightMeters;
 
 
-            int robotPixelSize = (int) (ROBOT_METERS * pixelsPerMeterX);
-            int notePixelSize = (int) (NOTE_METERS * pixelsPerMeterX);
 
-
-            drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor);
+            drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, false, Color.RED);
 
             for (Map.Entry<Pose2d, Double> entry : enemyRobots.entrySet()) {
                 drawOtherRobot(g2d, entry.getKey(), entry.getValue(), fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor);
@@ -402,7 +412,7 @@ public class FieldPanel extends JPanel {
         g2d.setTransform(oldTransform);
     }
 
-    private void drawRobot(Graphics2D g2d, Pose2d pose, BufferedImage image, double scaleX, double scaleY, int robotSize, int xOffset, int yOffset, double scaleFactor) {
+    private void drawRobot(Graphics2D g2d, Pose2d pose, BufferedImage image, double scaleX, double scaleY, int robotSize, int xOffset, int yOffset, double scaleFactor, Boolean ghost, Color borderColor) {
         if (image == null) return;
 
         // Compute displayed boundaries of the field
@@ -432,7 +442,7 @@ public class FieldPanel extends JPanel {
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
 
-        g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
+        if(!ghost) g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
         g2d.setColor(Color.RED);

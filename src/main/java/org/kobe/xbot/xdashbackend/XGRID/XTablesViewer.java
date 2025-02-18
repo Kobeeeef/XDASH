@@ -39,6 +39,7 @@ public class XTablesViewer extends JFrame {
     private static double ACCELERATION_METERS_PER_SECOND = 0.5;
 
     private static double SAFE_RADIUS_INCHES = 5;
+    public double FINAL_ROTATION_DEFAULT = 0;
 
 
     private static final XDashLogger logger = XDashLogger.getLogger();
@@ -49,7 +50,7 @@ public class XTablesViewer extends JFrame {
     public JMenuBar menuBar;
     public JMenu settingsMenu, themeItem, plannerItem;
     public JMenuItem darkThemeItem, lightThemeItem,
-            exitItem, speedMPSItem, accelerationItem, safeRadiusInches;
+            exitItem, speedMPSItem, accelerationItem, safeRadiusInches,finalRotationDefault;
     private final XTablesData cache;
     private JButton reloadButton, addButton, rebootButton, expandButton, addValueLogButton, closeButton;
     private final XTableContext client;
@@ -206,7 +207,7 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        fieldPanel = new FieldPanel();
+        fieldPanel = new FieldPanel(this);
         fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {
                 Pose2d robotPose = fieldPanel.getRobotPose();
@@ -232,16 +233,16 @@ public class XTablesViewer extends JFrame {
                 }
                 XTableValues.BezierCurves responseProto = XTableValues.BezierCurves.parseFrom(response);
                 if (!responseProto.getPathFound()) {
-                    fieldPanel.setBezierCurves(null);
+                    fieldPanel.setBezierCurves(null, 0);
                     client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, XTableValues.BezierCurves.newBuilder().buildPartial());
                     return;
                 }
                 List<XTableValues.BezierCurve> curves = responseProto.getCurvesList();
-                fieldPanel.setBezierCurves(Utilities.to3DArray(curves));
+                fieldPanel.setBezierCurves(Utilities.to3DArray(curves), goalPose.getRotation().getDegrees());
                 client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, responseProto
                         .toBuilder()
                                 .setMetersPerSecond(SPEED_METERS_PER_SECOND)
-                                .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND  )
+                                .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND)
                         .setFinalRotationDegrees(goalPose.getRotation().getDegrees()).build());
             } catch (Exception e) {
                 System.out.println("Reconnecting to socket...");
@@ -263,6 +264,7 @@ public class XTablesViewer extends JFrame {
         accelerationItem = new JMenuItem("Acceleration");
         speedMPSItem = new JMenuItem("Meters Per Second");
         safeRadiusInches = new JMenuItem("Safe Radius Inches");
+        finalRotationDefault = new JMenuItem("Default Rotation Degrees");
         toolPanel.add(createControlPanel());
 
         safeRadiusInches.addActionListener(e -> {
@@ -290,6 +292,16 @@ public class XTablesViewer extends JFrame {
             if (input != null) {
                 try {
                     ACCELERATION_METERS_PER_SECOND = Double.parseDouble(input);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        finalRotationDefault.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(this, "Enter value:", FINAL_ROTATION_DEFAULT);
+            if (input != null) {
+                try {
+                    FINAL_ROTATION_DEFAULT = Double.parseDouble(input);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -541,11 +553,12 @@ public class XTablesViewer extends JFrame {
 
         themeItem.add(darkThemeItem);
         themeItem.add(lightThemeItem);
-        settingsMenu.addSeparator();
         settingsMenu.add(plannerItem);
         plannerItem.add(speedMPSItem);
         plannerItem.add(accelerationItem);
         plannerItem.add(safeRadiusInches);
+        plannerItem.add(finalRotationDefault);
+
 
         settingsMenu.add(exitItem);
         this.add(toolPanel, BorderLayout.NORTH);
