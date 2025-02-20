@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.kobe.xbot</groupId>
             <artifactId>xtables</artifactId>
-            <version>5.2.9.5</version>
+            <version>5.3.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

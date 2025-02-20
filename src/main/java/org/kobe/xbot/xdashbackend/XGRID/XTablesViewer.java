@@ -6,8 +6,10 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import edu.wpi.first.math.geometry.Pose2d;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.kobe.xbot.JClient.XTableContext;
+import org.kobe.xbot.Utilities.Entities.VisionCoprocessor;
 import org.kobe.xbot.Utilities.Entities.XTableProto;
 import org.kobe.xbot.Utilities.Entities.XTableValues;
+import org.kobe.xbot.Utilities.VisionCoprocessorCommander;
 import org.kobe.xbot.Utilities.XTablesByteUtils;
 import org.kobe.xbot.Utilities.XTablesData;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
@@ -38,7 +40,7 @@ public class XTablesViewer extends JFrame {
     private static double SPEED_METERS_PER_SECOND = 4;
     private static double ACCELERATION_METERS_PER_SECOND = 0.5;
 
-    private static double SAFE_RADIUS_INCHES = 5;
+    private static double SAFE_RADIUS_INCHES = 10;
     public double FINAL_ROTATION_DEFAULT = 0;
 
 
@@ -50,7 +52,7 @@ public class XTablesViewer extends JFrame {
     public JMenuBar menuBar;
     public JMenu settingsMenu, themeItem, plannerItem;
     public JMenuItem darkThemeItem, lightThemeItem,
-            exitItem, speedMPSItem, accelerationItem, safeRadiusInches,finalRotationDefault;
+            exitItem, speedMPSItem, accelerationItem, safeRadiusInches, finalRotationDefault;
     private final XTablesData cache;
     private JButton reloadButton, addButton, rebootButton, expandButton, addValueLogButton, closeButton;
     private final XTableContext client;
@@ -207,43 +209,52 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
+        VisionCoprocessorCommander commander = new VisionCoprocessorCommander(VisionCoprocessor.LOCALHOST);
         fieldPanel = new FieldPanel(this);
         fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {
                 Pose2d robotPose = fieldPanel.getRobotPose();
-                BezierCurveProto.Point start = BezierCurveProto.Point.newBuilder()
+                XTableValues.ControlPoint start = XTableValues.ControlPoint.newBuilder()
                         .setX(robotPose.getX())
                         .setY(robotPose.getY())
                         .build();
-                BezierCurveProto.Point goal = BezierCurveProto.Point.newBuilder()
+                XTableValues.ControlPoint goal = XTableValues.ControlPoint.newBuilder()
                         .setX(goalPose.getX())
                         .setY(goalPose.getY())
                         .build();
-                BezierCurveProto.PlanBezierPathRequest request = BezierCurveProto.PlanBezierPathRequest.newBuilder()
-                        .setSafeRadiusInches(SAFE_RADIUS_INCHES)
+               XTableValues.BezierCurves bezierCurvesResponse = commander.requestBezierPathWithOptions(XTableValues.RequestVisionCoprocessorMessage.newBuilder()
                         .setStart(start)
-                        .setGoal(goal)
-                        .build();
+                        .setEnd(goal)
+                               .setSafeDistanceInches(SAFE_RADIUS_INCHES)
+                       .build(), 3, TimeUnit.SECONDS);
 
-                socket.send(request.toByteArray());
-
-                byte[] response = socket.recv();
-                if (response == null) {
+                if (bezierCurvesResponse == null) {
                     throw new Exception("Socket not connected.");
                 }
-                XTableValues.BezierCurves responseProto = XTableValues.BezierCurves.parseFrom(response);
-                if (!responseProto.getPathFound()) {
+                if (bezierCurvesResponse.getCurvesCount() == 0) {
                     fieldPanel.setBezierCurves(null, 0);
                     client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, XTableValues.BezierCurves.newBuilder().buildPartial());
                     return;
                 }
-                List<XTableValues.BezierCurve> curves = responseProto.getCurvesList();
+                List<XTableValues.BezierCurve> curves = bezierCurvesResponse.getCurvesList();
                 fieldPanel.setBezierCurves(Utilities.to3DArray(curves), goalPose.getRotation().getDegrees());
-                client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, responseProto
+
+                XTableValues.TraversalOptions options = XTableValues.TraversalOptions.newBuilder()
+                        .setMetersPerSecond(SPEED_METERS_PER_SECOND) // What should the max speed be?
+                        .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND) // How fast should it speed up?
+                        .setFinalRotationDegrees(goalPose.getRotation().getDegrees()) // What should the final rotation be?
+                        .setFaceNearestReefAprilTag(true) // Should robot look at reef while traversing path?
+                        .setSnapToNearestAprilTag(true) // Should robot instantly snap to nearest April Tag?
+                        .setStartFaceNearestReefAprilTagPathThresholdPercentage(0) // When should robot begin April Tag Mode?
+                        .setEndFaceNearestReefAprilTagPathThresholdPercentage(60) // When should it stop and try to achieve final rotation?
+                        .setFaceNearestReefAprilTagDirection(XTableValues.RobotDirection.FRONT) // Which direction should it face while in April Tag Mode?
+                        .setAprilTagRotationDegreesTurnSpeedFactorPerStep(150) // If snap is false how many degrees should it turn per step for a Tag?
+                        .setFinalRotationTurnSpeedFactor(3) // How fast should it turn back to final rotation (2x)?
+                        .build();
+                client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, bezierCurvesResponse
                         .toBuilder()
-                                .setMetersPerSecond(SPEED_METERS_PER_SECOND)
-                                .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND)
-                        .setFinalRotationDegrees(goalPose.getRotation().getDegrees()).build());
+                        .setOptions(options) // Setting options
+                        .build());
             } catch (Exception e) {
                 System.out.println("Reconnecting to socket...");
                 reconnectSocket();
