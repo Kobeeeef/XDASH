@@ -8,6 +8,7 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import { WebsocketContext } from '../../../layout/context/websocketcontext';
 import TimeAgo from '../../../components/TimeAgo';
 import { Image } from 'primereact/image';
+import axios from 'axios';
 
 
 const Dashboard = () => {
@@ -64,25 +65,21 @@ const Dashboard = () => {
 
     useEffect(() => {
         for (let hostname of hostnames) {
-            fetch(`http://${hostname}:5800/api/status`)
+
+            axios
+                .get(`http://${hostname}:5800/api/status`, { timeout: 2500 }) // 3 seconds timeout
                 .then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then((data) => {
                     setStatuses((prev) => {
                         const updatedMessages = { ...prev };
-                        updatedMessages[hostname] = data;
-                        return updatedMessages; // Return the updated object
+                        updatedMessages[hostname] = response.data;
+                        return updatedMessages;
                     });
                 })
                 .catch((err) => {
                     setStatuses((prev) => {
                         const updatedMessages = { ...prev };
                         updatedMessages[hostname] = null;
-                        return updatedMessages; // Return the updated object
+                        return updatedMessages;
                     });
                     console.error('Error fetching status:', err);
                 });
