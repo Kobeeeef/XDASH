@@ -32,6 +32,7 @@ const AppMenu = () => {
             label: 'Vision',
             items: [
                 { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' },
+                { label: 'April Tags', icon: 'pi pi-qrcode', to: '/photonvision' },
                 { label: 'Live Camera', icon: 'pi pi-camera', to: '/camera' }
             ]
         },

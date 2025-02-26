@@ -471,6 +471,30 @@ const Dashboard = () => {
                                            })
                                        } />
                             </div>
+                            <Divider align="center">
+                                <Badge value="PhotonVision"></Badge>
+                            </Divider>
+                            <div className="p-fluid">
+                                <Chips separator={','} placeholder={'Hostnames'} value={newData?.PHOTONVISION_COPROCESSOR_HOSTNAMES}
+                                       onChange={(e) =>
+                                           setNewData(prev => {
+                                               if (e.value.length > prev?.PHOTONVISION_COPROCESSOR_HOSTNAMES?.length && prev?.PHOTONVISION_COPROCESSOR_HOSTNAMES?.includes(e.value[e.value.length - 1])) {
+                                                   toast.current.show({
+                                                       severity: 'error',
+                                                       summary: 'Duplicate Hostnames!',
+                                                       detail: 'There cannot be multiple duplicate hostnames!'
+                                                   });
+                                                   playErrorNotificationSound();
+                                                   return prev;
+                                               } else {
+                                                   return ({
+                                                       ...prev,
+                                                       PHOTONVISION_COPROCESSOR_HOSTNAMES: e.value
+                                                   });
+                                               }
+                                           })
+                                       } />
+                            </div>
                         </TabPanel>
                         <TabPanel disabled={!isConnected || loading} className={'w-full'} header="Docker"
                                   leftIcon="pi pi-image mr-2">
