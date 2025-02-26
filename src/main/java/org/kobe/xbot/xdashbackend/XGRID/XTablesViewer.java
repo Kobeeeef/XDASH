@@ -15,11 +15,7 @@ import org.kobe.xbot.Utilities.XTablesData;
 import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.utilities.AudioUtil;
-import org.kobe.xbot.xdashbackend.utilities.BezierCurveProto;
 import org.kobe.xbot.xdashbackend.utilities.Utilities;
-import org.zeromq.SocketType;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -38,7 +34,7 @@ public class XTablesViewer extends JFrame {
     private static final String TARGET_WAYPOINTS_TABLE = "target_waypoints";
     private static final String BEZIER_CURVES_TABLE = "bezier_path";
     private static double SPEED_METERS_PER_SECOND = 4;
-    private static double ACCELERATION_METERS_PER_SECOND = 0.5;
+    private static double ACCELERATION_METERS_PER_SECOND = 1;
 
     private static double SAFE_RADIUS_INCHES = 10;
     public double FINAL_ROTATION_DEFAULT = 0;
@@ -58,27 +54,11 @@ public class XTablesViewer extends JFrame {
     private final XTableContext client;
     private Thread cacheThread;
     private final Theme theme;
-    private ZMQ.Socket socket;
-    private ZContext context;
 
-    private void reconnectSocket() {
-        if (this.socket != null) {
-            this.socket.close();
-        }
-        this.socket = context.createSocket(SocketType.REQ);
-        this.socket.connect("tcp://127.0.0.1:8531");
-        this.socket.setReceiveTimeOut(3000);
-        this.socket.setSendTimeOut(3000);
-    }
 
     public XTablesViewer(XTableContext client) {
         this.client = client;
-        this.context = new ZContext();
 
-        this.socket = context.createSocket(SocketType.REQ);
-        this.socket.connect("tcp://127.0.0.1:8531");
-        this.socket.setReceiveTimeOut(3000);
-        this.socket.setSendTimeOut(3000);
 
         this.cache = new XTablesData();
         InputStream nightStream = getClass().getResourceAsStream("/themes/monokai.xml");
@@ -209,7 +189,7 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        VisionCoprocessorCommander commander = new VisionCoprocessorCommander(VisionCoprocessor.LOCALHOST);
+        VisionCoprocessorCommander commander = new VisionCoprocessorCommander(VisionCoprocessor.ORIN3_DHCP);
         fieldPanel = new FieldPanel(this);
         fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {
@@ -222,11 +202,11 @@ public class XTablesViewer extends JFrame {
                         .setX(goalPose.getX())
                         .setY(goalPose.getY())
                         .build();
-               XTableValues.BezierCurves bezierCurvesResponse = commander.requestBezierPathWithOptions(XTableValues.RequestVisionCoprocessorMessage.newBuilder()
+                XTableValues.BezierCurves bezierCurvesResponse = commander.requestBezierPathWithOptions(XTableValues.RequestVisionCoprocessorMessage.newBuilder()
                         .setStart(start)
                         .setEnd(goal)
-                               .setSafeDistanceInches(SAFE_RADIUS_INCHES)
-                       .build(), 3, TimeUnit.SECONDS);
+                        .setSafeDistanceInches(SAFE_RADIUS_INCHES)
+                        .build(), 3, TimeUnit.SECONDS);
 
                 if (bezierCurvesResponse == null) {
                     throw new Exception("Socket not connected.");
@@ -243,21 +223,20 @@ public class XTablesViewer extends JFrame {
                         .setMetersPerSecond(SPEED_METERS_PER_SECOND) // What should the max speed be?
                         .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND) // How fast should it speed up?
                         .setFinalRotationDegrees(goalPose.getRotation().getDegrees()) // What should the final rotation be?
-                        .setFaceNearestReefAprilTag(true) // Should robot look at reef while traversing path?
+                        .setFaceNearestReefAprilTag(false) // Should robot look at reef while traversing path?
                         .setSnapToNearestAprilTag(true) // Should robot instantly snap to nearest April Tag?
                         .setStartFaceNearestReefAprilTagPathThresholdPercentage(0) // When should robot begin April Tag Mode?
-                        .setEndFaceNearestReefAprilTagPathThresholdPercentage(60) // When should it stop and try to achieve final rotation?
+                        .setEndFaceNearestReefAprilTagPathThresholdPercentage(80) // When should it stop and try to achieve final rotation?
                         .setFaceNearestReefAprilTagDirection(XTableValues.RobotDirection.FRONT) // Which direction should it face while in April Tag Mode?
                         .setAprilTagRotationDegreesTurnSpeedFactorPerStep(150) // If snap is false how many degrees should it turn per step for a Tag?
-                        .setFinalRotationTurnSpeedFactor(3) // How fast should it turn back to final rotation (2x)?
+                        .setFinalRotationTurnSpeedFactor(2) // How fast should it turn back to final rotation (2x)?
                         .build();
                 client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, bezierCurvesResponse
                         .toBuilder()
                         .setOptions(options) // Setting options
                         .build());
             } catch (Exception e) {
-                System.out.println("Reconnecting to socket...");
-                reconnectSocket();
+                e.printStackTrace();
             }
         });
         dropdownViewer = new XTablesDropdownViewer(client, cache);

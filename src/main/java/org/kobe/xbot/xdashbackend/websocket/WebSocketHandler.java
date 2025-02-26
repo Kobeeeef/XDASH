@@ -506,7 +506,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         ));
                     }
 
-                } else if (message.getType().equals("DOCKER-BUILD")) {
+                } else if (message.getType().equals("GET-PHOTONVISION-HOSTNAMES")) {
+                    WebSocketHandler.getBroadcastService().queueBroadcast(new Message(XdashbackendApplication.getConfigLoader().getPHOTONVISION_COPROCESSOR_HOSTNAMES(), message.getType()));
+                }else if (message.getType().equals("DOCKER-BUILD")) {
                     String msg = message.getMessage();
                     if (msg != null) {
                         try {

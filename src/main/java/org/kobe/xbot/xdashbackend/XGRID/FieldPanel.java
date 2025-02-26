@@ -93,7 +93,7 @@ public class FieldPanel extends JPanel {
                 int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
                 int relativeX = (int) ((e.getX() - xOffset) / scaleFactor);
                 int relativeY = (int) ((e.getY() - yOffset) / scaleFactor);
-//                System.out.println(relativeX + " " + relativeY);
+                System.out.println(relativeX + " " + relativeY);
                 // Check if the mouse is outside the field bounds
                 if (e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
                     tooltip.setVisible(false);
@@ -101,8 +101,19 @@ public class FieldPanel extends JPanel {
                     // Your existing logic for showing tooltips, etc.
                     Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
                     Map.Entry<Pose2d, Double> clickedNote = getClickedNote(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
+                    System.out.println(Landmarks.getBranchPose(Landmarks.ReefFace.CLOSE, Landmarks.Branch.A));
                     if (clickedEnemy != null && clickCallback != null) {
                         showTooltip(e, "Click to go to robot.");
+                    } else if ((relativeY >= 766 && relativeY <= 811) && (relativeX >= 2407 && relativeX <= 2523)) {
+                        showTooltip(e, "Click to go to CLOSE red branch A."); // bottom blue left
+                    } else if ((relativeY >= 766 && relativeY <= 826) && (relativeX >= 975 && relativeX <= 1087)) {
+                        showTooltip(e, "Click to go to CLOSE blue branch B.");
+                    } else if ((relativeY >= 706 && relativeY <= 766) && (relativeX >= 975 && relativeX <= 1087)) {
+                        showTooltip(e, "Click to go to CLOSE blue branch A.");
+                    } else if ((relativeY >= 706 && relativeY <= 766) && (relativeX >= 1251 && relativeX <= 1369)) {
+                        showTooltip(e, "Click to go to FAR blue branch B.");
+                    } else if ((relativeY >= 766 && relativeY <= 826) && (relativeX >= 1251 && relativeX <= 1369)) {
+                        showTooltip(e, "Click to go to FAR blue branch A.");
                     } else if (clickedNote != null && clickCallback != null) {
                         showTooltip(e, "Click to go to note.");
                     } else if (relativeX < 700 && relativeY < 340) {
@@ -151,6 +162,14 @@ public class FieldPanel extends JPanel {
                         clickCallback.accept(Landmarks.getCoralStationSectionPose(Landmarks.CoralStation.LEFT, Landmarks.CoralStationSection.MID), 100.0, e);
                     } else if (relativeX < 700 && relativeY > 1225) {
                         clickCallback.accept(Landmarks.getCoralStationSectionPose(Landmarks.CoralStation.RIGHT, Landmarks.CoralStationSection.MID), 100.0, e);
+                    } else if ((relativeY >= 766 && relativeY <= 826) && (relativeX >= 975 && relativeX <= 1087)) {
+                        clickCallback.accept(Landmarks.getBranchPose(Landmarks.ReefFace.CLOSE, Landmarks.Branch.B), 100.0, e);
+                    } else if ((relativeY >= 706 && relativeY <= 766) && (relativeX >= 975 && relativeX <= 1087)) {
+                        clickCallback.accept(Landmarks.getBranchPose(Landmarks.ReefFace.CLOSE, Landmarks.Branch.A), 100.0, e);
+                    } else if ((relativeY >= 706 && relativeY <= 766) && (relativeX >= 1251 && relativeX <= 1369)) {
+                        clickCallback.accept(Landmarks.getBranchPose(Landmarks.ReefFace.FAR, Landmarks.Branch.B), 100.0, e);
+                    } else if ((relativeY >= 766 && relativeY <= 826) && (relativeX >= 1251 && relativeX <= 1369)) {
+                        clickCallback.accept(Landmarks.getBranchPose(Landmarks.ReefFace.FAR, Landmarks.Branch.A), 100.0, e);
                     } else {
                         if (e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
                             return;
@@ -170,7 +189,6 @@ public class FieldPanel extends JPanel {
 
 
     }
-
 
 
     private void showTooltip(MouseEvent e, String text) {
@@ -355,9 +373,6 @@ public class FieldPanel extends JPanel {
             }
 
 
-
-
-
             drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, false, Color.RED);
 
             for (Map.Entry<Pose2d, Double> entry : enemyRobots.entrySet()) {
@@ -442,7 +457,7 @@ public class FieldPanel extends JPanel {
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
 
-        if(!ghost) g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
+        if (!ghost) g2d.drawImage(image, -robotSize / 2, -robotSize / 2, robotSize, robotSize, null);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
         g2d.setColor(Color.RED);

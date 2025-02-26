@@ -20,6 +20,7 @@ public class ConfigProperties {
     private String PROJECT_DIRECTORY;
     private String SYNC_DIRECTORY;
     private String SYNC_TARGET_DIRECTORY;
+    private String[] PHOTONVISION_COPROCESSOR_HOSTNAMES;
 
     private String ALT_BASE_IMAGE_URL;
     private String DOCKER_IMAGES_DIRECTORY;
@@ -40,6 +41,15 @@ public class ConfigProperties {
     public ConfigProperties(LocalDateTime LAST_UPDATED, LocalDateTime LAST_RELOADED) {
         this.LAST_UPDATED = LAST_UPDATED.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         this.LAST_RELOADED = LAST_RELOADED.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public String[] getPHOTONVISION_COPROCESSOR_HOSTNAMES() {
+        return PHOTONVISION_COPROCESSOR_HOSTNAMES;
+    }
+
+    public ConfigProperties setPHOTONVISION_COPROCESSOR_HOSTNAMES(String[] PHOTONVISION_COPROCESSOR_HOSTNAMES) {
+        this.PHOTONVISION_COPROCESSOR_HOSTNAMES = PHOTONVISION_COPROCESSOR_HOSTNAMES;
+        return this;
     }
 
     public String getDOCKER_ALT_IMPORT_TIMEOUT() {

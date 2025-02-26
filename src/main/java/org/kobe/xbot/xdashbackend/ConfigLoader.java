@@ -3,12 +3,9 @@ package org.kobe.xbot.xdashbackend;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.xdashbackend.entities.ConfigProperties;
 import org.kobe.xbot.xdashbackend.entities.DeviceAddData;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -34,10 +31,16 @@ public class ConfigLoader {
     public static final String DEFAULT_ROBORIO_SERVER = "roboRIO-488-FRC.local";
     public static final String DEFAULT_ROBORIO_ADDRESS = "10.4.88.2";
     public static final String DEFAULT_SERVICES = "";
+
+    public final List<String> PHOTONVISION_COPROCESSOR_HOSTNAMES = new ArrayList<>();
     private LocalDateTime lastReloaded;
     private LocalDateTime lastUpdated;
 
     public ConfigLoader() {
+        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("photonvisionfrontright.local");
+        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("photonvisionback.local");
+        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("photonvisionfrontleft.local");
+
         loadProperties();
         this.lastReloaded = LocalDateTime.now();
         this.lastUpdated = LocalDateTime.now();
@@ -95,6 +98,21 @@ public class ConfigLoader {
         }
     }
 
+    public List<String> getPropertyList(String key, List<String> defaultValue) {
+        String value = properties.getProperty(key);
+        if (value == null || value.isEmpty()) return defaultValue;
+
+        try {
+            // Deserialize JSON array to List
+            Type listType = new TypeToken<List<String>>() {
+            }.getType();
+            return gson.fromJson(value, listType);
+        } catch (Exception e) {
+            logger.fatal("Error parsing property list for key: " + key + ": " + e.getMessage());
+            return defaultValue;
+        }
+    }
+
     public void setPropertyList(String key, List<String> list) {
         if (list == null || list.isEmpty()) {
             properties.remove(key);
@@ -110,6 +128,7 @@ public class ConfigLoader {
     }
 
     private void setDefaultProperties() {
+        setPropertyList("servers.photonvision.hostnames", PHOTONVISION_COPROCESSOR_HOSTNAMES);
         properties.setProperty("servers.password", DEFAULT_SERVERS_PASSWORD);
         properties.setProperty("servers.user", DEFAULT_SERVERS_USER);
         properties.setProperty("servers.connectTimeout", String.valueOf(DEFAULT_CONNECT_TIMEOUT));
@@ -224,12 +243,15 @@ public class ConfigLoader {
     public String getProjectDirectory() {
         return getProperty("project.directory");
     }
+
     public String getSyncDirectory() {
         return getProperty("sync.directory");
     }
+
     public String getSyncTargetDirectory() {
         return getProperty("sync.target.directory");
     }
+
     public String getDockerComposeFileDirectory() {
         return getProperty("docker.compose.file.directory");
     }
@@ -255,6 +277,7 @@ public class ConfigLoader {
                 .setSERVER_PASSWORD(getServerPassword())
                 .setROBORIO_HOSTNAME(getRoboRIOHostname())
                 .setROBORIO_USERNAME(getRoboRIOUsername())
+
                 .setDOCKER_ALT_IMPORT_TIMEOUT(String.valueOf(getDockerAltBaseImageImportTimeout()))
                 .setALT_BASE_IMAGE_URL(getDockerAltBaseImageURL())
                 .setSYNC_DIRECTORY(getSyncDirectory())
@@ -266,6 +289,7 @@ public class ConfigLoader {
                 .setWIFI_SSID(getInternetWifiSSID())
                 .setROBOT_WIFI_SSID(getRobotWifiSSID())
                 .setROBORIO_ADDRESS(getRoboRIOAddress())
+                .setPHOTONVISION_COPROCESSOR_HOSTNAMES(getPHOTONVISION_COPROCESSOR_HOSTNAMES().toArray(new String[0]))
                 .setSERVICES(getServices().toArray(new String[0]));
     }
 
@@ -343,6 +367,9 @@ public class ConfigLoader {
         if (configProperties.getSERVICES() != null) {
             setPropertyList("services", Arrays.stream(configProperties.getSERVICES()).toList());
         }
+        if (configProperties.getPHOTONVISION_COPROCESSOR_HOSTNAMES() != null) {
+            setPropertyList("servers.photonvision.hostnames", Arrays.stream(configProperties.getPHOTONVISION_COPROCESSOR_HOSTNAMES()).toList());
+        }
 
         save(); // Save updated properties to the file
         logger.info("Configuration updated and saved successfully.");
@@ -375,5 +402,9 @@ public class ConfigLoader {
 
     public List<String> getServices() {
         return getPropertyList("services");
+    }
+
+    public List<String> getPHOTONVISION_COPROCESSOR_HOSTNAMES() {
+        return getPropertyList("servers.photonvision.hostnames", PHOTONVISION_COPROCESSOR_HOSTNAMES);
     }
 }
