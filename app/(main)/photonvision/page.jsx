@@ -9,6 +9,8 @@ import { WebsocketContext } from '../../../layout/context/websocketcontext';
 import TimeAgo from '../../../components/TimeAgo';
 import { Image } from 'primereact/image';
 import axios from 'axios';
+import { Tag } from 'primereact/tag';
+import { root } from 'postcss';
 
 
 const Dashboard = () => {
@@ -145,15 +147,16 @@ const Dashboard = () => {
               </span>
                                         <a
                                             href={`http://${hostname}:5800/`}
-                                            className="block mt-2 text-xl text-red-500 font-semibold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
+                                            className="block mt-2 text-2xl text-red-500 font-semibold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
                                             tabIndex="1"
                                             role="link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                         >
                                             {hostname}
                                         </a>
                                         <p className="mt-2 text-sm text-gray-600">
-                                            {hostname} | {status?.isConnected ? 'Online' : 'Offline'} |
-                                            Pipeline: {status?.currentPipelineIndex ?? 'Unknown'}
+                                            {hostname} | {status?.uniqueName || "Unknown ID"} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
                                         </p>
                                     </div>
                                 </div>
@@ -177,17 +180,55 @@ const Dashboard = () => {
               <span className="text-xs font-medium text-blue-600 uppercase dark:text-blue-400">
                 {status.cameraPath}
               </span>
-                                    <a
-                                        href={`http://${hostname}:5800/`}
-                                        className="block mt-2 text-xl font-semibold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
-                                        tabIndex="1"
-                                        role="link"
-                                    >
-                                        {status?.nickname ?? 'Unknown'}
-                                    </a>
+                                    <div className="flex items-center justify-center gap-2 mt-2">
+                                        <a
+                                            href={`http://${hostname}:5800/`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-2xl font-bold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
+                                            tabIndex="1"
+                                            role="link"
+                                        >
+                                            {status?.nickname ?? 'Unknown'}
+                                        </a>
+                                        <Tag
+                                            className="px-2"
+                                            rounded
+                                            pt={{
+                                                value: {
+                                                    style: { fontSize: "0.65rem" }
+                                                },
+                                            }}
+                                            value={status?.isConnected ? 'Online' : 'Offline'}
+                                            severity={status?.isConnected ? 'success' : 'danger'}
+                                        />
+
+                                        <Tag
+                                            className={'px-2'}
+                                            rounded={true}
+                                            pt={{
+                                                value: {
+                                                    style: { fontSize: "0.65rem" }
+                                                },
+                                            }}
+                                            value={status?.ntConnected ? 'NT Connected' : 'NT Offline'}
+                                            severity={status?.ntConnected ? 'success' : 'danger'}
+                                        />
+                                        <Tag
+                                            className={'px-2'}
+                                            rounded={true}
+                                            pt={{
+                                                value: {
+                                                    style: { fontSize: "0.65rem" }
+                                                },
+                                            }}
+                                            value={status?.xtConnected ? 'XT Connected' : 'XT Offline'}
+                                            severity={status?.xtConnected ? 'success' : 'danger'}
+                                        />
+                                    </div>
+
                                     <p className="mt-2 text-sm text-gray-600">
-                                        {hostname} | {status?.isConnected ? 'Online' : 'Offline'} |
-                                        Pipeline: {status?.currentPipelineIndex ?? 'Unknown'}
+                                        {hostname} | {status?.uniqueName ?? "Unknown ID"} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
                                     </p>
                                 </div>
                             </div>
