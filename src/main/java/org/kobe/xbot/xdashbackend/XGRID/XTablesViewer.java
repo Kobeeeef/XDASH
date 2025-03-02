@@ -220,6 +220,7 @@ public class XTablesViewer extends JFrame {
                 fieldPanel.setBezierCurves(Utilities.to3DArray(curves), goalPose.getRotation().getDegrees());
 
                 XTableValues.TraversalOptions options = XTableValues.TraversalOptions.newBuilder()
+
                         .setMetersPerSecond(SPEED_METERS_PER_SECOND) // What should the max speed be?
                         .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND) // How fast should it speed up?
                         .setFinalRotationDegrees(goalPose.getRotation().getDegrees()) // What should the final rotation be?
