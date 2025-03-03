@@ -172,6 +172,14 @@ public class XTablesViewer extends JFrame {
                     if (cords != null)
                         fieldPanel.setWaypoints(cords);
                 }
+                if (updateEvent.getKey().equals(BEZIER_CURVES_TABLE)) {
+                    try {
+                        logger.info("Received new bezier curves update, updating visuals...");
+                        XTableValues.BezierCurves curves = XTablesByteUtils.unpack_bezier_curves(updateEvent.getValue().toByteArray());
+                        fieldPanel.setBezierCurves(Utilities.to3DArray(curves.getCurvesList()), curves.hasOptions() ? curves.getOptions().hasFinalRotationDegrees() ? curves.getOptions().getFinalRotationDegrees() : 0 : 0);
+                    } catch (Exception ignored) {
+                    }
+                    }
                 if (XTablesValueLogs.logWindows.containsKey(updateEvent.getKey())) {
                     XTablesValueLogs.addLogToKey(updateEvent.getKey(), updateEvent);
                 }
@@ -189,7 +197,7 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        VisionCoprocessorCommander commander = new VisionCoprocessorCommander(VisionCoprocessor.ORIN3_DHCP);
+        VisionCoprocessorCommander commander = new VisionCoprocessorCommander(VisionCoprocessor.ORIN3_STATIC);
         fieldPanel = new FieldPanel(this);
         fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {
