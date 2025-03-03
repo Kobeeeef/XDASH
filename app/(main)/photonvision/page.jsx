@@ -11,13 +11,19 @@ import { Image } from 'primereact/image';
 import axios from 'axios';
 import { Tag } from 'primereact/tag';
 import { root } from 'postcss';
+import { LayoutContext } from '../../../layout/context/layoutcontext';
+import { Toast } from 'primereact/toast';
+import { playErrorNotificationSound, playNotificationSound } from '../../../utilities/notification';
 
 
 const Dashboard = () => {
+    const toast = useRef(null);
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition } = useContext(WebsocketContext);
     const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
+    const layoutContext = useContext(LayoutContext);
     const [lastAprilTagStatusUpdate, setLastAprilTagStatusUpdate] = useState(new Date());
-
+    const [isFullScreenEnabled, setIsFullScreenEnabled] = useState(false);
+    const [timer, setTimer] = useState(null);
     const [hostnames, setHostnames] = useState([]);
     const [statuses, setStatuses] = useState({});
     const isMounted = useRef(true); // Tracks if the component is mounted
@@ -64,7 +70,6 @@ const Dashboard = () => {
         };
     }, [isConnected, sendMessageAndWaitForCondition]);
 
-
     useEffect(() => {
         for (let hostname of hostnames) {
 
@@ -88,153 +93,285 @@ const Dashboard = () => {
         }
         setLastAprilTagStatusUpdate(new Date());
     }, [hostnames]);
+
+    useEffect(() => {
+        const handleKey = (event) => {
+            if (event.key.toLowerCase() !== 'd') return;
+
+            if (event.type === "keydown" && !timer) {
+                if (!isFullScreenEnabled) {
+                    setIsFullScreenEnabled(true);
+                    enterFullScreen();
+                    toast.current?.show({
+                        severity: 'info',
+                        summary: 'Driver Mode Enabled!',
+                        detail: "Hold 'D' for 3 seconds to disable.",
+                        life: 6000
+                    });
+                    playNotificationSound()
+                } else {
+                    setTimer(setTimeout(() => {
+                        setIsFullScreenEnabled(false);
+                        exitFullScreen();
+                        toast.current?.show({
+                            severity: 'success',
+                            summary: 'Driver Mode Disabled!',
+                            detail: "The driver mode was disabled."
+                        });
+                    }, 3000));
+                }
+            } else if (event.type === "keyup") {
+                clearTimeout(timer);
+                setTimer(null);
+            }
+        };
+
+        const preventExitKeys = (event) => {
+            if (["Escape", "F11"].includes(event.key)) {
+                event.preventDefault();
+                event.stopPropagation();
+                toast.current?.show({
+                    severity: 'warn',
+                    summary: 'Fullscreen Lock Active!',
+                    detail: "Press 'D' for 3 seconds to exit.",
+                    life: 3000
+                });
+                playErrorNotificationSound()
+                enterFullScreen();
+            }
+        };
+
+        const monitorFullscreen = () => {
+            if (!document.fullscreenElement && isFullScreenEnabled) {
+                enterFullScreen();
+            }
+        };
+
+        document.addEventListener("keydown", preventExitKeys);
+        document.addEventListener("fullscreenchange", monitorFullscreen);
+        window.addEventListener("keydown", handleKey);
+        window.addEventListener("keyup", handleKey);
+
+        return () => {
+            document.removeEventListener("keydown", preventExitKeys);
+            document.removeEventListener("fullscreenchange", monitorFullscreen);
+            window.removeEventListener("keydown", handleKey);
+            window.removeEventListener("keyup", handleKey);
+        };
+    }, [isFullScreenEnabled, timer]);
+
+    const enterFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(console.error);
+        }
+    };
+
+    const exitFullScreen = () => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(console.error);
+        }
+    };
+
+    useEffect(() => {
+        if (isFullScreenEnabled) {
+            layoutContext.setLayoutState((prevLayoutState) => ({
+                ...prevLayoutState,
+                overlayMenuActive: false,
+                staticMenuMobileActive: false,
+                staticMenuDesktopInactive: true,
+                useTopbarMenuActive: false
+            }));
+        } else {
+            layoutContext.setLayoutState((prevLayoutState) => ({
+                ...prevLayoutState,
+                overlayMenuActive: true,
+                staticMenuMobileActive: true,
+                staticMenuDesktopInactive: false,
+                useTopbarMenuActive: true
+            }));
+
+        }
+    }, [isFullScreenEnabled]);
+
     // @ts-ignore
     return (
         <div className="grid fadeIn">
+            <Toast ref={toast} />
             <ConfirmDialog />
-            <div className="col-12 lg:col-6">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Machines</span>
-                            <div
-                                className="text-900 font-medium text-xl"> {isConnected ? `${hostnames.length} Devices` : 'Disconnected'}</div>
-                        </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
-                        </div>
-                    </div>
-                    <TimeAgo date={lastStatusUpdate} />
-                </div>
-            </div>
-
-
-            <div className="col-12 lg:col-6">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">April Tag Statuses</span>
-                            <div
-                                className={('text-900 text-xl ') + getColorStatus(statuses)}>{getStatusSummary(statuses)}</div>
-                        </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-qrcode text-blue-500 text-xl" />
+            {!isFullScreenEnabled && (
+                <>
+                    <div className="col-12 lg:col-6">
+                        <div className="card mb-0">
+                            <div className="flex justify-content-between mb-3">
+                                <div>
+                                    <span className="block text-500 font-medium mb-3">Machines</span>
+                                    <div
+                                        className="text-900 font-medium text-xl"> {isConnected ? `${hostnames.length} Devices` : 'Disconnected'}</div>
+                                </div>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                    <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
+                                </div>
+                            </div>
+                            <TimeAgo date={lastStatusUpdate} />
                         </div>
                     </div>
-                    <TimeAgo date={lastAprilTagStatusUpdate} />
-                </div>
-            </div>
+
+
+                    <div className="col-12 lg:col-6">
+                        <div className="card mb-0">
+                            <div className="flex justify-content-between mb-3">
+                                <div>
+                                    <span className="block text-500 font-medium mb-3">April Tag Statuses</span>
+                                    <div
+                                        className={('text-900 text-xl ') + getColorStatus(statuses)}>{getStatusSummary(statuses)}</div>
+                                </div>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                    <i className="pi pi-qrcode text-blue-500 text-xl" />
+                                </div>
+                            </div>
+                            <TimeAgo date={lastAprilTagStatusUpdate} />
+                        </div>
+                    </div>
+                </>)
+            }
 
 
             {Object.entries(statuses).map(([hostname, devices]) => {
                 if (!devices) {
                     return (
-                        <div className="col-12 lg:col-6" key={hostname}>
+                        <div className={("col-12 lg:col-6 ") + (isFullScreenEnabled ? "hidden" : "")} key={hostname}>
                             <div className="card mb-0">
                                 <Image
+                                    downloadable={true}
+                                    downloadIcon={'pi pi-external-link'}
                                     src={`/images/error/camera_lost.png`}
                                     alt="Image"
                                     width="100%"
+                                    pt={{
+                                        preview: {
+                                            style: {
+                                                width: '100vw',
+                                                height: '100vh'
+                                            }
+                                        }
+                                    }}
                                     style={{ width: '100%', objectFit: 'fill' }}
                                     preview
                                 />
-                                <div className="px-6 pt-6 pb-2">
-                                    <div>
+                                {(!isFullScreenEnabled && <>
+                                        <div className="px-6 pt-6 pb-2">
+                                            <div>
               <span className="text-xs font-medium text-red-600 uppercase">
                     UNRESPONSIVE DEVICE
               </span>
-                                        <a
-                                            href={`http://${hostname}:5800/`}
-                                            className="block mt-2 text-2xl text-red-500 font-semibold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
-                                            tabIndex="1"
-                                            role="link"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {hostname}
-                                        </a>
-                                        <p className="mt-2 text-sm text-gray-600">
-                                            {hostname} | {status?.uniqueName || "Unknown ID"} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
-                                        </p>
-                                    </div>
-                                </div>
+                                                <a
+                                                    href={`http://${hostname}:5800/`}
+                                                    className="block mt-2 text-2xl text-red-500 font-semibold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
+                                                    tabIndex="1"
+                                                    role="link"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    {hostname}
+                                                </a>
+                                                <p className="mt-2 text-sm text-gray-600">
+                                                    {hostname} | {status?.uniqueName || 'Unknown ID'} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     );
                 }
-                return devices.map((status, index) => (
-                    <div className="col-12 lg:col-6" key={`${hostname}-${status.uniqueName || index}`}>
-                        <div className="card mb-0">
-                            <Image
-                                src={`http://${hostname}:${status.outputStreamPort}/stream.mjpg`}
-                                alt="Image"
-                                width="100%"
-                                style={{ width: '100%', objectFit: 'fill' }}
-                                preview
-                            />
+                return devices.map((status, index) => {
 
-                            <div className="px-6 pt-6 pb-2">
-                                <div>
+                    return (
+                        <div className={("col-12 lg:col-6 ") + (isFullScreenEnabled && !status?.isConnected ? "hidden" : "")} key={`${hostname}-${status.uniqueName || index}`}>
+                            <div className="card mb-0">
+                                <Image
+                                    downloadable={true}
+                                    downloadIcon={'pi pi-external-link'}
+                                    src={`http://${hostname}:${status.outputStreamPort}/stream.mjpg`}
+                                    alt="Image"
+                                    width="100%"
+                                    pt={{
+                                        preview: {
+                                            style: {
+                                                width: '100vw',
+                                                height: '100vh'
+                                            }
+                                        }
+                                    }}
+                                    style={{ width: '100%', objectFit: 'fill' }}
+                                    preview
+                                />
+                                {(!isFullScreenEnabled && <>
+                                        <div className="px-6 pt-6 pb-2">
+                                            <div>
               <span className="text-xs font-medium text-blue-600 uppercase dark:text-blue-400">
                 {status.cameraPath}
               </span>
-                                    <div className="flex items-center justify-center gap-2 mt-2">
-                                        <a
-                                            href={`http://${hostname}:5800/`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-2xl font-bold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
-                                            tabIndex="1"
-                                            role="link"
-                                        >
-                                            {status?.nickname ?? 'Unknown'}
-                                        </a>
-                                        <Tag
-                                            className="px-2"
-                                            rounded
-                                            pt={{
-                                                value: {
-                                                    style: { fontSize: "0.65rem" }
-                                                },
-                                            }}
-                                            value={status?.isConnected ? 'Online' : 'Offline'}
-                                            severity={status?.isConnected ? 'success' : 'danger'}
-                                        />
+                                                <div className="flex items-center justify-center gap-2 mt-2">
+                                                    <a
+                                                        href={`http://${hostname}:5800/`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-2xl font-bold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
+                                                        tabIndex="1"
+                                                        role="link"
+                                                    >
+                                                        {status?.nickname ?? 'Unknown'}
+                                                    </a>
+                                                    <Tag
+                                                        className="px-2"
+                                                        rounded
+                                                        pt={{
+                                                            value: {
+                                                                style: { fontSize: '0.65rem' }
+                                                            }
+                                                        }}
+                                                        value={status?.isConnected ? 'Online' : 'Offline'}
+                                                        severity={status?.isConnected ? 'success' : 'danger'}
+                                                    />
 
-                                        <Tag
-                                            className={'px-2'}
-                                            rounded={true}
-                                            pt={{
-                                                value: {
-                                                    style: { fontSize: "0.65rem" }
-                                                },
-                                            }}
-                                            value={status?.ntConnected ? 'NT Connected' : 'NT Offline'}
-                                            severity={status?.ntConnected ? 'success' : 'danger'}
-                                        />
-                                        <Tag
-                                            className={'px-2'}
-                                            rounded={true}
-                                            pt={{
-                                                value: {
-                                                    style: { fontSize: "0.65rem" }
-                                                },
-                                            }}
-                                            value={status?.xtConnected ? 'XT Connected' : 'XT Offline'}
-                                            severity={status?.xtConnected ? 'success' : 'danger'}
-                                        />
-                                    </div>
+                                                    <Tag
+                                                        className={'px-2'}
+                                                        rounded={true}
+                                                        pt={{
+                                                            value: {
+                                                                style: { fontSize: '0.65rem' }
+                                                            }
+                                                        }}
+                                                        value={status?.ntConnected ? 'NT Connected' : 'NT Offline'}
+                                                        severity={status?.ntConnected ? 'success' : 'danger'}
+                                                    />
+                                                    <Tag
+                                                        className={'px-2'}
+                                                        rounded={true}
+                                                        pt={{
+                                                            value: {
+                                                                style: { fontSize: '0.65rem' }
+                                                            }
+                                                        }}
+                                                        value={status?.xtConnected ? 'XT Connected' : 'XT Offline'}
+                                                        severity={status?.xtConnected ? 'success' : 'danger'}
+                                                    />
+                                                </div>
 
-                                    <p className="mt-2 text-sm text-gray-600">
-                                        {hostname} | {status?.uniqueName ?? "Unknown ID"} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
-                                    </p>
-                                </div>
+                                                <p className="mt-2 text-sm text-gray-600">
+                                                    {hostname} | {status?.uniqueName ?? 'Unknown ID'} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
-                        </div>
-                    </div>
-                ));
+                        </div>);
+                });
             })}
 
 

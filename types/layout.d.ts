@@ -23,6 +23,7 @@ export interface BreadcrumbItem {
 export type LayoutState = {
     staticMenuDesktopInactive: boolean;
     overlayMenuActive: boolean;
+    useTopbarMenuActive: boolean;
     profileSidebarVisible: boolean;
     configSidebarVisible: boolean;
     staticMenuMobileActive: boolean;

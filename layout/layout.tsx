@@ -148,15 +148,15 @@ const Layout = ({ children }: ChildContainerProps) => {
     return (
         <React.Fragment>
             <div className={containerClass}>
-                <AppTopbar ref={topbarRef} />
+                {layoutState.useTopbarMenuActive && <AppTopbar ref={topbarRef} />}
                 <div ref={sidebarRef} className="layout-sidebar">
                     <AppSidebar />
                 </div>
-                <div className="layout-main-container">
+                <div className={layoutState.useTopbarMenuActive ? "layout-main-container" : "layout-main-container-fullscreen"}>
                     <div className="layout-main"><Preloader>{children}</Preloader></div>
                     <AppFooter />
                 </div>
-                <AppConfig />
+                {layoutState.useTopbarMenuActive &&  <AppConfig />}
                 <div className="layout-mask"></div>
             </div>
         </React.Fragment>
