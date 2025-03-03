@@ -224,13 +224,6 @@ public class XTablesViewer extends JFrame {
                         .setMetersPerSecond(SPEED_METERS_PER_SECOND) // What should the max speed be?
                         .setAccelerationMetersPerSecond(ACCELERATION_METERS_PER_SECOND) // How fast should it speed up?
                         .setFinalRotationDegrees(goalPose.getRotation().getDegrees()) // What should the final rotation be?
-                        .setFaceNearestReefAprilTag(false) // Should robot look at reef while traversing path?
-                        .setSnapToNearestAprilTag(true) // Should robot instantly snap to nearest April Tag?
-                        .setStartFaceNearestReefAprilTagPathThresholdPercentage(0) // When should robot begin April Tag Mode?
-                        .setEndFaceNearestReefAprilTagPathThresholdPercentage(80) // When should it stop and try to achieve final rotation?
-                        .setFaceNearestReefAprilTagDirection(XTableValues.RobotDirection.FRONT) // Which direction should it face while in April Tag Mode?
-                        .setAprilTagRotationDegreesTurnSpeedFactorPerStep(150) // If snap is false how many degrees should it turn per step for a Tag?
-                        .setFinalRotationTurnSpeedFactor(2) // How fast should it turn back to final rotation (2x)?
                         .build();
                 client.getxTablesClient().putBezierCurves(BEZIER_CURVES_TABLE, bezierCurvesResponse
                         .toBuilder()
