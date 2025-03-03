@@ -101,7 +101,7 @@ public class FieldPanel extends JPanel {
                     // Your existing logic for showing tooltips, etc.
                     Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
                     Map.Entry<Pose2d, Double> clickedNote = getClickedNote(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
-                    System.out.println(Landmarks.getBranchPose(Landmarks.ReefFace.CLOSE, Landmarks.Branch.A));
+//                    System.out.println(Landmarks.getBranchPose(Landmarks.ReefFace.CLOSE, Landmarks.Branch.A));
                     if (clickedEnemy != null && clickCallback != null) {
                         showTooltip(e, "Click to go to robot.");
                     } else if ((relativeY >= 766 && relativeY <= 811) && (relativeX >= 2407 && relativeX <= 2523)) {
