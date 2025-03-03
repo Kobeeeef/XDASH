@@ -118,7 +118,7 @@ const Dashboard = () => {
                             summary: 'Driver Mode Disabled!',
                             detail: "The driver mode was disabled."
                         });
-                    }, 3000));
+                    }, 1750));
                 }
             } else if (event.type === "keyup") {
                 clearTimeout(timer);
@@ -127,6 +127,7 @@ const Dashboard = () => {
         };
 
         const preventExitKeys = (event) => {
+            if(isFullScreenEnabled) {
             if (["Escape", "F11"].includes(event.key)) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -138,6 +139,7 @@ const Dashboard = () => {
                 });
                 playErrorNotificationSound()
                 enterFullScreen();
+            }
             }
         };
 
@@ -246,7 +248,7 @@ const Dashboard = () => {
                                 <Image
                                     downloadable={true}
                                     downloadIcon={'pi pi-external-link'}
-                                    src={`/images/error/camera_lost.png`}
+                                    src={`/images/error/xbot_camera_not_found.png`}
                                     alt="Image"
                                     width="100%"
                                     pt={{
