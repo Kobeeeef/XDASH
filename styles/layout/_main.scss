@@ -104,6 +104,18 @@ body {
         }
     }
 }
+.animate-pulse-fast-super {
+    animation: pulse 0.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.3;
+        }
+    }
+}
 .animate-pulse-fast-lite {
     animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 

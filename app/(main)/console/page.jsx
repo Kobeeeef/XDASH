@@ -37,16 +37,18 @@ const Dashboard = () => {
                 try {
                     sendMessageAndWaitForCondition({ type: 'GET-RIO-STATUS' }, (m) => m.type === 'GET-RIO-STATUS')
                         .then((message) => {
+                            setRioStatus(message?.message?.message || "UNKNOWN");
                             setLastStatusUpdate(new Date());
                             isRequestInProgress = false;
                             if (isMounted.current) {
-                                timeoutId.current = setTimeout(sendRequest, 2000); // Schedule next call
+                                timeoutId.current = setTimeout(sendRequest, 500); // Schedule next call
                             }
                         })
                         .catch(() => {
+                            setRioStatus("ERROR");
                             isRequestInProgress = false;
                             if (isMounted.current) {
-                                timeoutId.current = setTimeout(sendRequest, 3000); // Retry on failure
+                                timeoutId.current = setTimeout(sendRequest, 1000); // Retry on failure
                             }
                         });
                 } catch (e) {
@@ -238,38 +240,6 @@ const Dashboard = () => {
         </div>
     );
 
-    function getStatusSummary(statusData) {
-        let totalDevices = 0;
-        let offlineDevices = 0;
-
-        // Iterate over each host
-        Object.keys(statusData).forEach((hostname) => {
-            const devices = statusData[hostname];
-            if (!devices) {
-                totalDevices++;
-                offlineDevices++;
-                return;
-            }
-            devices.forEach((device) => {
-                totalDevices++;
-                // Define a device as online if either isConnected or hasConnected is true
-                if (!device.isConnected) {
-                    offlineDevices++;
-                }
-            });
-        });
-        console.log(totalDevices);
-        if (totalDevices === 0) {
-            return 'No devices found';
-        }
-        if (offlineDevices === 0) {
-            return 'Fully Functional';
-        } else if (offlineDevices === totalDevices) {
-            return 'None Functional';
-        } else {
-            return `${offlineDevices} Offline`;
-        }
-    }
 
     function getColorStatus(rioStatus) {
         // Return color status based on device counts
@@ -280,9 +250,12 @@ const Dashboard = () => {
             return 'font-bold text-green-600'; // GOOD
         }
         if (rioStatus === 'DISCONNECTED') {
-            return 'font-bold text-red-600 animate-pulse-fast'; // BAD
+            return 'font-bold text-red-600 animate-pulse'; // BAD
         }
-        return 'font-bold text-yellow-600 animate-pulse'; // MAYBE
+        if (rioStatus === 'ERROR') {
+            return 'font-bold text-red-800 animate-pulse-fast-super'; // SUPER BAD
+        }
+        return 'font-bold text-yellow-600 animate-pulse-fast'; // MAYBE
     }
 };
 
