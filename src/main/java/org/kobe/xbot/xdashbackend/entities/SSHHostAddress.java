@@ -510,18 +510,22 @@ public class SSHHostAddress {
             this.rioThread = new Thread(() -> {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                      BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false))) {  // 'false' for overwrite mode
+                    String timeLine = "LOG START - " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
                     writer.newLine();
                     writer.newLine();
                     writer.write("----------------------------------------------------------------");
                     writer.newLine();
                     writer.newLine();
-                    writer.write("LOG START - " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                    writer.write(timeLine);
                     writer.newLine();
                     writer.newLine();
                     writer.write("----------------------------------------------------------------");
                     writer.newLine();
                     writer.newLine();
-
+                    try {
+                        WebSocketHandler.getBroadcastService().queueBroadcast(timeLine.trim(), "RIO-LOGS");
+                    } catch (Exception ignored) {
+                    }
                     String line;
                     while ((line = reader.readLine()) != null) {
                         String trimmed = line.trim();
