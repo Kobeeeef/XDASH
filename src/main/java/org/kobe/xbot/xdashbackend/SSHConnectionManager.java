@@ -22,17 +22,20 @@ public class SSHConnectionManager {
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final XDashLogger logger = XDashLogger.getLogger();
     private static final Logger log = LoggerFactory.getLogger(SSHConnectionManager.class);
-
+    public static SSHHostAddress getRioHostAddress() {
+        String rioServer = XdashbackendApplication.getConfigLoader().getProperty("roboRIO.server", ConfigLoader.DEFAULT_ROBORIO_SERVER);
+        return XdashbackendApplication.getResolvedXCASTERServices().get(rioServer);
+    }
     public static void startConnectionManager(ConfigLoader config) {
         String user = config.getServersUser();
         String password = config.getServersPassword();
         long retryTimeout = config.getRetryTimeout();
         int connectTimeout = config.getConnectTimeout();
+        String rioServer = config.getProperty("roboRIO.server", ConfigLoader.DEFAULT_ROBORIO_SERVER);
         try {
-            String rioHostname = config.getProperty("roboRIO.hostname");
-            String rioUsername = config.getProperty("roboRIO.username");
-            String rioServer = config.getProperty("roboRIO.server");
-            String rioAddress = config.getProperty("roboRIO.address");
+            String rioHostname = config.getProperty("roboRIO.hostname", ConfigLoader.DEFAULT_ROBORIO_HOSTNAME);
+            String rioUsername = config.getProperty("roboRIO.username", ConfigLoader.DEFAULT_ROBORIO_USERNAME);
+            String rioAddress = config.getProperty("roboRIO.address", ConfigLoader.DEFAULT_ROBORIO_ADDRESS);
             if (rioServer == null || rioHostname == null || rioUsername == null || rioAddress == null) {
                 logger.severe("The RIO is not defined inside of the config. Please update it.");
             } else {
@@ -44,7 +47,7 @@ public class SSHConnectionManager {
         }
 
         List<DeviceAddData> serversConstant = config.getServersConstant();
-        for(DeviceAddData deviceAddData : serversConstant) {
+        for (DeviceAddData deviceAddData : serversConstant) {
             String server = deviceAddData.getHostname() + ".local";
             XdashbackendApplication.getResolvedXCASTERServices().put(server, new SSHHostAddress(deviceAddData.getHostname(), deviceAddData.getUsername(),
                     deviceAddData.getPassword(), deviceAddData.getAddress(), server));
@@ -55,6 +58,7 @@ public class SSHConnectionManager {
                 try {
                     for (Map.Entry<String, SSHHostAddress> entry : XdashbackendApplication.getResolvedXCASTERServices().entrySet()) {
                         String server = entry.getKey();
+
                         SSHHostAddress sshHostAddress = entry.getValue();
                         // Check if already connected
                         if (sshHostAddress.getSession() == null || !sshHostAddress.getSession().isConnected()) {
@@ -65,7 +69,13 @@ public class SSHConnectionManager {
                                 sshHostAddress.setSession(session);
                                 sshHostAddress.setStatus("CONNECTED");
                                 logger.info(String.format("Connected to %s with hostname %s", sshHostAddress.getAddress(), sshHostAddress.getHostname()));
-                                if (!sshHostAddress.startJournalCtlReader()) {
+                                if (server.equals(rioServer)) {
+                                    if(sshHostAddress.startRoboRIOLogger()) {
+                                        logger.info("RoboRIO logging enabled");
+                                    } else {
+                                        logger.severe("RoboRIO logging not enabled and failed.");
+                                    }
+                                } else if (!sshHostAddress.startJournalCtlReader()) {
                                     logger.severe("Failed to start journalctl log reader for host: " + sshHostAddress.getHostname());
                                 }
                             }

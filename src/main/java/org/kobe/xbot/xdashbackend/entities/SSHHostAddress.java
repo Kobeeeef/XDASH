@@ -13,8 +13,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -32,6 +34,8 @@ public class SSHHostAddress {
     private final String username;
     private final String password;
     private transient Thread journalThread = null;
+    private transient Thread rioThread = null;
+
 
     public SSHHostAddress(String hostname, String username, String password, String address, String server) {
         this.username = username;
@@ -468,6 +472,88 @@ public class SSHHostAddress {
     public boolean isJournalCtlReaderRunning() {
         return journalThread != null && journalThread.isAlive() && !journalThread.isInterrupted();
     }
+    public boolean isRioLogReaderRunning() {
+        return rioThread != null && rioThread.isAlive() && !rioThread.isInterrupted();
+    }
+
+    public boolean startRoboRIOLogger() {
+        if (session == null || !forceIsConnected()) {
+            throw new IllegalStateException("RIO SSH session is not connected.");
+        }
+        if (isRioLogReaderRunning()) {
+            logger.severe("RIO logger reader already running...");
+            return true;
+        }
+
+        // Create the directory if it doesn't exist
+        File logDir = new File("XDASH_RIO_LOGS");
+        if (!logDir.exists() && !logDir.mkdir()) {
+            logger.severe("Failed to create XDASH_RIO_LOGS directory");
+            return false;
+        }
+
+        // Log file path in XDASH_LOGS directory
+        String logFileName = "XDASH_RIO_LOGS" + File.separator + getHostname() + "-" +
+                new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) + "-RIO.txt";
+        File logFile = new File(logFileName);
+
+        try {
+            // Open a new exec channel for running the command
+            ChannelExec channel = (ChannelExec) session.openChannel("exec");
+            channel.setCommand("tail -f /var/local/natinst/log/FRC_UserProgram.log");
+
+            // Set up the input stream and output file
+            InputStream inputStream = channel.getInputStream();
+            channel.connect(); // Connect the channel
+
+            // Start a new thread to keep the channel open and stream logs
+            this.rioThread = new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                     BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false))) {  // 'false' for overwrite mode
+                    writer.newLine();
+                    writer.newLine();
+                    writer.write("----------------------------------------------------------------");
+                    writer.newLine();
+                    writer.newLine();
+                    writer.write("LOG START - " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                    writer.newLine();
+                    writer.newLine();
+                    writer.write("----------------------------------------------------------------");
+                    writer.newLine();
+                    writer.newLine();
+
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String trimmed = line.trim();
+                        writer.write(trimmed);
+                        writer.newLine();
+                        writer.flush();
+
+                        // Broadcast log line over WebSocket (if needed)
+                        try {
+                            WebSocketHandler.getBroadcastService().queueBroadcast(trimmed, "RIO-LOGS");
+                        } catch (Exception ignored) {
+                        }
+                    }
+
+                } catch (IOException e) {
+                    logger.severe("Error writing rio logs to file: " + e.getMessage());
+                } finally {
+                    // Ensure the channel is closed properly
+                    if (channel.isConnected()) {
+                        channel.disconnect();
+                    }
+                }
+            });
+            rioThread.start(); // Start the log streaming thread
+
+        } catch (JSchException | IOException e) {
+            logger.severe("Failed to start RIO logs reader on host: " + getHostname() + "\n" + e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
 
     public boolean startJournalCtlReader() {
         if (session == null || !forceIsConnected()) {
@@ -515,7 +601,7 @@ public class SSHHostAddress {
                             JournalEntry entry = gson.fromJson(trimmed, JournalEntry.class);
                             entry.setServer(server);
                             if (entry.getPRIORITY() < 5 && !entry.get_COMM().equals("update-notifier")) {
-                                WebSocketHandler.broadcast(entry, "DEVICE-ERROR-LOG");
+                                WebSocketHandler.getBroadcastService().queueBroadcast(entry, "DEVICE-ERROR-LOG");
                             }
                         } catch (Exception ignored) {
                         }
@@ -1227,7 +1313,7 @@ public class SSHHostAddress {
                     // Broadcast progress
                     double percentage = ((double) totalRead / (fileSize + totalRead)) * 100;
                     progress.setMessage("Writing to client from server...").setPercentage(percentage).setCurrentBytes(totalRead).setTotalBytes(fileSize + totalRead);
-                    WebSocketHandler.broadcast(progress, "TRANSFER-DOWNLOAD-PROGRESS-" + id);
+                    WebSocketHandler.getBroadcastService().queueBroadcast(progress, "TRANSFER-DOWNLOAD-PROGRESS-" + id);
                 }
             }
 
@@ -1238,12 +1324,12 @@ public class SSHHostAddress {
             // Send '\0' to end file transfer
             out.write(0);
             out.flush();
-            WebSocketHandler.broadcast(new TransferProgress("File download completed successfully.", 100, fileSize, fileSize).setFinished(true), "TRANSFER-DOWNLOAD-PROGRESS-" + id);
+            WebSocketHandler.getBroadcastService().queueBroadcast(new TransferProgress("File download completed successfully.", 100, fileSize, fileSize).setFinished(true), "TRANSFER-DOWNLOAD-PROGRESS-" + id);
 
             return true;
         } catch (JSchException | IOException e) {
             logger.severe("File streaming failed: " + e.getMessage());
-            WebSocketHandler.broadcast(new TransferProgress("Error during file streaming: " + e.getMessage(), 0, 0, 0), "TRANSFER-DOWNLOAD-PROGRESS-" + id);
+            WebSocketHandler.getBroadcastService().queueBroadcast(new TransferProgress("Error during file streaming: " + e.getMessage(), 0, 0, 0), "TRANSFER-DOWNLOAD-PROGRESS-" + id);
             return false;
         } finally {
             if (channel != null) {

@@ -36,10 +36,10 @@ public class FileUploadController {
 
         for (MultipartFile file : files) {
             boolean success = sshHostAddress.uploadFile(file, directory, (transferProgress -> {
-                WebSocketHandler.broadcast(transferProgress, "TRANSFER-PROGRESS-" + id);
+                WebSocketHandler.getBroadcastService().queueBroadcast(transferProgress, "TRANSFER-PROGRESS-" + id);
             }));
             if (success) {
-                WebSocketHandler.broadcast(new TransferProgress("Finished uploading.", 100, 0, 0).setFinished(true), "TRANSFER-PROGRESS-" + id);
+                WebSocketHandler.getBroadcastService().queueBroadcast(new TransferProgress("Finished uploading.", 100, 0, 0).setFinished(true), "TRANSFER-PROGRESS-" + id);
             }
         }
 

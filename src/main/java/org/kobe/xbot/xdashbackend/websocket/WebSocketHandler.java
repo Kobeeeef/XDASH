@@ -508,6 +508,15 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
                 } else if (message.getType().equals("GET-PHOTONVISION-HOSTNAMES")) {
                     WebSocketHandler.getBroadcastService().queueBroadcast(new Message(XdashbackendApplication.getConfigLoader().getPHOTONVISION_COPROCESSOR_HOSTNAMES(), message.getType()));
+                }else if (message.getType().equals("GET-RIO-STATUS")) {
+                    SSHHostAddress sshHostAddress = SSHConnectionManager.getRioHostAddress();
+                    StatusMessageCode statusMessageCode;
+                    if (sshHostAddress != null) {
+                       statusMessageCode = new StatusMessageCode(true, sshHostAddress.getStatus());
+                    } else {
+                        statusMessageCode = new StatusMessageCode(false, "UNKNOWN");
+                    }
+                    WebSocketHandler.getBroadcastService().queueBroadcast(new Message(statusMessageCode, message.getType()));
                 }else if (message.getType().equals("DOCKER-BUILD")) {
                     String msg = message.getMessage();
                     if (msg != null) {
@@ -1115,28 +1124,6 @@ public class WebSocketHandler extends TextWebSocketHandler {
         return thread;
     }
 
-
-    public static void broadcast(DataReturn data, String type) {
-        synchronized (sessions) {
-            for (WebSocketSession session : sessions) {
-                try {
-                    session.sendMessage(new TextMessage(new Message(data, type).toJSON()));
-                } catch (Exception ignored) {
-                }
-            }
-        }
-    }
-
-    public static void broadcastNotification(Notification notification) {
-        synchronized (sessions) {
-            for (WebSocketSession session : sessions) {
-                try {
-                    session.sendMessage(new TextMessage(new Message(notification, "NOTIFICATION").toJSON()));
-                } catch (Exception ignored) {
-                }
-            }
-        }
-    }
 
     public static BroadcastService getBroadcastService() {
         return broadcastService;

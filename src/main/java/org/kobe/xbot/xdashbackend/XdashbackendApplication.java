@@ -199,7 +199,7 @@ public class XdashbackendApplication {
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             try {
                 logger.fatal("UNCAUGHT EXCEPTION: " + Utilities.formatError(throwable));
-                WebSocketHandler.broadcastNotification(new Notification(Notification.NotificationType.fatal).setDetail(throwable.getMessage()).setCause(throwable.getCause().toString()).setExceptionType(throwable.getClass().getName()).setStackTrace(Arrays.stream(throwable.getStackTrace()).map(StackTraceElement::toString).toArray(String[]::new)).setSummary("Uncaught Exception: " + thread.getName()));
+                WebSocketHandler.getBroadcastService().queueBroadcast(new Notification(Notification.NotificationType.fatal).setDetail(throwable.getMessage()).setCause(throwable.getCause().toString()).setExceptionType(throwable.getClass().getName()).setStackTrace(Arrays.stream(throwable.getStackTrace()).map(StackTraceElement::toString).toArray(String[]::new)).setSummary("Uncaught Exception: " + thread.getName()), "NOTIFICATION");
             } catch (Exception ignored) {
             }
         });
