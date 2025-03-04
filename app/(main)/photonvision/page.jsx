@@ -118,7 +118,7 @@ const Dashboard = () => {
                             summary: 'Driver Mode Disabled!',
                             detail: "The driver mode was disabled."
                         });
-                    }, 1750));
+                    }, 1500));
                 }
             } else if (event.type === "keyup") {
                 clearTimeout(timer);

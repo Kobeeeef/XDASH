@@ -1,13 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import LoadingDots from './LoadingDots';
 
-const TerminalDisplay = ({ messages, prompt = 'XDASH $ ', maxHeight = '300px', maxWidth = "100%", placeholder = null, loadingDots = false }) => {
+const TerminalDisplay = ({ messages, prompt = 'XDASH $ ', maxHeight = '300px', maxWidth = "100%", placeholder = null, loadingDots = false ,scrollLog = false, backGroundColor = "bg-gray-900"}) => {
+    const scrollRef = useRef(null);
 
-
+    useEffect(() => {
+        if (scrollLog && scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages, scrollLog]);
     return (
         <div
-            className="bg-gray-900 text-white border-round p-4 rounded-lg"
+            className={("text-white border-round p-4 rounded-lg ") + backGroundColor}
+
+            ref={scrollRef}
             style={{
+                backgroundColor: `var(--surface-card)`,
                 maxHeight,
                 maxWidth,
                 overflowY: 'auto',
