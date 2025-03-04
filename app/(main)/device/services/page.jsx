@@ -1,6 +1,5 @@
 'use client';
 
-
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 import { WebsocketContext } from '@/layout/context/websocketcontext';
@@ -18,7 +17,6 @@ import { Button } from 'primereact/button';
 import Loader from '../../../../components/XBOTLoader';
 import TimeoutsDialog from '../../../../components/TimeoutsDialog';
 
-
 const Dashboard = () => {
     const toast = useRef(null);
     const searchParams = useSearchParams();
@@ -26,14 +24,7 @@ const Dashboard = () => {
     const [server, setServer] = useState(null);
     const [loading, setLoading] = useState(false);
     const [restartLoading, setRestartLoading] = useState(false);
-    const {
-        isConnected,
-        lastConnectionUpdate,
-        sendMessageAndWaitForCondition,
-        sendMessageAndWaitForConditionWithManage,
-        getTimeoutManagerById,
-        timeoutsRef
-    } = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageAndWaitForConditionWithManage, getTimeoutManagerById, timeoutsRef } = useContext(WebsocketContext);
     const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
     const [data, setData] = useState({});
     const [warningDialogVisible, setWarningDialogVisible] = useState(false);
@@ -44,10 +35,13 @@ const Dashboard = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
-                sendMessageAndWaitForCondition({
-                    type: 'DEVICE-DATA',
-                    message: server
-                }, (m) => m.type === 'DEVICE-DATA')
+                sendMessageAndWaitForCondition(
+                    {
+                        type: 'DEVICE-DATA',
+                        message: server
+                    },
+                    (m) => m.type === 'DEVICE-DATA'
+                )
                     .then((message) => {
                         if (!message?.message?.exists) {
                             setWarningDialogVisible(true);
@@ -56,9 +50,8 @@ const Dashboard = () => {
                             setData(message.message);
                             setWarningDialogVisible(false);
                         }
-
-                    }).catch(() => {
-                });
+                    })
+                    .catch(() => {});
             }
         }, 250);
 
@@ -84,61 +77,74 @@ const Dashboard = () => {
             return;
         }
         setRestartLoading(true);
-        sendMessageAndWaitForConditionWithManage("DEVICE-SERVICE-RESTART", {
-            type: 'DEVICE-SERVICE-RESTART',
-            message: JSON.stringify({
-                server: server,
-                serviceID: service
+        sendMessageAndWaitForConditionWithManage(
+            'DEVICE-SERVICE-RESTART',
+            {
+                type: 'DEVICE-SERVICE-RESTART',
+                message: JSON.stringify({
+                    server: server,
+                    serviceID: service
+                })
+            },
+            (m) => m.type === 'DEVICE-SERVICE-RESTART',
+            30000
+        )
+            .then((e) => {
+                setRestartLoading(false);
+                toast.current.show({
+                    severity: 'success',
+                    summary: 'Service Daemon Restarted!',
+                    detail: 'The service has been restarted.'
+                });
+                reloadServices();
             })
-        }, (m) => m.type === 'DEVICE-SERVICE-RESTART', 30000).then((e) => {
-            setRestartLoading(false);
-            toast.current.show({
-                severity: 'success',
-                summary: 'Service Daemon Restarted!',
-                detail: 'The service has been restarted.'
-            });
-            reloadServices();
-        }).catch((e) => {
-            const errorMessage = e.message || 'An unexpected error occurred.';
-            toast.current.show({
-                severity: 'error',
-                summary: 'Failed to restart',
-                detail: errorMessage
-            });
+            .catch((e) => {
+                const errorMessage = e.message || 'An unexpected error occurred.';
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Failed to restart',
+                    detail: errorMessage
+                });
 
-            setRestartLoading(false);
-            reloadServices();
-        });
+                setRestartLoading(false);
+                reloadServices();
+            });
     }
 
     function reloadServices() {
         if (isConnected) {
             const startTime = new Date();
             setLoading(true);
-            setServices([])
-            sendMessageAndWaitForConditionWithManage('DEVICE-SERVICES-DATA', {
-                type: 'DEVICE-SERVICES-DATA',
-                message: server
-            }, (m) => m.type === 'DEVICE-SERVICES-DATA', 15000).then((e) => {
-                const endTime = new Date();
-                const elapsedTime = endTime - startTime;
-                const waitTime = Math.max(2000 - elapsedTime, 0);
-                const services = JSON.parse(e.message.services);
-                setServices(services);
-                setTimeout(() => {
+            setServices([]);
+            sendMessageAndWaitForConditionWithManage(
+                'DEVICE-SERVICES-DATA',
+                {
+                    type: 'DEVICE-SERVICES-DATA',
+                    message: server
+                },
+                (m) => m.type === 'DEVICE-SERVICES-DATA',
+                15000
+            )
+                .then((e) => {
+                    const endTime = new Date();
+                    const elapsedTime = endTime - startTime;
+                    const waitTime = Math.max(2000 - elapsedTime, 0);
+                    const services = JSON.parse(e.message.services);
+                    setServices(services);
+                    setTimeout(() => {
+                        setLoading(false);
+                    }, waitTime);
+                })
+                .catch((e) => {
+                    toast.current.show({
+                        severity: 'error',
+                        summary: 'Failed to reload',
+                        detail: e
+                    });
                     setLoading(false);
-                }, waitTime);
-            }).catch((e) => {
-                toast.current.show({
-                    severity: 'error',
-                    summary: 'Failed to reload',
-                    detail: e
                 });
-                setLoading(false);
-            });
         }
     }
-
 
     return (
         <div className="grid fadeIn">
@@ -159,8 +165,7 @@ const Dashboard = () => {
                 resizable={false}
             >
                 <p className="m-0">
-                    The machine with the server name <strong>{server}</strong> was not found on the network running
-                    XCASTER. Please check your network connection, verify the machine is on and try again later.
+                    The machine with the server name <strong>{server}</strong> was not found on the network running XCASTER. Please check your network connection, verify the machine is on and try again later.
                 </p>
             </Dialog>
 
@@ -169,11 +174,9 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div
-                                className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -186,10 +189,15 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Machine Server</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (server ?? 'Unknown') : 'Disconnected'}</div>
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server ? (data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600') : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? server ?? 'Unknown' : 'Disconnected'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-desktop text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -202,11 +210,21 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Hostname</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.hostname ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.hostname ?? 'Unknown') : 'Unknown'}</div>
-
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server && data?.hostname
+                                        ? data?.status === 'CONNECTED'
+                                            ? 'text-green-600'
+                                            : data?.status === 'CONNECTING'
+                                            ? 'animate-pulse-fast text-yellow-500'
+                                            : 'animate-pulse text-red-600'
+                                        : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? data?.hostname ?? 'Unknown' : 'Unknown'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-address-book text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -219,11 +237,21 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">IP Address</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.address ?? 'Unknown') : 'Unknown'}</div>
-
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server && data?.address
+                                        ? data?.status === 'CONNECTED'
+                                            ? 'text-green-600'
+                                            : data?.status === 'CONNECTING'
+                                            ? 'animate-pulse-fast text-yellow-500'
+                                            : 'animate-pulse text-red-600'
+                                        : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? data?.address ?? 'Unknown' : 'Unknown'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-map-marker text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -234,28 +262,44 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <DataTable
                         showGridlines={false}
-                        emptyMessage={Loader({message: loading && (services ?? []).length > 0 ? "Loading resources" : loading ? 'Requesting resources' : !isConnected ? 'Connecting to backend' : !data?.exists ? 'Machine not running XCASTER' : data?.status !== 'CONNECTED' ? 'Connecting to machine' : 'No resources found', speed: data?.status === 'CONNECTING' ? 'fast' : 'normal'})}
+                        emptyMessage={Loader({
+                            message:
+                                loading && (services ?? []).length > 0
+                                    ? 'Loading resources'
+                                    : loading
+                                    ? 'Requesting resources'
+                                    : !isConnected
+                                    ? 'Connecting to backend'
+                                    : !data?.exists
+                                    ? 'Machine not running XCASTER'
+                                    : data?.status !== 'CONNECTED'
+                                    ? 'Connecting to machine'
+                                    : 'No resources found',
+                            speed: data?.status === 'CONNECTING' ? 'fast' : 'normal'
+                        })}
                         value={loading || (services ?? []).length === 0 || !isConnected || data?.status !== 'CONNECTED' || !data?.exists ? [] : services}
-                        paginator rows={5}
+                        paginator
+                        rows={5}
                         rowsPerPageOptions={[5, 10, 25, 50, 75]}
                         tableStyle={{ minWidth: '50rem' }}
                         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                         currentPageReportTemplate="{first} to {last} of {totalRecords}"
-                        paginatorLeft={() => <Button disabled={!isConnected || data?.status !== 'CONNECTED'}
-                                                     loading={loading || restartLoading} type="button"
-                                                     icon="pi pi-refresh" text
-                                                     onClick={reloadServices} />}>
+                        paginatorLeft={() => <Button disabled={!isConnected || data?.status !== 'CONNECTED'} loading={loading || restartLoading} type="button" icon="pi pi-refresh" text onClick={reloadServices} />}
+                    >
                         <Column filter field="id" frozen={true} header="Name" style={{ width: '16%' }} key="id" />
                         <Column filter field="execMainPID" header="PID" style={{ width: '16%' }} key="execMainPID" />
                         <Column
                             filter
                             body={(data) => (
                                 <Tag
-
                                     severity={
-                                        data?.activeState === 'active' ? 'success' :
-                                            data?.activeState === 'inactive' ? 'danger' :
-                                                data?.status === 'activating' || data?.activeState === 'reloading' || data?.activeState === 'maintenance' ? 'warning' : 'danger'
+                                        data?.activeState === 'active'
+                                            ? 'success'
+                                            : data?.activeState === 'inactive'
+                                            ? 'danger'
+                                            : data?.status === 'activating' || data?.activeState === 'reloading' || data?.activeState === 'maintenance'
+                                            ? 'warning'
+                                            : 'danger'
                                     }
                                     value={data?.activeState ?? 'Unknown'}
                                     rounded
@@ -265,17 +309,9 @@ const Dashboard = () => {
                             style={{ width: '16%' }}
                             key="status"
                         />
-                        <Column
-                            body={(col) => (
-                                <span>{col?.memoryCurrent === 0 ? 'Unknown' : col?.memoryCurrent ?? 'Unknown'}</span>
-                            )}
-                            header="Memory"
-                            style={{ width: '16%' }}
-                            key="memory"
-                        />
+                        <Column body={(col) => <span>{col?.memoryCurrent === 0 ? 'Unknown' : col?.memoryCurrent ?? 'Unknown'}</span>} header="Memory" style={{ width: '16%' }} key="memory" />
                         <Column field="cpuUsageNSec" header="CPU" style={{ width: '16%' }} key="cpu"></Column>
-                        <Column field="execMainStartTimestamp" header="Timestamp" style={{ width: '16%' }}
-                                key="timestamp"></Column>
+                        <Column field="execMainStartTimestamp" header="Timestamp" style={{ width: '16%' }} key="timestamp"></Column>
                         <Column
                             header="Restart"
                             body={(col) => (
@@ -293,7 +329,6 @@ const Dashboard = () => {
                     </DataTable>
                 </div>
             </div>
-
         </div>
     );
 };

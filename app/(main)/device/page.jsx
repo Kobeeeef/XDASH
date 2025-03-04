@@ -1,6 +1,5 @@
 'use client';
 
-
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 import { WebsocketContext } from '@/layout/context/websocketcontext';
@@ -19,23 +18,14 @@ import linuxCommands from '../../../utilities/linuxCommands';
 import { playErrorNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
 import TimeoutsDialog from '../../../components/TimeoutsDialog';
 
-
 const Dashboard = () => {
     const [commands, setCommands] = useState([]);
     const toast = useRef(null);
     const searchParams = useSearchParams();
     const serverParam = searchParams.get('server');
     const [server, setServer] = useState(null);
-    const {
-        isConnected,
-        lastConnectionUpdate,
-        sendMessageAndWaitForCondition,
-        sendMessageAndWaitForConditionWithManage,
-        timeoutsRef,
-        sendMessage,
-        socket
-    } = useContext(WebsocketContext);
-    const inputRef = useRef(null)
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, sendMessageAndWaitForConditionWithManage, timeoutsRef, sendMessage, socket } = useContext(WebsocketContext);
+    const inputRef = useRef(null);
     const [indexState, setIndexState] = useState(0);
     const [first, setFirst] = useState(true);
     const [logs, setLogs] = useState([]);
@@ -53,32 +43,36 @@ const Dashboard = () => {
     function fileEditor(path) {
         setLoading(true);
 
-        sendMessageAndWaitForConditionWithManage("DEVICES-FILE-EDITOR", {
-            type: 'DEVICES-FILE-EDITOR',
-            message: JSON.stringify({
-                servers: [server],
-                remoteFilePath: path
-            })
-        }, (m) => {
-            if (m.type === 'DEVICES-FILE-EDITOR') {
-                const msg = JSON.parse(m.message);
-                if (msg?.finished) {
-                    if(msg?.success === true) {
-                        playSuccessNotificationSound()
-                    } else if (msg?.success === false) {
-                        playErrorNotificationSound()
+        sendMessageAndWaitForConditionWithManage(
+            'DEVICES-FILE-EDITOR',
+            {
+                type: 'DEVICES-FILE-EDITOR',
+                message: JSON.stringify({
+                    servers: [server],
+                    remoteFilePath: path
+                })
+            },
+            (m) => {
+                if (m.type === 'DEVICES-FILE-EDITOR') {
+                    const msg = JSON.parse(m.message);
+                    if (msg?.finished) {
+                        if (msg?.success === true) {
+                            playSuccessNotificationSound();
+                        } else if (msg?.success === false) {
+                            playErrorNotificationSound();
+                        }
+                        return true;
                     }
-                    return true;
+                    if (msg?.message) {
+                        setLogs((a) => {
+                            return [...a, msg.message || `Unknown message received...`];
+                        });
+                    }
+                    return false;
                 }
-                if(msg?.message) {
-                    setLogs((a) => {
-                        return [...a, msg.message || `Unknown message received...`];
-                    });
-                }
-                return false;
-            }
-
-        }, 15000)
+            },
+            15000
+        )
             .then(() => {
                 setLoading(false);
             })
@@ -98,23 +92,25 @@ const Dashboard = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected) {
-                sendMessageAndWaitForCondition({
-                    type: 'DEVICE-DATA',
-                    message: server
-                }, (m) => m.type === 'DEVICE-DATA')
+                sendMessageAndWaitForCondition(
+                    {
+                        type: 'DEVICE-DATA',
+                        message: server
+                    },
+                    (m) => m.type === 'DEVICE-DATA'
+                )
                     .then((message) => {
                         if (!message?.message?.exists) {
                             setWarningDialogVisible(true);
-                            setFirst(true)
+                            setFirst(true);
                             setData({});
                         } else {
-                            if(message.message?.status !== "CONNECTED") setFirst(true)
+                            if (message.message?.status !== 'CONNECTED') setFirst(true);
                             setData(message.message);
                             setWarningDialogVisible(false);
                         }
-
-                    }).catch(() => {
-                });
+                    })
+                    .catch(() => {});
             }
         }, 100);
 
@@ -147,7 +143,6 @@ const Dashboard = () => {
                 setLogs((a) => {
                     return [...a, '' + msg.response];
                 });
-
             }
         };
         if (socket.current) {
@@ -165,34 +160,42 @@ const Dashboard = () => {
     }, [socket.current]);
 
     function sendCommand() {
-        let trimmedLowercaseInput = input.trim().toLowerCase()
+        let trimmedLowercaseInput = input.trim().toLowerCase();
         if (trimmedLowercaseInput === 'clear') {
             setLogs([]);
             setInput('');
             return;
-        } else if (trimmedLowercaseInput.startsWith("nano") || trimmedLowercaseInput.startsWith("vim")|| trimmedLowercaseInput.startsWith("vi")|| trimmedLowercaseInput.startsWith("emacs")|| trimmedLowercaseInput.startsWith("gedit")|| trimmedLowercaseInput.startsWith("micro")|| trimmedLowercaseInput.startsWith("pico")) {
-            let split = input.split(" ")
+        } else if (
+            trimmedLowercaseInput.startsWith('nano') ||
+            trimmedLowercaseInput.startsWith('vim') ||
+            trimmedLowercaseInput.startsWith('vi') ||
+            trimmedLowercaseInput.startsWith('emacs') ||
+            trimmedLowercaseInput.startsWith('gedit') ||
+            trimmedLowercaseInput.startsWith('micro') ||
+            trimmedLowercaseInput.startsWith('pico')
+        ) {
+            let split = input.split(' ');
 
             if (split[1]) {
                 setLogs((a) => {
-                    return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input,'\u001B[92m$ ' +'Using XDASH file editor for this action...'];
+                    return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input, '\u001B[92m$ ' + 'Using XDASH file editor for this action...'];
                 });
-                fileEditor(split[1])
+                fileEditor(split[1]);
             } else {
                 setLogs((a) => {
-                    return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input,'\u001B[92m$ ' +'No directory found in command.'];
+                    return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input, '\u001B[92m$ ' + 'No directory found in command.'];
                 });
             }
             setInput('');
             return;
         } else if (!sudo && input.trim().toLowerCase().startsWith('exit')) {
-            setFirst(true)
+            setFirst(true);
         }
         setLoading(true);
         setLogs((a) => {
             return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + input];
         });
-        setCommands(a => {
+        setCommands((a) => {
             return [...a, input];
         });
         const type = sudo ? 'DEVICE-COMMAND-SUDO' : 'DEVICE-COMMAND';
@@ -208,7 +211,6 @@ const Dashboard = () => {
     }
 
     function sendControl(control) {
-
         setLoading(true);
         setLogs((a) => {
             return [...a, '\u001B[92m$ ' + data?.hostname + ' ' + control];
@@ -224,13 +226,12 @@ const Dashboard = () => {
         setLoading(false);
     }
 
-
     const searchCommands = (event) => {
-        setFilteredCommands([...new Set([...linuxCommands, ...(commands || [])])].filter(cmd => cmd?.startsWith(event.query)));
+        setFilteredCommands([...new Set([...linuxCommands, ...(commands || [])])].filter((cmd) => cmd?.startsWith(event.query)));
     };
     return (
         <div className="grid fadeIn">
-            <TimeoutsDialog timeoutsRef={timeoutsRef}/>
+            <TimeoutsDialog timeoutsRef={timeoutsRef} />
             <Toast ref={toast} />
             <Dialog
                 header={`Machine Discovery Failed`}
@@ -247,8 +248,7 @@ const Dashboard = () => {
                 resizable={false}
             >
                 <p className="m-0">
-                    The machine with the server name <strong>{server}</strong> was not found on the network running
-                    XCASTER. Please check your network connection, verify the machine is on and try again later.
+                    The machine with the server name <strong>{server}</strong> was not found on the network running XCASTER. Please check your network connection, verify the machine is on and try again later.
                 </p>
             </Dialog>
 
@@ -257,11 +257,9 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div
-                                className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -274,10 +272,15 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Machine Server</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (server ?? 'Unknown') : 'Disconnected'}</div>
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server ? (data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600') : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? server ?? 'Unknown' : 'Disconnected'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-desktop text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -290,11 +293,21 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Hostname</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.hostname ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.hostname ?? 'Unknown') : 'Unknown'}</div>
-
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server && data?.hostname
+                                        ? data?.status === 'CONNECTED'
+                                            ? 'text-green-600'
+                                            : data?.status === 'CONNECTING'
+                                            ? 'animate-pulse-fast text-yellow-500'
+                                            : 'animate-pulse text-red-600'
+                                        : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? data?.hostname ?? 'Unknown' : 'Unknown'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-address-book text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -307,11 +320,21 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">IP Address</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.address ?? 'Unknown') : 'Unknown'}</div>
-
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server && data?.address
+                                        ? data?.status === 'CONNECTED'
+                                            ? 'text-green-600'
+                                            : data?.status === 'CONNECTING'
+                                            ? 'animate-pulse-fast text-yellow-500'
+                                            : 'animate-pulse text-red-600'
+                                        : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? data?.address ?? 'Unknown' : 'Unknown'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-map-marker text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -321,129 +344,151 @@ const Dashboard = () => {
             <div className={'col-12'}>
                 <div className="card">
                     <div className="card">
-                        <div className="overflow-y-auto" style={{ 'maxHeight': '40rem' }}>
+                        <div className="overflow-y-auto" style={{ maxHeight: '40rem' }}>
                             {logs.map((log, index) => (
-
                                 <LogComponent key={index} log={log} />
                             ))}
                             <div ref={logEndRef} />
                         </div>
                     </div>
                     <div className="p-inputgroup flex-1 w-full">
-                        <SplitButton severity={first ? "success" : "danger"} disabled={!isConnected || data?.status !== 'CONNECTED'}
-                                     label={first ? "Connect" : "Reconnect"}
-                                     loading={loading}
-                                     onClick={() => {
-                                         setFirst(false)
-                                         setLoading(true)
-                                         sendMessageAndWaitForCondition({
-                                             type: 'DEVICE-COMMAND-NEW-SESSION',
-                                             message: server
-                                         }, (a) => a.type === "DEVICE-COMMAND-NEW-SESSION").then((m) => {
-                                             setLoading(false)
-                                            if(m?.message?.success) {
-                                                toast.current.show({
-                                                    severity: 'success',
-                                                    summary: 'Successful Creation',
-                                                    detail: "A new shell channel has been created."
-                                                });
-                                            } else {
-                                                toast.current.show({
-                                                    severity: 'error',
-                                                    summary: 'Unsuccessful Creation',
-                                                    detail: "The new shell channel failed to create."
-                                                });
-                                            }
-
-                                         }).catch(e => {
-                                             const errorMessage = e.message || 'An unexpected error occurred.';
-                                             toast.current.show({
-                                                 severity: 'error',
-                                                 summary: 'Failed To Connect',
-                                                 detail: errorMessage
-                                             });
-                                             setLoading(false)
-                                         }) ;
-                                     }} model={[{
-                            label: sudo ? 'Disable Root' : 'Enable Root',
-                            icon: sudo ? 'pi pi-user' : 'pi pi-crown',
-                            command: () => {
-                                setSudo(a => !a);
-                            }
-                        }, {
-                            label: lock ? 'Disable Lock' : 'Enable Lock',
-                            icon: lock ? 'pi pi-lock' : 'pi pi-unlock',
-                            command: () => {
-                                setLock(a => !a);
-                            }
-                        }, {
-                            label: 'Clear Terminal',
-                            icon: 'pi pi-eraser',
-                            command: () => {
-                                setLogs([]);
-                            }
-                        }]} />
+                        <SplitButton
+                            severity={first ? 'success' : 'danger'}
+                            disabled={!isConnected || data?.status !== 'CONNECTED'}
+                            label={first ? 'Connect' : 'Reconnect'}
+                            loading={loading}
+                            onClick={() => {
+                                setFirst(false);
+                                setLoading(true);
+                                sendMessageAndWaitForCondition(
+                                    {
+                                        type: 'DEVICE-COMMAND-NEW-SESSION',
+                                        message: server
+                                    },
+                                    (a) => a.type === 'DEVICE-COMMAND-NEW-SESSION'
+                                )
+                                    .then((m) => {
+                                        setLoading(false);
+                                        if (m?.message?.success) {
+                                            toast.current.show({
+                                                severity: 'success',
+                                                summary: 'Successful Creation',
+                                                detail: 'A new shell channel has been created.'
+                                            });
+                                        } else {
+                                            toast.current.show({
+                                                severity: 'error',
+                                                summary: 'Unsuccessful Creation',
+                                                detail: 'The new shell channel failed to create.'
+                                            });
+                                        }
+                                    })
+                                    .catch((e) => {
+                                        const errorMessage = e.message || 'An unexpected error occurred.';
+                                        toast.current.show({
+                                            severity: 'error',
+                                            summary: 'Failed To Connect',
+                                            detail: errorMessage
+                                        });
+                                        setLoading(false);
+                                    });
+                            }}
+                            model={[
+                                {
+                                    label: sudo ? 'Disable Root' : 'Enable Root',
+                                    icon: sudo ? 'pi pi-user' : 'pi pi-crown',
+                                    command: () => {
+                                        setSudo((a) => !a);
+                                    }
+                                },
+                                {
+                                    label: lock ? 'Disable Lock' : 'Enable Lock',
+                                    icon: lock ? 'pi pi-lock' : 'pi pi-unlock',
+                                    command: () => {
+                                        setLock((a) => !a);
+                                    }
+                                },
+                                {
+                                    label: 'Clear Terminal',
+                                    icon: 'pi pi-eraser',
+                                    command: () => {
+                                        setLogs([]);
+                                    }
+                                }
+                            ]}
+                        />
                         <span className="p-inputgroup-addon">
-        <i className={'pi ' + (sudo ? 'pi-crown' : 'pi-user')}></i>
-    </span>
+                            <i className={'pi ' + (sudo ? 'pi-crown' : 'pi-user')}></i>
+                        </span>
                         <span
-                            className={'p-inputgroup-addon font-bold ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>$ {server}</span>
-                        <AutoComplete inputRef={inputRef} completeMethod={searchCommands} suggestions={filteredCommands}
-                                      disabled={!isConnected || loading || data?.status !== 'CONNECTED'} value={input}
-                                      onChange={(e) => {
-                                          setInput(a => {
-                                                  setIndexState(0);
-                                                  return e.target.value;
-                                              }
-                                          );
-                                      }
-                                      } onKeyDown={(event) => {
-                            if (input && (event.key === 'Enter' || event.key === 'NumpadEnter')) {
-                                event.preventDefault();
-                                sendCommand();
-                            } else if (event.key === 'ArrowUp') {
-                                event.preventDefault();
-                                if (commands && commands.length) {
-                                    const prevIndex = indexState - 1 < 0 ? commands.length - 1 : indexState - 1;
-                                    const command = commands[prevIndex];
-                                    setIndexState(prevIndex);
-                                    setInput(command);
-                                }
-                            } else if (event.key === 'ArrowDown') {
-                                event.preventDefault();
-                                if (commands && commands.length) {
-                                    const nextIndex = indexState + 1 >= commands.length ? 0 : indexState + 1;
-                                    const command = commands[nextIndex];
-                                    setIndexState(nextIndex);
-                                    setInput(command);
-                                }
-                            } else if (event.ctrlKey && event.key === 'c') {
-                                event.preventDefault();
-                                sendControl('CTRL_C');
-                            } else if (event.ctrlKey && event.key === 'j') {
-                                event.preventDefault();
-                                sendControl('CTRL_J');
-                            } else if (event.ctrlKey && event.key === 'x') {
-                                event.preventDefault();
-                                sendControl('CTRL_X');
-                            } else if (event.ctrlKey && event.key === 'd') {
-                                event.preventDefault();
-                                sendControl('CTRL_D');
-                                setFirst(true)
-                            }else if (event.ctrlKey && event.key === 'z') {
-                                event.preventDefault();
-                                sendControl('CTRL_Z');
+                            className={
+                                'p-inputgroup-addon font-bold ' +
+                                (isConnected && server && data?.address
+                                    ? data?.status === 'CONNECTED'
+                                        ? 'text-green-600'
+                                        : data?.status === 'CONNECTING'
+                                        ? 'animate-pulse-fast text-yellow-500'
+                                        : 'animate-pulse text-red-600'
+                                    : 'animate-pulse text-red-600')
                             }
-                        }} />
-                        <Button disabled={!isConnected || !input || data?.status !== 'CONNECTED'} loading={loading}
-                                label="Send"
-                                onClick={sendCommand} />
+                        >
+                            $ {server}
+                        </span>
+                        <AutoComplete
+                            inputRef={inputRef}
+                            completeMethod={searchCommands}
+                            suggestions={filteredCommands}
+                            disabled={!isConnected || loading || data?.status !== 'CONNECTED'}
+                            value={input}
+                            onChange={(e) => {
+                                setInput((a) => {
+                                    setIndexState(0);
+                                    return e.target.value;
+                                });
+                            }}
+                            onKeyDown={(event) => {
+                                if (input && (event.key === 'Enter' || event.key === 'NumpadEnter')) {
+                                    event.preventDefault();
+                                    sendCommand();
+                                } else if (event.key === 'ArrowUp') {
+                                    event.preventDefault();
+                                    if (commands && commands.length) {
+                                        const prevIndex = indexState - 1 < 0 ? commands.length - 1 : indexState - 1;
+                                        const command = commands[prevIndex];
+                                        setIndexState(prevIndex);
+                                        setInput(command);
+                                    }
+                                } else if (event.key === 'ArrowDown') {
+                                    event.preventDefault();
+                                    if (commands && commands.length) {
+                                        const nextIndex = indexState + 1 >= commands.length ? 0 : indexState + 1;
+                                        const command = commands[nextIndex];
+                                        setIndexState(nextIndex);
+                                        setInput(command);
+                                    }
+                                } else if (event.ctrlKey && event.key === 'c') {
+                                    event.preventDefault();
+                                    sendControl('CTRL_C');
+                                } else if (event.ctrlKey && event.key === 'j') {
+                                    event.preventDefault();
+                                    sendControl('CTRL_J');
+                                } else if (event.ctrlKey && event.key === 'x') {
+                                    event.preventDefault();
+                                    sendControl('CTRL_X');
+                                } else if (event.ctrlKey && event.key === 'd') {
+                                    event.preventDefault();
+                                    sendControl('CTRL_D');
+                                    setFirst(true);
+                                } else if (event.ctrlKey && event.key === 'z') {
+                                    event.preventDefault();
+                                    sendControl('CTRL_Z');
+                                }
+                            }}
+                        />
+                        <Button disabled={!isConnected || !input || data?.status !== 'CONNECTED'} loading={loading} label="Send" onClick={sendCommand} />
                     </div>
                 </div>
-
             </div>
-
-
         </div>
     );
 };

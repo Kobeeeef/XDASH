@@ -52,7 +52,7 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
         layoutState,
         setLayoutState,
         onMenuToggle,
-        showProfileSidebar,
+        showProfileSidebar
     };
 
     return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;

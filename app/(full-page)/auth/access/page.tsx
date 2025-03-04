@@ -17,7 +17,6 @@ const AccessDeniedPage = () => {
                         borderRadius: '56px',
                         padding: '0.3rem',
                         background: 'linear-gradient(180deg, rgba(48, 149, 247, 0.4) 10%, rgba(48, 149, 247, 0) 30%)'
-
                     }}
                 >
                     <div className="w-full surface-card py-8 px-5 sm:px-8 flex flex-column align-items-center" style={{ borderRadius: '53px' }}>

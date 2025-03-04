@@ -19,50 +19,53 @@ const LoginPage = () => {
     useEffect(() => {
         setError(null);
     }, [password]);
-    const handleLogin = useCallback(async (e) => {
-        e.preventDefault();
-        if (!password) {
-            return setError('Password is required');
-        }
+    const handleLogin = useCallback(
+        async (e) => {
+            e.preventDefault();
+            if (!password) {
+                return setError('Password is required');
+            }
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-        try {
-            setLoading(true);
-            const response = await fetch('/perform_login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `username=user&password=${password}`,
-                signal: controller.signal
-            });
-            setLoading(false);
-            clearTimeout(timeoutId);
-            if (response.ok) {
+            try {
                 setLoading(true);
-                toast.current.show({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: 'Redirecting to dashboard...',
-                    life: 2000
+                const response = await fetch('/perform_login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `username=user&password=${password}`,
+                    signal: controller.signal
                 });
-                setTimeout(() => {
-                    router.replace('/');
-                }, 2000);
-            } else {
-                setError('Invalid password, please try again.');
+                setLoading(false);
+                clearTimeout(timeoutId);
+                if (response.ok) {
+                    setLoading(true);
+                    toast.current.show({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Redirecting to dashboard...',
+                        life: 2000
+                    });
+                    setTimeout(() => {
+                        router.replace('/');
+                    }, 2000);
+                } else {
+                    setError('Invalid password, please try again.');
+                }
+            } catch (error) {
+                setLoading(false);
+                if (error.name === 'AbortError') {
+                    setError('Request timed out, please try again.');
+                } else {
+                    setError('An error occurred. Please try again.');
+                }
             }
-        } catch (error) {
-            setLoading(false);
-            if (error.name === 'AbortError') {
-                setError('Request timed out, please try again.');
-            } else {
-                setError('An error occurred. Please try again.');
-            }
-        }
-    }, [password, router]);
+        },
+        [password, router]
+    );
     useEffect(() => {
         const handleKeyDown = async (event) => {
             if (event.key === 'Enter') {

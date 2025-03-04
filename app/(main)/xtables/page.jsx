@@ -123,13 +123,12 @@ const Dashboard = () => {
                     }
                     break;
                 case 'deleteall':
-
                     TerminalService.emit('response', 'Sending delete request...');
 
                     sendMessageAndWaitForCondition(
                         {
                             type: 'XTABLES-DATA-DELETE',
-                            message: ""
+                            message: ''
                         },
                         (response) => response.type === 'XTABLES-DATA-DELETE'
                     )
@@ -179,8 +178,6 @@ const Dashboard = () => {
     );
 
     function getStringSize(byteSize) {
-
-
         if (byteSize < 1024) {
             return `${byteSize} bytes`;
         } else if (byteSize < 1024 * 1024) {
@@ -198,11 +195,7 @@ const Dashboard = () => {
         const fetchData = async () => {
             while (isActive && isConnected) {
                 try {
-
-                    const message = await sendMessageAndWaitForCondition(
-                        { type: 'XTABLES-DATA-VIEW' },
-                        (m) => m?.type === 'XTABLES-DATA-VIEW'
-                    );
+                    const message = await sendMessageAndWaitForCondition({ type: 'XTABLES-DATA-VIEW' }, (m) => m?.type === 'XTABLES-DATA-VIEW');
                     console.log(message);
                     setStatusData((a) => {
                         if (message?.message?.connected !== a?.connected) {
@@ -235,7 +228,6 @@ const Dashboard = () => {
         setData(convertJSONForTreeTable(rawJSON));
     }, [rawJSON]);
 
-
     // @ts-ignore
     return (
         <div className="grid fadeIn">
@@ -245,11 +237,9 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div
-                                className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -261,11 +251,9 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">XTABLES Status</span>
-                            <div
-                                className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
+                            <div className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? 'Connected' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-table text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -278,11 +266,9 @@ const Dashboard = () => {
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Data Size</span>
-                            <div
-                                className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? getStringSize(statusData?.size) || 'Unknown' : 'Disconnected') : 'Disconnected'}</div>
+                            <div className="text-900 font-medium text-xl">{isConnected ? (statusData?.connected ? getStringSize(statusData?.size) || 'Unknown' : 'Disconnected') : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-android text-cyan-500 text-xl" />
                         </div>
                     </div>
@@ -305,18 +291,24 @@ const Dashboard = () => {
             </div>
             <div className="col-12">
                 <div className="card mb-0">
-                    <ToggleButton className={'w-full'} disabled={viewerLoading || !statusData?.connected}
-                                  checked={statusData?.isViewerOpen}
-                                  onClick={() => {
-                                      setViewerLoading(true);
-                                      sendMessageAndWaitForCondition({ type: 'XTABLES-VIEWER-TOGGLE' }, (m) => m.type === 'XTABLES-DATA')
-                                          .then((message) => {
-                                              console.log(message);
-                                              setViewerLoading(false);
-                                          }).catch((e) => {
-                                          setViewerLoading(false);
-                                      });
-                                  }} onLabel={'Disable Realtime Viewer'} offLabel={'Enable Realtime Viewer'} />
+                    <ToggleButton
+                        className={'w-full'}
+                        disabled={viewerLoading || !statusData?.connected}
+                        checked={statusData?.isViewerOpen}
+                        onClick={() => {
+                            setViewerLoading(true);
+                            sendMessageAndWaitForCondition({ type: 'XTABLES-VIEWER-TOGGLE' }, (m) => m.type === 'XTABLES-DATA')
+                                .then((message) => {
+                                    console.log(message);
+                                    setViewerLoading(false);
+                                })
+                                .catch((e) => {
+                                    setViewerLoading(false);
+                                });
+                        }}
+                        onLabel={'Disable Realtime Viewer'}
+                        offLabel={'Enable Realtime Viewer'}
+                    />
                 </div>
             </div>
             <div className="col-12">
@@ -328,8 +320,7 @@ const Dashboard = () => {
                         showGridlines={false}
                         removableSort
                         filterDisplay="row"
-
-                        emptyMessage={Loader({ message: isConnected ? statusData?.connected ? 'No data found' : 'Connecting to XTABLES' : 'Connecting to backend' })}
+                        emptyMessage={Loader({ message: isConnected ? (statusData?.connected ? 'No data found' : 'Connecting to XTABLES') : 'Connecting to backend' })}
                         dataKey="key"
                         scrollable
                         scrollHeight={'50vh'}
@@ -337,10 +328,8 @@ const Dashboard = () => {
                     >
                         <Column expander={true} style={{ width: '5rem' }} />
                         <Column field="name" header="Name" sortable f />
-                        <Column field="value" header="Value"
-                                className="font-bold max-w-1 overflow-hidden whitespace-nowrap" sortable />
-                        <Column field="type" header="Type"
-                                className="capitalize max-w-1 overflow-hidden whitespace-nowrap" sortable />
+                        <Column field="value" header="Value" className="font-bold max-w-1 overflow-hidden whitespace-nowrap" sortable />
+                        <Column field="type" header="Type" className="capitalize max-w-1 overflow-hidden whitespace-nowrap" sortable />
                     </TreeTable>
                 </div>
             </div>
@@ -395,6 +384,5 @@ function convertJSONForTreeTable(json) {
     // Start the transformation with the top-level keys
     return transformRecursively(json);
 }
-
 
 export default Dashboard;

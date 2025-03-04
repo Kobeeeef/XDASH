@@ -83,8 +83,6 @@ const AppConfig = (props: AppConfigProps) => {
                                 <label htmlFor="mode2">Overlay</label>
                             </div>
                         </div>
-
-
                     </>
                 )}
                 <h5>Design</h5>

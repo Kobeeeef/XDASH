@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 
@@ -16,7 +15,6 @@ import { Toast } from 'primereact/toast';
 import { playErrorNotificationSound, playNotificationSound } from '../../../utilities/notification';
 import TerminalDisplay from '../../../components/TerminalDisplay';
 
-
 const Dashboard = () => {
     const toast = useRef(null);
     const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, socket } = useContext(WebsocketContext);
@@ -26,7 +24,7 @@ const Dashboard = () => {
     const [messages, setMessages] = useState([]);
     const [timer, setTimer] = useState(null);
     const [scrollLock, setScrollLock] = useState(true);
-    const [rioStatus, setRioStatus] = useState("UNKNOWN");
+    const [rioStatus, setRioStatus] = useState('UNKNOWN');
     const isMounted = useRef(true); // Tracks if the component is mounted
     const timeoutId = useRef(null); // Stores the timeout ID persistently
     useEffect(() => {
@@ -51,7 +49,6 @@ const Dashboard = () => {
                                 timeoutId.current = setTimeout(sendRequest, 3000); // Retry on failure
                             }
                         });
-
                 } catch (e) {
                     console.error(e);
                     isRequestInProgress = false;
@@ -74,7 +71,7 @@ const Dashboard = () => {
             const data = JSON.parse(event.data);
             if (data.type === 'RIO-LOGS') {
                 const msg = JSON.parse(data.message);
-                setMessages((prevArray) => [(msg || ""), ...prevArray]);
+                setMessages((prevArray) => [msg || '', ...prevArray]);
             }
         };
         if (socket.current) {
@@ -87,12 +84,12 @@ const Dashboard = () => {
 
     useEffect(() => {
         const handleKey = (event) => {
-            if(event.key.toLowerCase() === 'l' && event.type === 'keydown') {
+            if (event.key.toLowerCase() === 'l' && event.type === 'keydown') {
                 setScrollLock((prev) => {
                     toast.current?.show({
                         severity: prev ? 'info' : 'success',
                         summary: 'Scroll Lock',
-                        detail: `The scroll lock has been ${prev ? "disabled" : "enabled"}!`,
+                        detail: `The scroll lock has been ${prev ? 'disabled' : 'enabled'}!`
                     });
                     return !prev;
                 });
@@ -106,20 +103,22 @@ const Dashboard = () => {
                     toast.current?.show({
                         severity: 'info',
                         summary: 'Driver Mode Enabled!',
-                        detail: 'Hold \'D\' for 3 seconds to disable.',
+                        detail: "Hold 'D' for 3 seconds to disable.",
                         life: 6000
                     });
                     playNotificationSound();
                 } else {
-                    setTimer(setTimeout(() => {
-                        setIsFullScreenEnabled(false);
-                        exitFullScreen();
-                        toast.current?.show({
-                            severity: 'success',
-                            summary: 'Driver Mode Disabled!',
-                            detail: 'The driver mode was disabled.'
-                        });
-                    }, 1500));
+                    setTimer(
+                        setTimeout(() => {
+                            setIsFullScreenEnabled(false);
+                            exitFullScreen();
+                            toast.current?.show({
+                                severity: 'success',
+                                summary: 'Driver Mode Disabled!',
+                                detail: 'The driver mode was disabled.'
+                            });
+                        }, 1500)
+                    );
                 }
             } else if (event.type === 'keyup') {
                 clearTimeout(timer);
@@ -135,7 +134,7 @@ const Dashboard = () => {
                     toast.current?.show({
                         severity: 'warn',
                         summary: 'Fullscreen Lock Active!',
-                        detail: 'Press \'D\' for 3 seconds to exit.',
+                        detail: "Press 'D' for 3 seconds to exit.",
                         life: 3000
                     });
                     playErrorNotificationSound();
@@ -192,7 +191,6 @@ const Dashboard = () => {
                 staticMenuDesktopInactive: false,
                 useTopbarMenuActive: true
             }));
-
         }
     }, [isFullScreenEnabled]);
 
@@ -208,11 +206,9 @@ const Dashboard = () => {
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">Backend Status</span>
-                                    <div
-                                        className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                                    <div className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                                 </div>
                             </div>
@@ -220,36 +216,25 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-
                     <div className="col-12 lg:col-6">
                         <div className="card mb-0">
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">RIO Status</span>
-                                    <div
-                                        className={('text-900 text-xl text-green-600 ') + getColorStatus(rioStatus)}>{rioStatus}
-                                    </div>
+                                    <div className={'text-900 text-xl text-green-600 ' + getColorStatus(rioStatus)}>{rioStatus}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-qrcode text-blue-500 text-xl" />
                                 </div>
                             </div>
                             <TimeAgo date={lastStatusUpdate} />
                         </div>
                     </div>
-                </>)
-            }
+                </>
+            )}
             <div className="col-12">
-
-                <TerminalDisplay
-                    backGroundColor={""}
-                    messages={messages}
-                    loadingDots={true} scrollLog={scrollLock} placeholder={'Listening for messages from RIO'}
-                    maxHeight={isFullScreenEnabled ? "90vh" : "60vh"}
-                />
+                <TerminalDisplay backGroundColor={''} messages={messages} loadingDots={true} scrollLog={scrollLock} placeholder={'Listening for messages from RIO'} maxHeight={isFullScreenEnabled ? '90vh' : '60vh'} />
             </div>
-
         </div>
     );
 
@@ -258,14 +243,14 @@ const Dashboard = () => {
         let offlineDevices = 0;
 
         // Iterate over each host
-        Object.keys(statusData).forEach(hostname => {
+        Object.keys(statusData).forEach((hostname) => {
             const devices = statusData[hostname];
             if (!devices) {
                 totalDevices++;
                 offlineDevices++;
                 return;
             }
-            devices.forEach(device => {
+            devices.forEach((device) => {
                 totalDevices++;
                 // Define a device as online if either isConnected or hasConnected is true
                 if (!device.isConnected) {
@@ -288,18 +273,17 @@ const Dashboard = () => {
 
     function getColorStatus(rioStatus) {
         // Return color status based on device counts
-        if (rioStatus === "UNKNOWN") {
+        if (rioStatus === 'UNKNOWN') {
             return 'font-bold text-gray-400'; // UNKNOWN
         }
-        if (rioStatus === "CONNECTED") {
+        if (rioStatus === 'CONNECTED') {
             return 'font-bold text-green-600'; // GOOD
         }
-        if (rioStatus === "DISCONNECTED") {
+        if (rioStatus === 'DISCONNECTED') {
             return 'font-bold text-red-600 animate-pulse-fast'; // BAD
         }
         return 'font-bold text-yellow-600 animate-pulse'; // MAYBE
     }
 };
-
 
 export default Dashboard;

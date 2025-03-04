@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 
@@ -14,7 +13,6 @@ import { root } from 'postcss';
 import { LayoutContext } from '../../../layout/context/layoutcontext';
 import { Toast } from 'primereact/toast';
 import { playErrorNotificationSound, playNotificationSound } from '../../../utilities/notification';
-
 
 const Dashboard = () => {
     const toast = useRef(null);
@@ -51,7 +49,6 @@ const Dashboard = () => {
                                 timeoutId.current = setTimeout(sendRequest, 3000); // Retry on failure
                             }
                         });
-
                 } catch (e) {
                     console.error(e);
                     isRequestInProgress = false;
@@ -72,7 +69,6 @@ const Dashboard = () => {
 
     useEffect(() => {
         for (let hostname of hostnames) {
-
             axios
                 .get(`http://${hostname}:5800/api/status`, { timeout: 2500 }) // 3 seconds timeout
                 .then((response) => {
@@ -98,7 +94,7 @@ const Dashboard = () => {
         const handleKey = (event) => {
             if (event.key.toLowerCase() !== 'd') return;
 
-            if (event.type === "keydown" && !timer) {
+            if (event.type === 'keydown' && !timer) {
                 if (!isFullScreenEnabled) {
                     setIsFullScreenEnabled(true);
                     enterFullScreen();
@@ -108,38 +104,40 @@ const Dashboard = () => {
                         detail: "Hold 'D' for 3 seconds to disable.",
                         life: 6000
                     });
-                    playNotificationSound()
+                    playNotificationSound();
                 } else {
-                    setTimer(setTimeout(() => {
-                        setIsFullScreenEnabled(false);
-                        exitFullScreen();
-                        toast.current?.show({
-                            severity: 'success',
-                            summary: 'Driver Mode Disabled!',
-                            detail: "The driver mode was disabled."
-                        });
-                    }, 1500));
+                    setTimer(
+                        setTimeout(() => {
+                            setIsFullScreenEnabled(false);
+                            exitFullScreen();
+                            toast.current?.show({
+                                severity: 'success',
+                                summary: 'Driver Mode Disabled!',
+                                detail: 'The driver mode was disabled.'
+                            });
+                        }, 1500)
+                    );
                 }
-            } else if (event.type === "keyup") {
+            } else if (event.type === 'keyup') {
                 clearTimeout(timer);
                 setTimer(null);
             }
         };
 
         const preventExitKeys = (event) => {
-            if(isFullScreenEnabled) {
-            if (["Escape", "F11"].includes(event.key)) {
-                event.preventDefault();
-                event.stopPropagation();
-                toast.current?.show({
-                    severity: 'warn',
-                    summary: 'Fullscreen Lock Active!',
-                    detail: "Press 'D' for 3 seconds to exit.",
-                    life: 3000
-                });
-                playErrorNotificationSound()
-                enterFullScreen();
-            }
+            if (isFullScreenEnabled) {
+                if (['Escape', 'F11'].includes(event.key)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toast.current?.show({
+                        severity: 'warn',
+                        summary: 'Fullscreen Lock Active!',
+                        detail: "Press 'D' for 3 seconds to exit.",
+                        life: 3000
+                    });
+                    playErrorNotificationSound();
+                    enterFullScreen();
+                }
             }
         };
 
@@ -149,16 +147,16 @@ const Dashboard = () => {
             }
         };
 
-        document.addEventListener("keydown", preventExitKeys);
-        document.addEventListener("fullscreenchange", monitorFullscreen);
-        window.addEventListener("keydown", handleKey);
-        window.addEventListener("keyup", handleKey);
+        document.addEventListener('keydown', preventExitKeys);
+        document.addEventListener('fullscreenchange', monitorFullscreen);
+        window.addEventListener('keydown', handleKey);
+        window.addEventListener('keyup', handleKey);
 
         return () => {
-            document.removeEventListener("keydown", preventExitKeys);
-            document.removeEventListener("fullscreenchange", monitorFullscreen);
-            window.removeEventListener("keydown", handleKey);
-            window.removeEventListener("keyup", handleKey);
+            document.removeEventListener('keydown', preventExitKeys);
+            document.removeEventListener('fullscreenchange', monitorFullscreen);
+            window.removeEventListener('keydown', handleKey);
+            window.removeEventListener('keyup', handleKey);
         };
     }, [isFullScreenEnabled, timer]);
 
@@ -191,7 +189,6 @@ const Dashboard = () => {
                 staticMenuDesktopInactive: false,
                 useTopbarMenuActive: true
             }));
-
         }
     }, [isFullScreenEnabled]);
 
@@ -207,11 +204,9 @@ const Dashboard = () => {
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">Machines</span>
-                                    <div
-                                        className="text-900 font-medium text-xl"> {isConnected ? `${hostnames.length} Devices` : 'Disconnected'}</div>
+                                    <div className="text-900 font-medium text-xl"> {isConnected ? `${hostnames.length} Devices` : 'Disconnected'}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                                 </div>
                             </div>
@@ -219,31 +214,27 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-
                     <div className="col-12 lg:col-6">
                         <div className="card mb-0">
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">April Tag Statuses</span>
-                                    <div
-                                        className={('text-900 text-xl ') + getColorStatus(statuses)}>{getStatusSummary(statuses)}</div>
+                                    <div className={'text-900 text-xl ' + getColorStatus(statuses)}>{getStatusSummary(statuses)}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-qrcode text-blue-500 text-xl" />
                                 </div>
                             </div>
                             <TimeAgo date={lastAprilTagStatusUpdate} />
                         </div>
                     </div>
-                </>)
-            }
-
+                </>
+            )}
 
             {Object.entries(statuses).map(([hostname, devices]) => {
                 if (!devices) {
                     return (
-                        <div className={("col-12 lg:col-6 ") + (isFullScreenEnabled ? "hidden" : "")} key={hostname}>
+                        <div className={'col-12 lg:col-6 ' + (isFullScreenEnabled ? 'hidden' : '')} key={hostname}>
                             <div className="card mb-0">
                                 <Image
                                     downloadable={true}
@@ -262,12 +253,11 @@ const Dashboard = () => {
                                     style={{ width: '100%', objectFit: 'fill' }}
                                     preview
                                 />
-                                {(!isFullScreenEnabled && <>
+                                {!isFullScreenEnabled && (
+                                    <>
                                         <div className="px-6 pt-6 pb-2">
                                             <div>
-              <span className="text-xs font-medium text-red-600 uppercase">
-                    UNRESPONSIVE DEVICE
-              </span>
+                                                <span className="text-xs font-medium text-red-600 uppercase">UNRESPONSIVE DEVICE</span>
                                                 <a
                                                     href={`http://${hostname}:5800/`}
                                                     className="block mt-2 text-2xl text-red-500 font-semibold transition-colors duration-300 transform hover:text-gray-600 hover:underline"
@@ -279,7 +269,8 @@ const Dashboard = () => {
                                                     {hostname}
                                                 </a>
                                                 <p className="mt-2 text-sm text-gray-600">
-                                                    {hostname} | {status?.uniqueName || 'Unknown ID'} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
+                                                    {hostname} | {status?.uniqueName || 'Unknown ID'} |{' '}
+                                                    {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
                                                 </p>
                                             </div>
                                         </div>
@@ -290,9 +281,8 @@ const Dashboard = () => {
                     );
                 }
                 return devices.map((status, index) => {
-
                     return (
-                        <div className={("col-12 lg:col-6 ") + (isFullScreenEnabled && !status?.isConnected ? "hidden" : "")} key={`${hostname}-${status.uniqueName || index}`}>
+                        <div className={'col-12 lg:col-6 ' + (isFullScreenEnabled && !status?.isConnected ? 'hidden' : '')} key={`${hostname}-${status.uniqueName || index}`}>
                             <div className="card mb-0">
                                 <Image
                                     downloadable={true}
@@ -311,12 +301,11 @@ const Dashboard = () => {
                                     style={{ width: '100%', objectFit: 'fill' }}
                                     preview
                                 />
-                                {(!isFullScreenEnabled && <>
+                                {!isFullScreenEnabled && (
+                                    <>
                                         <div className="px-6 pt-6 pb-2">
                                             <div>
-              <span className="text-xs font-medium text-blue-600 uppercase dark:text-blue-400">
-                {status.cameraPath}
-              </span>
+                                                <span className="text-xs font-medium text-blue-600 uppercase dark:text-blue-400">{status.cameraPath}</span>
                                                 <div className="flex items-center justify-center gap-2 mt-2">
                                                     <a
                                                         href={`http://${hostname}:5800/`}
@@ -365,18 +354,18 @@ const Dashboard = () => {
                                                 </div>
 
                                                 <p className="mt-2 text-sm text-gray-600">
-                                                    {hostname} | {status?.uniqueName ?? 'Unknown ID'} | {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
+                                                    {hostname} | {status?.uniqueName ?? 'Unknown ID'} |{' '}
+                                                    {status?.currentPipelineIndex >= 0 ? status?.pipelineNicknames[status?.currentPipelineIndex] ?? 'No Pipeline' : status?.currentPipelineIndex ?? 'Unknown Pipeline'}
                                                 </p>
                                             </div>
                                         </div>
                                     </>
                                 )}
                             </div>
-                        </div>);
+                        </div>
+                    );
                 });
             })}
-
-
         </div>
     );
 
@@ -385,14 +374,14 @@ const Dashboard = () => {
         let offlineDevices = 0;
 
         // Iterate over each host
-        Object.keys(statusData).forEach(hostname => {
+        Object.keys(statusData).forEach((hostname) => {
             const devices = statusData[hostname];
             if (!devices) {
                 totalDevices++;
                 offlineDevices++;
                 return;
             }
-            devices.forEach(device => {
+            devices.forEach((device) => {
                 totalDevices++;
                 // Define a device as online if either isConnected or hasConnected is true
                 if (!device.isConnected) {
@@ -447,6 +436,5 @@ const Dashboard = () => {
         return 'font-bold text-yellow-600 animate-pulse'; // MAYBE
     }
 };
-
 
 export default Dashboard;

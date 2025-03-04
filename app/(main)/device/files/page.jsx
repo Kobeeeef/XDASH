@@ -1,6 +1,5 @@
 'use client';
 
-
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 import { WebsocketContext } from '@/layout/context/websocketcontext';
@@ -22,7 +21,6 @@ import { FileUpload } from 'primereact/fileupload';
 import { ProgressBar } from 'primereact/progressbar';
 import generateUuid from '../../../../utilities/uuid';
 
-
 const Dashboard = () => {
     const toast = useRef(null);
     const searchParams = useSearchParams();
@@ -33,12 +31,7 @@ const Dashboard = () => {
     const [directory, setDirectory] = useState(null);
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState([]);
-    const {
-        isConnected,
-        lastConnectionUpdate,
-        sendMessageAndWaitForCondition,
-        listenTillCondition
-    } = useContext(WebsocketContext);
+    const { isConnected, lastConnectionUpdate, sendMessageAndWaitForCondition, listenTillCondition } = useContext(WebsocketContext);
     const [lastDeviceUpdate, setLastDeviceUpdate] = useState(new Date());
     const [data, setData] = useState({});
     const [warningDialogVisible, setWarningDialogVisible] = useState(false);
@@ -54,10 +47,13 @@ const Dashboard = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isConnected && !disabled) {
-                sendMessageAndWaitForCondition({
-                    type: 'DEVICE-DATA',
-                    message: server
-                }, (m) => m.type === 'DEVICE-DATA')
+                sendMessageAndWaitForCondition(
+                    {
+                        type: 'DEVICE-DATA',
+                        message: server
+                    },
+                    (m) => m.type === 'DEVICE-DATA'
+                )
                     .then((message) => {
                         if (!message?.message?.exists) {
                             setWarningDialogVisible(true);
@@ -66,9 +62,8 @@ const Dashboard = () => {
                             setData(message.message);
                             setWarningDialogVisible(false);
                         }
-
-                    }).catch(() => {
-                });
+                    })
+                    .catch(() => {});
             }
         }, 250);
 
@@ -88,13 +83,17 @@ const Dashboard = () => {
             }
             setLoading(true);
             setDisabled(true);
-            sendMessageAndWaitForCondition({
-                type: 'DEVICE-SCP-LIST',
-                message: JSON.stringify({
-                    server: server,
-                    directory: directory
-                })
-            }, (m) => m.type === 'DEVICE-SCP-LIST', 5000)
+            sendMessageAndWaitForCondition(
+                {
+                    type: 'DEVICE-SCP-LIST',
+                    message: JSON.stringify({
+                        server: server,
+                        directory: directory
+                    })
+                },
+                (m) => m.type === 'DEVICE-SCP-LIST',
+                5000
+            )
                 .then((message) => {
                     if (message.message.success) {
                         const files = JSON.parse(message.message.files);
@@ -102,16 +101,16 @@ const Dashboard = () => {
                     }
                     setLoading(false);
                     setDisabled(false);
-                }).catch((e) => {
-                console.log(e);
-                setLoading(false);
-                setDisabled(false);
-            });
+                })
+                .catch((e) => {
+                    console.log(e);
+                    setLoading(false);
+                    setDisabled(false);
+                });
         }
     }
 
     const fileUploadRef = useRef(null);
-
 
     const uploadHandler = async ({ files }) => {
         let uuid = generateUuid();
@@ -120,7 +119,7 @@ const Dashboard = () => {
         formData.append('directory', directory);
         formData.append('id', uuid);
         // Append each file
-        Array.from(files).forEach(file => {
+        Array.from(files).forEach((file) => {
             formData.append('files[]', file);
         });
         setLoading(true);
@@ -180,8 +179,6 @@ const Dashboard = () => {
             };
 
             xhr.send(formData);
-
-
         } catch (error) {
             setLoading(false);
             setDisabled(false);
@@ -190,14 +187,14 @@ const Dashboard = () => {
         }
     };
     const handleDownload = (filename) => {
-        setProgress(50)
-        setFileDownloadDialogVisible(true)
-        const id = generateUuid()
-        const path = directory + `${directory.endsWith("/") ? "" : "/"}${filename}`
-        setStatus("Starting download...");
-        setDisabled(true)
+        setProgress(50);
+        setFileDownloadDialogVisible(true);
+        const id = generateUuid();
+        const path = directory + `${directory.endsWith('/') ? '' : '/'}${filename}`;
+        setStatus('Starting download...');
+        setDisabled(true);
         listenTillCondition((message) => {
-            if (message?.type === "TRANSFER-DOWNLOAD-PROGRESS-" + id) {
+            if (message?.type === 'TRANSFER-DOWNLOAD-PROGRESS-' + id) {
                 const msg = JSON.parse(message.message);
                 setProgress(msg?.percentage?.toFixed(0) ?? 0);
                 setStatus(msg?.message ?? 'Unknown');
@@ -216,24 +213,24 @@ const Dashboard = () => {
         fetch(`/api/download?server=${server}&remoteFilePath=${encodeURIComponent(path)}&id=${id}`)
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error("Network response was not ok");
+                    throw new Error('Network response was not ok');
                 }
                 return response.blob();
             })
             .then((blob) => {
                 const url = window.URL.createObjectURL(new Blob([blob]));
-                const link = document.createElement("a");
+                const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute("download", path.split("/").pop());
+                link.setAttribute('download', path.split('/').pop());
                 document.body.appendChild(link);
                 link.click();
                 link.parentNode.removeChild(link);
             })
             .catch((error) => {
-                console.error("There was a problem with the download:", error);
-                setDisabled(false)
-                setStatus("Download failed: " + error?.message);
-                setProgress(-1)
+                console.error('There was a problem with the download:', error);
+                setDisabled(false);
+                setStatus('Download failed: ' + error?.message);
+                setProgress(-1);
             });
     };
     const onTemplateRemove = (file, callback) => {
@@ -244,8 +241,7 @@ const Dashboard = () => {
     const headerTemplate = (options) => {
         const { className, chooseButton, uploadButton, cancelButton } = options;
         return (
-            <div className={className}
-                 style={{ backgroundColor: 'transparent', display: 'flex', alignItems: 'center' }}>
+            <div className={className} style={{ backgroundColor: 'transparent', display: 'flex', alignItems: 'center' }}>
                 {chooseButton}
                 {uploadButton}
                 {cancelButton}
@@ -257,16 +253,13 @@ const Dashboard = () => {
         return (
             <div className="flex align-items-center flex-wrap">
                 <div className="flex align-items-center" style={{ width: '40%' }}>
-
                     <span className="flex flex-column text-left ml-3">
                         {file.name}
                         <small>{new Date().toLocaleDateString()}</small>
                     </span>
                 </div>
                 <Tag value={props.formatSize} severity="warning" className="px-3 py-2" />
-                <Button type="button" icon="pi pi-times"
-                        className="p-button-outlined p-button-rounded p-button-danger ml-auto"
-                        onClick={() => onTemplateRemove(file, props.onRemove)} />
+                <Button type="button" icon="pi pi-times" className="p-button-outlined p-button-rounded p-button-danger ml-auto" onClick={() => onTemplateRemove(file, props.onRemove)} />
             </div>
         );
     };
@@ -274,12 +267,15 @@ const Dashboard = () => {
     const emptyTemplate = () => {
         return (
             <div className="flex align-items-center flex-column">
-                <i className="pi pi-image mt-3 p-5" style={{
-                    fontSize: '5em',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--surface-b)',
-                    color: 'var(--surface-d)'
-                }}></i>
+                <i
+                    className="pi pi-image mt-3 p-5"
+                    style={{
+                        fontSize: '5em',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--surface-b)',
+                        color: 'var(--surface-d)'
+                    }}
+                ></i>
                 <span style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }} className="my-5">
                     Drag and drop files here
                 </span>
@@ -321,32 +317,40 @@ const Dashboard = () => {
                 resizable={false}
             >
                 <p className="m-0">
-                    The machine with the server name <strong>{server}</strong> was not found on the network running
-                    XCASTER. Please check your network connection, verify the machine is on and try again later.
+                    The machine with the server name <strong>{server}</strong> was not found on the network running XCASTER. Please check your network connection, verify the machine is on and try again later.
                 </p>
             </Dialog>
-            <Dialog maximizable={true} style={{ width: '80vw', height: '60vh' }} visible={fileUploadDialogVisible}
-                    resizable={false} onHide={() => {
-
-                setFileUploadDialogVisible(false);
-            }}>
+            <Dialog
+                maximizable={true}
+                style={{ width: '80vw', height: '60vh' }}
+                visible={fileUploadDialogVisible}
+                resizable={false}
+                onHide={() => {
+                    setFileUploadDialogVisible(false);
+                }}
+            >
                 <div>
-
                     <Tooltip target=".custom-choose-btn" content="Choose" position="bottom" />
                     <Tooltip target=".custom-upload-btn" content="Upload" position="bottom" />
                     <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom" />
 
-                    <FileUpload disabled={disabled || loading} ref={fileUploadRef} multiple
-                                maxFileSize={100000000}
-                                customUpload={true}
-                                uploadHandler={uploadHandler}
-                                onClear={() => {
-                                    setProgress(0);
-                                }}
-                                headerTemplate={headerTemplate} itemTemplate={itemTemplate}
-                                emptyTemplate={emptyTemplate}
-                                chooseOptions={chooseOptions} uploadOptions={uploadOptions}
-                                cancelOptions={cancelOptions} />
+                    <FileUpload
+                        disabled={disabled || loading}
+                        ref={fileUploadRef}
+                        multiple
+                        maxFileSize={100000000}
+                        customUpload={true}
+                        uploadHandler={uploadHandler}
+                        onClear={() => {
+                            setProgress(0);
+                        }}
+                        headerTemplate={headerTemplate}
+                        itemTemplate={itemTemplate}
+                        emptyTemplate={emptyTemplate}
+                        chooseOptions={chooseOptions}
+                        uploadOptions={uploadOptions}
+                        cancelOptions={cancelOptions}
+                    />
                     {progress > 0 && (
                         <div style={{ marginTop: '20px' }}>
                             <ProgressBar value={progress} />
@@ -355,20 +359,26 @@ const Dashboard = () => {
                     )}
                 </div>
             </Dialog>
-            <Dialog footer={() => <Button label={"Close"} onClick={() => setFileDownloadDialogVisible(false)}/>} maximizable={false} closable={false} draggable={false} style={{ width: '80vw' }} onHide={() => setFileDownloadDialogVisible(false)} visible={fileDownloadDialogVisible}>
+            <Dialog
+                footer={() => <Button label={'Close'} onClick={() => setFileDownloadDialogVisible(false)} />}
+                maximizable={false}
+                closable={false}
+                draggable={false}
+                style={{ width: '80vw' }}
+                onHide={() => setFileDownloadDialogVisible(false)}
+                visible={fileDownloadDialogVisible}
+            >
                 <h5>{status}</h5>
-                <ProgressBar mode={progress === -1 ? "indeterminate" : "determinate"} value={progress} />
+                <ProgressBar mode={progress === -1 ? 'indeterminate' : 'determinate'} value={progress} />
             </Dialog>
             <div className="col-12 lg:col-6 sm:col-4 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
                             <span className="block text-500 font-medium mb-3">Backend Status</span>
-                            <div
-                                className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? 'Connected' : 'Disconnected'}</div>
+                            <div className={'text-900 font-medium text-xl ' + (isConnected ? 'text-green-600' : 'text-red-600 animate-pulse')}>{isConnected ? 'Connected' : 'Disconnected'}</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -381,10 +391,15 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Machine Server</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (server ?? 'Unknown') : 'Disconnected'}</div>
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server ? (data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600') : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? server ?? 'Unknown' : 'Disconnected'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-desktop text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -397,11 +412,21 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">Hostname</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.hostname ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.hostname ?? 'Unknown') : 'Unknown'}</div>
-
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server && data?.hostname
+                                        ? data?.status === 'CONNECTED'
+                                            ? 'text-green-600'
+                                            : data?.status === 'CONNECTING'
+                                            ? 'animate-pulse-fast text-yellow-500'
+                                            : 'animate-pulse text-red-600'
+                                        : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? data?.hostname ?? 'Unknown' : 'Unknown'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-address-book text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -414,11 +439,21 @@ const Dashboard = () => {
                         <div>
                             <span className="block text-500 font-medium mb-3">IP Address</span>
                             <div
-                                className={'text-900 font-medium text-xl ' + (isConnected && server && data?.address ? data?.status === 'CONNECTED' ? 'text-green-600' : data?.status === 'CONNECTING' ? 'animate-pulse-fast text-yellow-500' : 'animate-pulse text-red-600' : 'animate-pulse text-red-600')}>{isConnected ? (data?.address ?? 'Unknown') : 'Unknown'}</div>
-
+                                className={
+                                    'text-900 font-medium text-xl ' +
+                                    (isConnected && server && data?.address
+                                        ? data?.status === 'CONNECTED'
+                                            ? 'text-green-600'
+                                            : data?.status === 'CONNECTING'
+                                            ? 'animate-pulse-fast text-yellow-500'
+                                            : 'animate-pulse text-red-600'
+                                        : 'animate-pulse text-red-600')
+                                }
+                            >
+                                {isConnected ? data?.address ?? 'Unknown' : 'Unknown'}
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                             style={{ width: '2.5rem', height: '2.5rem' }}>
+                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-map-marker text-blue-500 text-xl" />
                         </div>
                     </div>
@@ -430,53 +465,78 @@ const Dashboard = () => {
                     <DataTable
                         selectionMode="single"
                         onSelectionChange={(e) => {
-                            if(e.value?.permissions?.startsWith("d")) {
-                                const directory = e.value.directory
+                            if (e.value?.permissions?.startsWith('d')) {
+                                const directory = e.value.directory;
                                 router.replace(`/device/files?server=${server}&directory=` + directory + `${directory.endsWith('/') ? '' : '/'}${e.value.name}`);
                             }
                         }}
                         showGridlines={false}
                         emptyMessage={Loader({
-                            message: loading && (files ?? []).length > 0 ? 'Loading resources' : loading ? 'Requesting resources' : !isConnected ? 'Connecting to backend' : !data?.exists ? 'Machine not running XCASTER' : data?.status !== 'CONNECTED' ? 'Connecting to machine' : 'No resources found',
+                            message:
+                                loading && (files ?? []).length > 0
+                                    ? 'Loading resources'
+                                    : loading
+                                    ? 'Requesting resources'
+                                    : !isConnected
+                                    ? 'Connecting to backend'
+                                    : !data?.exists
+                                    ? 'Machine not running XCASTER'
+                                    : data?.status !== 'CONNECTED'
+                                    ? 'Connecting to machine'
+                                    : 'No resources found',
                             speed: data?.status === 'CONNECTING' ? 'fast' : 'normal'
                         })}
                         value={loading || (files ?? []).length === 0 || !isConnected || data?.status !== 'CONNECTED' || !data?.exists ? [] : files}
-                        paginator rows={5}
+                        paginator
+                        rows={5}
                         rowsPerPageOptions={[5, 10, 25, 50, 75]}
                         tableStyle={{ minWidth: '50rem' }}
                         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                         currentPageReportTemplate="{first} to {last} of {totalRecords}"
-                        paginatorLeft={() => (<div className={'flex'}><BreadCrumb
-                            model={directory
-                                ?.split('/')
-                                .filter(m => m) // Remove empty elements
-                                .map((m, i, arr) => {
-                                    // Join elements from 0 to i to form the path
-                                    const path = arr.slice(0, i + 1).join('/');
-                                    return {
-                                        label: m,
-                                        disabled: directory === '/' + path,
-                                        command: () => {
-                                            router.replace(`/device/files?server=${server}&directory=/${path}`);
+                        paginatorLeft={() => (
+                            <div className={'flex'}>
+                                <BreadCrumb
+                                    model={directory
+                                        ?.split('/')
+                                        .filter((m) => m) // Remove empty elements
+                                        .map((m, i, arr) => {
+                                            // Join elements from 0 to i to form the path
+                                            const path = arr.slice(0, i + 1).join('/');
+                                            return {
+                                                label: m,
+                                                disabled: directory === '/' + path,
+                                                command: () => {
+                                                    router.replace(`/device/files?server=${server}&directory=/${path}`);
+                                                }
+                                            };
+                                        })}
+                                    home={{
+                                        icon: 'pi pi-home',
+                                        disabled: directory === '/',
+                                        command(event) {
+                                            router.replace(`/device/files?server=${server}&directory=/`);
                                         }
-                                    };
-                                })} home={{
-                            icon: 'pi pi-home', disabled: directory === '/', command(event) {
-                                router.replace(`/device/files?server=${server}&directory=/`);
-                            }
-                        }} /></div>)}
-
+                                    }}
+                                />
+                            </div>
+                        )}
                         paginatorRight={() => (
-                            <div className={'flex'}><Button disabled={!isConnected || data?.status !== 'CONNECTED'}
-                                                            loading={loading} type="button"
-                                                            icon="pi pi-upload" text onClick={() => {
-                                setProgress(50);
-                                setFileUploadDialogVisible(true);
-                            }}
-                            /><Button disabled={!isConnected || data?.status !== 'CONNECTED'}
-                                      loading={loading} type="button"
-                                      icon={'pi pi-refresh ' + (loading && 'pi-spin')} text
-                                      onClick={reloadFiles} /></div>)}>
+                            <div className={'flex'}>
+                                <Button
+                                    disabled={!isConnected || data?.status !== 'CONNECTED'}
+                                    loading={loading}
+                                    type="button"
+                                    icon="pi pi-upload"
+                                    text
+                                    onClick={() => {
+                                        setProgress(50);
+                                        setFileUploadDialogVisible(true);
+                                    }}
+                                />
+                                <Button disabled={!isConnected || data?.status !== 'CONNECTED'} loading={loading} type="button" icon={'pi pi-refresh ' + (loading && 'pi-spin')} text onClick={reloadFiles} />
+                            </div>
+                        )}
+                    >
                         <Column filter field="name" frozen={true} header="Name" style={{ width: '25%' }} />
                         <Column field="size" header="Size" style={{ width: '25%' }} />
                         <Column field="date" header="Date" style={{ width: '25%' }} />
@@ -494,9 +554,9 @@ const Dashboard = () => {
                                         if (col?.permissions?.startsWith('d')) {
                                             setLoading(true);
                                             router.replace(`/device/files?server=${server}&directory=` + directory + `${directory.endsWith('/') ? '' : '/'}${col.name}`);
-                                        } else if(col?.permissions?.startsWith('-')) {
-                                            if(col?.name) {
-                                                handleDownload(col.name)
+                                        } else if (col?.permissions?.startsWith('-')) {
+                                            if (col?.name) {
+                                                handleDownload(col.name);
                                             } else {
                                                 toast.current.show({
                                                     severity: 'error',
@@ -512,7 +572,6 @@ const Dashboard = () => {
                     </DataTable>
                 </div>
             </div>
-
         </div>
     );
 };

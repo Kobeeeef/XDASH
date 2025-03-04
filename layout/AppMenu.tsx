@@ -13,27 +13,30 @@ const AppMenu = () => {
     const model: AppMenuItem[] = [
         {
             label: 'Home',
-            items: [{ label: 'Dashboard', icon: 'pi pi-home', to: '/' },
-                { label: 'Console', icon: "pi console-icon",  to: '/console' },
+            items: [
+                { label: 'Dashboard', icon: 'pi pi-home', to: '/' },
+                { label: 'Console', icon: 'pi console-icon', to: '/console' },
                 {
-                label: 'Network',
-                icon: 'pi pi-sitemap',
-                items: [{ label: 'Statistics', icon: 'pi pi-wifi', to: '/network/stats' }, {
-                    label: 'mDNS',
-                    icon: 'pi pi-globe',
-                    to: '/network/mDNS'
-                },
-                    { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' },
-                    { label: 'XCASTER', icon: 'pi pi-megaphone', to: '/network/XCASTER' }]
-            },
-
+                    label: 'Network',
+                    icon: 'pi pi-sitemap',
+                    items: [
+                        { label: 'Statistics', icon: 'pi pi-wifi', to: '/network/stats' },
+                        {
+                            label: 'mDNS',
+                            icon: 'pi pi-globe',
+                            to: '/network/mDNS'
+                        },
+                        { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' },
+                        { label: 'XCASTER', icon: 'pi pi-megaphone', to: '/network/XCASTER' }
+                    ]
+                }
             ]
         },
         {
             label: 'Vision',
             items: [
                 { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' },
-                { label: 'April Tags', icon: 'pi pi-qrcode', to: '/photonvision' },
+                { label: 'April Tags', icon: 'pi pi-qrcode', to: '/photonvision' }
                 // { label: 'Live Camera', icon: 'pi pi-camera', to: '/camera' }
             ]
         },
@@ -42,12 +45,15 @@ const AppMenu = () => {
             items: [
                 { label: 'View', icon: 'pi pi-server', to: '/machines/view' },
                 { label: 'Scripts', icon: 'pi pi-code', to: '/scripts' },
-                { label: 'Dockers', icon: 'pi pi-box', items: [
-                        { label: "Single Pipeline", icon: "pi pi-clock", to: '/dockers'},
-                        { label: "Compose Pipeline", icon: "pi pi-book", to: '/dockers/compose'},
-                        { label: "Scripts", icon: "pi pi-code", to: '/dockers/scripts'}
-                    ] }
-
+                {
+                    label: 'Dockers',
+                    icon: 'pi pi-box',
+                    items: [
+                        { label: 'Single Pipeline', icon: 'pi pi-clock', to: '/dockers' },
+                        { label: 'Compose Pipeline', icon: 'pi pi-book', to: '/dockers/compose' },
+                        { label: 'Scripts', icon: 'pi pi-code', to: '/dockers/scripts' }
+                    ]
+                }
             ]
         },
         {
@@ -56,14 +62,14 @@ const AppMenu = () => {
                 { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables' },
 
                 {
-                    label: 'Statistics', icon: 'pi pi-chart-bar',
+                    label: 'Statistics',
+                    icon: 'pi pi-chart-bar',
                     items: [
                         { label: 'Live Statistics', icon: 'pi pi-chart-line', to: '/xtables/stats' },
                         { label: 'Record Statistics', icon: 'pi pi-history', to: '/xtables/stats/record' }
                     ]
                 },
                 { label: 'Graphs', icon: 'pi pi-chart-pie', to: '/xtables/graphs' }
-
             ]
         },
         {
@@ -181,8 +187,7 @@ const AppMenu = () => {
         <MenuProvider>
             <ul className="layout-menu">
                 {model.map((item, i) => {
-                    return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> :
-                        <li className="menu-separator"></li>;
+                    return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> : <li className="menu-separator"></li>;
                 })}
 
                 <Link href="/" style={{ cursor: 'pointer' }}>

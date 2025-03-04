@@ -31,19 +31,14 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                 <img src={`/images/logo/logo.png`} height={'35px'} alt="logo" />
             </Link>
 
-            <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button"
-                    onClick={onMenuToggle}>
+            <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
                 <i className="pi pi-bars" />
             </button>
 
-            <button ref={topbarmenubuttonRef} type="button"
-                    className="p-link layout-topbar-menu-button layout-topbar-button" onClick={showProfileSidebar}>
+            <button ref={topbarmenubuttonRef} type="button" className="p-link layout-topbar-menu-button layout-topbar-button" onClick={showProfileSidebar}>
                 <i className="pi pi-ellipsis-v" />
             </button>
-            <div ref={topbarmenuRef} style={{ justifyContent: 'center', alignItems: 'center' }}
-                 className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-
-
+            <div ref={topbarmenuRef} style={{ justifyContent: 'center', alignItems: 'center' }} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
                 <Menu
                     model={[
                         {
@@ -55,12 +50,9 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                     command: () => {
                                         const currentPath = window.location.pathname;
                                         const queryString = window.location.search;
-                                        const newPath = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('.html')
-                                            ? currentPath
-                                            : `${currentPath}.html`;
+                                        const newPath = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('.html') ? currentPath : `${currentPath}.html`;
 
                                         window.location.href = `${newPath}${queryString}`;
-
                                     }
                                 },
                                 {
@@ -75,9 +67,12 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                     ref={menuLeftRef}
                     id="popup_menu_left"
                 />
-                <Tag className={('font-extrabold text-base ml-2 flex mt-2 lg:mt-0')}
-                     style={{ height: '28px', lineHeight: '32px', justifyContent: 'center' }}
-                    severity={isConnected ? "success" : "danger"} value={isConnected ? "Connected" : "Disconnected"} />
+                <Tag
+                    className={'font-extrabold text-base ml-2 flex mt-2 lg:mt-0'}
+                    style={{ height: '28px', lineHeight: '32px', justifyContent: 'center' }}
+                    severity={isConnected ? 'success' : 'danger'}
+                    value={isConnected ? 'Connected' : 'Disconnected'}
+                />
 
                 <Button
                     className="p-link layout-topbar-button"
@@ -98,7 +93,6 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                         <span>Settings</span>
                     </button>
                 </Link>
-
             </div>
         </div>
     );
