@@ -9,7 +9,7 @@ const Documentation = () => {
                     <div className="card docs">
                         <h4>About This Website</h4>
                         <p>
-                            This website is created for XBOT Robotics FRC&apos;s vision team. It is designed to control all machines that host the cameras, AI models, and XTABLES. The website provides a user-friendly interface that simplifies the
+                            This website is created for XBOT Robotics FRC&apos;s vision team by Kobe. It is designed to control all machines that host the cameras, AI models, and XTABLES. The website provides a user-friendly interface that simplifies the
                             management and operation of these systems.
                         </p>
                         <p>

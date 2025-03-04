@@ -190,9 +190,9 @@ const AppMenu = () => {
                     return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> : <li className="menu-separator"></li>;
                 })}
 
-                <Link href="/" style={{ cursor: 'pointer' }}>
-                    <img alt="XBOT Robotics" className="w-full my-4" src={`/images/logo/logo.png`} />
-                </Link>
+                {/*<Link href="/" style={{ cursor: 'pointer' }}>*/}
+                {/*    <img alt="XBOT Robotics" className="w-full my-4" src={`/images/logo/logo.png`} />*/}
+                {/*</Link>*/}
             </ul>
         </MenuProvider>
     );

@@ -47,11 +47,11 @@ const LoginPage = () => {
                         severity: 'success',
                         summary: 'Success',
                         detail: 'Redirecting to dashboard...',
-                        life: 2000
+                        life: 200
                     });
                     setTimeout(() => {
                         router.replace('/');
-                    }, 2000);
+                    }, 200);
                 } else {
                     setError('Invalid password, please try again.');
                 }

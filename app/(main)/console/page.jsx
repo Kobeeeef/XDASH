@@ -73,7 +73,7 @@ const Dashboard = () => {
             const data = JSON.parse(event.data);
             if (data.type === 'RIO-LOGS') {
                 const msg = JSON.parse(data.message);
-                setMessages((prevArray) => [msg || '', ...prevArray]);
+                setMessages((prevArray) => [ ...prevArray,msg || '',]);
             }
         };
         if (socket.current) {
@@ -235,7 +235,7 @@ const Dashboard = () => {
                 </>
             )}
             <div className="col-12">
-                <TerminalDisplay backGroundColor={''} messages={messages} loadingDots={true} scrollLog={scrollLock} placeholder={'Listening for messages from RIO'} maxHeight={isFullScreenEnabled ? '90vh' : '60vh'} />
+                <TerminalDisplay backGroundColor={''} messages={messages} loadingDots={true} scrollLog={scrollLock} placeholder={'Listening for messages from RIO'} maxHeight={isFullScreenEnabled ? '90vh' : '63vh'} />
             </div>
         </div>
     );
