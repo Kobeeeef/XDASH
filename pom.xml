@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.kobe.xbot</groupId>
     <artifactId>XDASH</artifactId>
-    <version>3.4.3</version>
+    <version>3.4.4-DEV</version>
     <name>xdashbackend</name>
     <description>xdashbackend</description>
     <url/>
@@ -111,10 +111,10 @@
         </dependency>
 
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

@@ -7,6 +7,7 @@ import org.kobe.xbot.xdashbackend.entities.DeviceAddData;
 import org.kobe.xbot.xdashbackend.entities.DevicesReconnectReturn;
 import org.kobe.xbot.xdashbackend.entities.SSHHostAddress;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
+import org.kobe.xbot.xdashbackend.websocket.WebSocketHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
