@@ -14,17 +14,17 @@ const AppMenu = () => {
         {
             label: 'Home',
             items: [{ label: 'Dashboard', icon: 'pi pi-home', to: '/' },
-                { label: 'Console', icon: "pi console-icon",  to: '/console.html' },
+                { label: 'Console', icon: "pi console-icon",  to: '/console' },
                 {
                 label: 'Network',
                 icon: 'pi pi-sitemap',
-                items: [{ label: 'Statistics', icon: 'pi pi-wifi', to: '/network/stats.html' }, {
+                items: [{ label: 'Statistics', icon: 'pi pi-wifi', to: '/network/stats' }, {
                     label: 'mDNS',
                     icon: 'pi pi-globe',
                     to: '/network/mDNS'
                 },
-                    { label: 'Scan', icon: 'pi pi-search', to: '/network/scan.html' },
-                    { label: 'XCASTER', icon: 'pi pi-megaphone', to: '/network/XCASTER.html' }]
+                    { label: 'Scan', icon: 'pi pi-search', to: '/network/scan' },
+                    { label: 'XCASTER', icon: 'pi pi-megaphone', to: '/network/XCASTER' }]
             },
 
             ]
@@ -32,20 +32,20 @@ const AppMenu = () => {
         {
             label: 'Vision',
             items: [
-                { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping.html' },
-                { label: 'April Tags', icon: 'pi pi-qrcode', to: '/photonvision.html' },
+                { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' },
+                { label: 'April Tags', icon: 'pi pi-qrcode', to: '/photonvision' },
                 // { label: 'Live Camera', icon: 'pi pi-camera', to: '/camera' }
             ]
         },
         {
             label: 'Machines',
             items: [
-                { label: 'View', icon: 'pi pi-server', to: '/machines/view.html' },
-                { label: 'Scripts', icon: 'pi pi-code', to: '/scripts.html' },
+                { label: 'View', icon: 'pi pi-server', to: '/machines/view' },
+                { label: 'Scripts', icon: 'pi pi-code', to: '/scripts' },
                 { label: 'Dockers', icon: 'pi pi-box', items: [
-                        { label: "Single Pipeline", icon: "pi pi-clock", to: '/dockers.html'},
-                        { label: "Compose Pipeline", icon: "pi pi-book", to: '/dockers/compose.html'},
-                        { label: "Scripts", icon: "pi pi-code", to: '/dockers/scripts.html'}
+                        { label: "Single Pipeline", icon: "pi pi-clock", to: '/dockers'},
+                        { label: "Compose Pipeline", icon: "pi pi-book", to: '/dockers/compose'},
+                        { label: "Scripts", icon: "pi pi-code", to: '/dockers/scripts'}
                     ] }
 
             ]
@@ -53,22 +53,22 @@ const AppMenu = () => {
         {
             label: 'Network Tables',
             items: [
-                { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables.html' },
+                { label: 'XTABLES', icon: 'pi pi-fw pi-table', to: '/xtables' },
 
                 {
                     label: 'Statistics', icon: 'pi pi-chart-bar',
                     items: [
-                        { label: 'Live Statistics', icon: 'pi pi-chart-line', to: '/xtables/stats.html' },
-                        { label: 'Record Statistics', icon: 'pi pi-history', to: '/xtables/stats/record.html' }
+                        { label: 'Live Statistics', icon: 'pi pi-chart-line', to: '/xtables/stats' },
+                        { label: 'Record Statistics', icon: 'pi pi-history', to: '/xtables/stats/record' }
                     ]
                 },
-                { label: 'Graphs', icon: 'pi pi-chart-pie', to: '/xtables/graphs.html' }
+                { label: 'Graphs', icon: 'pi pi-chart-pie', to: '/xtables/graphs' }
 
             ]
         },
         {
             label: 'Settings',
-            items: [{ label: 'Settings', icon: 'pi pi-cog', to: '/settings.html' }]
+            items: [{ label: 'Settings', icon: 'pi pi-cog', to: '/settings' }]
         },
         // {
         //     label: 'UI Components',
@@ -171,7 +171,7 @@ const AppMenu = () => {
                 {
                     label: 'Documentation',
                     icon: 'pi pi-fw pi-question',
-                    to: '/documentation.html'
+                    to: '/documentation'
                 }
             ]
         }
