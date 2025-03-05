@@ -4,17 +4,14 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 
-import { WebsocketContext } from '../../../layout/context/websocketcontext';
-import TimeAgo from '../../../components/TimeAgo';
-import { Image } from 'primereact/image';
-import axios from 'axios';
-import { Tag } from 'primereact/tag';
-import { root } from 'postcss';
-import { LayoutContext } from '../../../layout/context/layoutcontext';
+import { WebsocketContext } from '../../../../layout/context/websocketcontext';
+import TimeAgo from '../../../../components/TimeAgo';
+import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { Toast } from 'primereact/toast';
-import { playErrorNotificationSound, playNotificationSound } from '../../../utilities/notification';
-import TerminalDisplay from '../../../components/TerminalDisplay';
-import { Button } from 'primereact/button';
+import { playErrorNotificationSound, playNotificationSound, playSuccessNotificationSound } from '../../../../utilities/notification';
+import TerminalDisplay from '../../../../components/TerminalDisplay';
+import { Dropdown } from 'primereact/dropdown';
+import TerminalDisplayColored from '../../../../components/TerminalDisplayColored';
 
 const Dashboard = () => {
     const toast = useRef(null);
@@ -22,11 +19,13 @@ const Dashboard = () => {
     const [lastStatusUpdate, setLastStatusUpdate] = useState(new Date());
     const layoutContext = useContext(LayoutContext);
     const [isFullScreenEnabled, setIsFullScreenEnabled] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState([]);
     const [timer, setTimer] = useState(null);
+    const [logFiles, setLogFiles] = useState([]);
     const [scrollLock, setScrollLock] = useState(true);
+    const [selectedLogFile, setSelectedLogFile] = useState(null);
     const [rioStatus, setRioStatus] = useState('UNKNOWN');
+    const [loading, setLoading] = useState(false);
     const isMounted = useRef(true); // Tracks if the component is mounted
     const timeoutId = useRef(null); // Stores the timeout ID persistently
     useEffect(() => {
@@ -40,10 +39,11 @@ const Dashboard = () => {
                     sendMessageAndWaitForCondition({ type: 'GET-RIO-STATUS' }, (m) => m.type === 'GET-RIO-STATUS')
                         .then((message) => {
                             setRioStatus(message?.message?.status || 'UNKNOWN');
+                            setLogFiles(message?.message?.logFiles ?? []);
                             setLastStatusUpdate(new Date());
                             isRequestInProgress = false;
                             if (isMounted.current) {
-                                timeoutId.current = setTimeout(sendRequest, 400); // Schedule next call
+                                timeoutId.current = setTimeout(sendRequest, 200); // Schedule next call
                             }
                         })
                         .catch(() => {
@@ -75,7 +75,7 @@ const Dashboard = () => {
             const data = JSON.parse(event.data);
             if (data.type === 'RIO-LOGS') {
                 const msg = JSON.parse(data.message);
-                setMessages((prevArray) => [...prevArray, { message: msg ?? '', textClass: getColorFromMessageStart(msg) }]);
+                setMessages((prevArray) => [...prevArray, msg || '']);
             }
         };
         if (socket.current) {
@@ -198,6 +198,48 @@ const Dashboard = () => {
         }
     }, [isFullScreenEnabled]);
 
+    function fetchLogs(filename) {
+        setLoading(true);
+        setMessages([]);
+        setSelectedLogFile(filename);
+
+        sendMessageAndWaitForCondition({ type: 'GET-RIO-LOGS', message: filename }, (m) => m.type === 'GET-RIO-LOGS')
+            .then((message) => {
+                setLoading(false);
+                if (message?.message) {
+                    const messages = (message?.message?.messages || []).map((msg) => ({ message: msg, textClass: getColorFromMessageStart(msg) }));
+                    if (message?.message?.success) {
+                        setMessages(messages);
+                        playSuccessNotificationSound();
+                        toast.current?.show({
+                            severity: 'success',
+                            summary: 'Logs Loaded!',
+                            detail: 'The logs have been successfully rendered.'
+                        });
+                    } else {
+                        setMessages([{ message: 'There was an non success status returned by server: ' }, ...messages]);
+                        playErrorNotificationSound();
+                        toast.current?.show({
+                            severity: 'error',
+                            summary: 'Logs Failed!',
+                            detail: 'There was a error fetching logs.'
+                        });
+                    }
+                }
+            })
+            .catch((e) => {
+                setLoading(false);
+                setRioStatus('ERROR');
+                setMessages([{ message: e?.message || 'There was an unknown error fetching logs.' }]);
+                playErrorNotificationSound();
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Logs Failed!',
+                    detail: 'There was a unknown error fetching logs.'
+                });
+            });
+    }
+
     // @ts-ignore
     return (
         <div className="grid fadeIn">
@@ -236,53 +278,22 @@ const Dashboard = () => {
                     </div>
                 </>
             )}
-            <div className="col-12 ">
+            <div className="col-12">
                 <div className="card mb-0">
-                    <Button
-                        disabled={!isConnected || rioStatus != 'CONNECTED'}
+                    <Dropdown
+                        disabled={loading || !isConnected}
+                        checkmark={true}
+                        onChange={(e) => fetchLogs(e.value)}
+                        value={selectedLogFile}
+                        options={logFiles}
                         loading={loading}
-                        onClick={() => {
-                            setLoading(true);
-                            sendMessageAndWaitForCondition({ type: 'REGISTER-RIO' }, (m) => m.type === 'REGISTER-RIO')
-                                .then((message) => {
-                                    setLoading(false);
-                                    if (message?.message?.success) {
-                                        toast.current?.show({
-                                            severity: 'success',
-                                            summary: 'Register Success!',
-                                            detail: message?.message?.message || 'Unknown response server side.'
-                                        });
-                                    } else {
-                                        toast.current?.show({
-                                            severity: 'error',
-                                            summary: 'Register Failed!',
-                                            detail: message?.message?.message || 'Unknown exception server side.'
-                                        });
-                                    }
-                                })
-                                .catch((e) => {
-                                    setLoading(false);
-                                    toast.current?.show({
-                                        severity: 'error',
-                                        summary: 'Register Failed!',
-                                        detail: e?.message || 'Unknown exception client side.'
-                                    });
-                                });
-                        }}
-                        label={'Register RIO'}
+                        placeholder={loading ? 'Loading log file...' : 'Select log file to view.'}
                         className={'w-full'}
                     />
                 </div>
             </div>
             <div className="col-12">
-                <TerminalDisplay
-                    backGroundColor={''}
-                    messages={messages}
-                    loadingDots={true}
-                    scrollLog={scrollLock}
-                    placeholder={rioStatus !== 'CONNECTED' ? 'Waiting for RIO connection' : 'Listening for messages from RIO'}
-                    maxHeight={isFullScreenEnabled ? '90vh' : '63vh'}
-                />
+                <TerminalDisplayColored backGroundColor={''} messages={messages} loadingDots={true} scrollLog={scrollLock} placeholder={loading ? 'Loading logs now' : 'Waiting for log selection'} maxHeight={isFullScreenEnabled ? '90vh' : '63vh'} />
             </div>
         </div>
     );
@@ -303,6 +314,7 @@ const Dashboard = () => {
         }
         return 'font-bold text-yellow-600 animate-pulse-fast'; // MAYBE
     }
+
     function getColorFromMessageStart(message) {
         message = message.toLowerCase();
         if (message.startsWith('warn')) {

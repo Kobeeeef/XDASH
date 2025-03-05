@@ -102,8 +102,8 @@ const template = (data, index) => {
                     <div className={'font-bold'}>CPU</div>
                 </div>
                 <div className="col-12 lg:col-6 xl:col-3 flex align-items-center justify-content-center flex-column">
-                    <Knob valueColor={data?.network > 50 ? 'RED' : 'var(--primary-color, Black)'} size={150} valueTemplate={data?.network ? '{value}%' : 'N/A'} value={data?.network ?? 0} />
-                    <div className={'font-bold'}>NETWORK</div>
+                    <Knob valueColor={data?.temperature > 50 ? 'RED' : 'var(--primary-color, Black)'} size={150} valueTemplate={data?.temperature ? '{value}%' : 'N/A'} value={data?.temperature ?? 0} />
+                    <div className={'font-bold'}>TEMPERATURE</div>
                 </div>
             </div>
         </div>

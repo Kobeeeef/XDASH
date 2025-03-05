@@ -15,7 +15,14 @@ const AppMenu = () => {
             label: 'Home',
             items: [
                 { label: 'Dashboard', icon: 'pi pi-home', to: '/' },
-                { label: 'Console', icon: 'pi console-icon', to: '/console' },
+                {
+                    label: 'RoboRIO',
+                    icon: 'pi pi-microchip',
+                    items: [
+                        { label: 'Console', icon: 'pi console-icon', to: '/console' },
+                        { label: 'Logs', icon: 'pi pi-file-edit', to: '/console/logs' }
+                    ]
+                },
                 {
                     label: 'Network',
                     icon: 'pi pi-sitemap',

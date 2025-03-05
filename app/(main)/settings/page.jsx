@@ -405,6 +405,21 @@ const Dashboard = () => {
                                     }))
                                 }
                             />
+                            <Divider align="center">
+                                <Badge value="RoboRIO Log Directory"></Badge>
+                            </Divider>
+                            <InputText
+                                invalid={!isValidPath(newData?.ROBORIO_LOG_DIRECTORY)}
+                                className={'w-full'}
+                                placeholder={'Log Directory'}
+                                value={newData?.ROBORIO_LOG_DIRECTORY}
+                                onChange={(e) =>
+                                    setNewData((prev) => ({
+                                        ...prev,
+                                        ROBORIO_LOG_DIRECTORY: e.target.value
+                                    }))
+                                }
+                            />
                         </TabPanel>
                         <TabPanel disabled={!isConnected || loading} className={'w-full'} header="Server" leftIcon="pi pi-server mr-2">
                             <Divider align="center">
