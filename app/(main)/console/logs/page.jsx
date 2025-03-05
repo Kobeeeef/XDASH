@@ -70,21 +70,6 @@ const Dashboard = () => {
             }
         };
     }, [isConnected, sendMessageAndWaitForCondition]);
-    useEffect(() => {
-        const listener = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'RIO-LOGS') {
-                const msg = JSON.parse(data.message);
-                setMessages((prevArray) => [...prevArray, msg || '']);
-            }
-        };
-        if (socket.current) {
-            socket.current.addEventListener('message', listener);
-        }
-        return () => {
-            socket.current.removeEventListener('message', listener);
-        };
-    }, [socket.current]);
 
     useEffect(() => {
         const handleKey = (event) => {

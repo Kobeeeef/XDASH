@@ -331,7 +331,7 @@ const Dashboard = () => {
             return 'text-green-400 font-extrabold text-lg';
         }
 
-        return 'text-gray-400';
+        return 'text-gray-300';
     }
 
     function playSoundNotificationFromMessageStart(message) {
