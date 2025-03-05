@@ -511,21 +511,23 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 } else if (message.getType().equals("GET-RIO-STATUS")) {
                     SSHHostAddress sshHostAddress = SSHConnectionManager.getRioHostAddress();
                     File directory = new File(XdashbackendApplication.getConfigLoader().getRoborioLogDirectory());
-                    String[] fileNames;
+                    FilePathWIthTimestamp[] filesWithTimestamp = new FilePathWIthTimestamp[0];
+
                     if (directory.isDirectory()) {
-                        fileNames = directory.list();
-                        if (fileNames == null) {
+                       File[] files = directory.listFiles();
+                        if (files == null) {
                             logger.severe("Failed to retrieve files from RIO logs: " + directory.getAbsolutePath());
+                        } else {
+                            filesWithTimestamp = Arrays.stream(files).map(m -> new FilePathWIthTimestamp(m.getName(), m.lastModified())).toArray(FilePathWIthTimestamp[]::new);
                         }
                     } else {
-                        fileNames = new String[]{};
                         logger.severe("The given path is not a directory for RIO logs: " + directory.getAbsolutePath());
                     }
                     RioStatus statusMessageCode;
                     if (sshHostAddress != null) {
-                        statusMessageCode = new RioStatus(sshHostAddress.getStatus(), fileNames);
+                        statusMessageCode = new RioStatus(sshHostAddress.getStatus(), filesWithTimestamp);
                     } else {
-                        statusMessageCode = new RioStatus("UNKNOWN", fileNames);
+                        statusMessageCode = new RioStatus("UNKNOWN", filesWithTimestamp);
                     }
                     WebSocketHandler.getBroadcastService().queueBroadcast(new Message(statusMessageCode, message.getType()));
                 } else if (message.getType().equals("REGISTER-RIO")) {

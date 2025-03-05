@@ -508,7 +508,7 @@ public class SSHHostAddress {
         try {
             // Open a new exec channel for running the command
             ChannelExec channel = (ChannelExec) session.openChannel("exec");
-            channel.setCommand("tail -F /var/local/natinst/log/FRC_UserProgram.log");
+            channel.setCommand("tail -n 200 -F /var/local/natinst/log/FRC_UserProgram.log");
 
             // Set up the input stream and output file
             InputStream inputStream = channel.getInputStream();
