@@ -8,7 +8,7 @@ import { WebsocketContext } from '../../../../layout/context/websocketcontext';
 import TimeAgo from '../../../../components/TimeAgo';
 import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { Toast } from 'primereact/toast';
-import { playErrorNotificationSound, playNotificationSound, playSuccessNotificationSound } from '../../../../utilities/notification';
+import { loadAllSounds, playErrorNotificationSound, playNotificationSound, playSuccessNotificationSound } from '../../../../utilities/notification';
 import TerminalDisplay from '../../../../components/TerminalDisplay';
 import { Dropdown } from 'primereact/dropdown';
 import TerminalDisplayColored from '../../../../components/TerminalDisplayColored';
@@ -197,13 +197,15 @@ const Dashboard = () => {
             }));
         }
     }, [isFullScreenEnabled]);
-
+    useEffect(() => {
+        loadAllSounds();
+    });
     function fetchLogs(filename) {
         setLoading(true);
         setMessages([]);
         setSelectedLogFile(filename);
 
-        sendMessageAndWaitForCondition({ type: 'GET-RIO-LOGS', message: filename }, (m) => m.type === 'GET-RIO-LOGS', 3000)
+        sendMessageAndWaitForCondition({ type: 'GET-RIO-LOGS', message: filename.path }, (m) => m.type === 'GET-RIO-LOGS', 3000)
             .then((message) => {
                 setLoading(false);
                 if (message?.message) {
@@ -281,6 +283,21 @@ const Dashboard = () => {
             <div className="col-12">
                 <div className="card mb-0">
                     <Dropdown
+                        itemTemplate={(m) => {
+                            return (
+                                <>
+                                    {m.path.replace('.txt', '')} (<TimeAgo className={'font-extrabold text-primary-500'} date={m.timestamp} refresh={100} />)
+                                </>
+                            );
+                        }}
+                        valueTemplate={(m) => {
+                            if (!m) return loading ? 'Rendering logs now.' : 'Select a log to render.';
+                            return (
+                                <>
+                                    {m?.path?.replace('.txt', '')} (<TimeAgo className={'font-extrabold text-primary-500'} date={m?.timestamp} refresh={100} />)
+                                </>
+                            );
+                        }}
                         disabled={loading || !isConnected}
                         checkmark={true}
                         onChange={(e) => fetchLogs(e.value)}
@@ -323,9 +340,9 @@ const Dashboard = () => {
         if (message.startsWith('error')) {
             return 'text-red-600 font-extrabold';
         }
-        // if (message.startsWith('navx')) {
-        //     return 'text-green-400';
-        // }
+        if (message.includes('contract')) {
+            return 'text-blue-500 font-extrabold text-lg';
+        }
         if (message.startsWith('info')) {
             return 'text-purple-200';
         }

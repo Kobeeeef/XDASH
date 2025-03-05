@@ -1,57 +1,64 @@
-// Helper function to preload and ensure readiness
-const loadAudio = (audio) => {
-    audio.preload = 'auto'; // Ensure preload is set
-    audio.load(); // Load the audio file for readiness
+let audioContext;
+let audioBuffers = {}; // Store preloaded audio buffers
+
+// Initialize the Audio Context (must be done after user interaction)
+const initializeAudioContext = () => {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
 };
 
-// Create audio instances
-let notificationSound = null;
-let errorNotificationSound = null;
-let successNotificationSound = null;
-let fatalNotificationSound = null;
-// Load all audio files
-const loadAllSounds = () => {
-    notificationSound = new Audio('/audio/ding.mp3');
-    loadAudio(notificationSound);
-    errorNotificationSound = new Audio('/audio/error.mp3');
-    loadAudio(errorNotificationSound);
-    successNotificationSound = new Audio('/audio/success.mp3');
-    loadAudio(successNotificationSound);
-    fatalNotificationSound = new Audio('/audio/fatal.mp3');
-    loadAudio(fatalNotificationSound);
+// Load and decode an audio file into a buffer
+const loadAudioBuffer = async (key, url) => {
+    initializeAudioContext();
+    try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        audioBuffers[key] = audioBuffer; // Store the fully decoded buffer
+    } catch (error) {
+        console.error(`Error loading ${url}:`, error);
+    }
 };
 
-// Play functions
-const playNotificationSound = () => {
-    if (!notificationSound) notificationSound = new Audio('/audio/ding.mp3');
-    notificationSound.currentTime = 0; // Reset playback position
-    notificationSound.play().catch(error => {
-        console.error('Audio play was prevented:', error); // Handle autoplay restrictions
-    });
+// Load all sounds (must be called once at startup)
+const loadAllSounds = async () => {
+    await Promise.all([
+        loadAudioBuffer('notification', '/audio/ding.mp3'),
+        loadAudioBuffer('error', '/audio/error.mp3'),
+        loadAudioBuffer('success', '/audio/success.mp3'),
+        loadAudioBuffer('fatal', '/audio/fatal.mp3')
+    ]);
 };
 
-const playErrorNotificationSound = () => {
-    if (!errorNotificationSound) errorNotificationSound = new Audio('/audio/error.mp3');
-    errorNotificationSound.currentTime = 0; // Reset playback position
-    errorNotificationSound.play().catch(error => {
-        console.error('Audio play was prevented:', error); // Handle autoplay restrictions
-    });
-};
-const playFatalNotificationSound = () => {
-    if (!fatalNotificationSound) fatalNotificationSound = new Audio('/audio/fatal.mp3');
-    fatalNotificationSound.currentTime = 0; // Reset playback position
-    fatalNotificationSound.play().catch(error => {
-        console.error('Audio play was prevented:', error); // Handle autoplay restrictions
-    });
+// Play a sound with a new AudioBufferSourceNode
+const playSound = (key) => {
+    if (!audioBuffers[key]) {
+        console.error(`Audio buffer for '${key}' not loaded.`);
+        return;
+    }
+
+    initializeAudioContext();
+
+    // Create a new AudioBufferSourceNode each time
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffers[key];
+    source.connect(audioContext.destination);
+
+    // Ensure the sound doesn't get cut off prematurely
+    source.start( 0);
+
+    // Fix for garbage collection: Keep a reference until playback ends
+    setTimeout(() => {
+        source.disconnect(); // Cleanup after sound finishes
+    }, audioBuffers[key].duration * 1000); // Convert seconds to milliseconds
 };
 
-const playSuccessNotificationSound = () => {
-    if (!successNotificationSound) successNotificationSound = new Audio('/audio/success.mp3');
-    successNotificationSound.currentTime = 0; // Reset playback position
-    successNotificationSound.play().catch(error => {
-        console.error('Audio play was prevented:', error); // Handle autoplay restrictions
-    });
-};
+// Wrapper functions for playing specific sounds
+const playNotificationSound = () => playSound('notification');
+const playErrorNotificationSound = () => playSound('error');
+const playSuccessNotificationSound = () => playSound('success');
+const playFatalNotificationSound = () => playSound('fatal');
 
-// Export load and play methods
+// Export functions
 export { loadAllSounds, playNotificationSound, playErrorNotificationSound, playSuccessNotificationSound, playFatalNotificationSound };

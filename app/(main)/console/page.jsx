@@ -12,7 +12,7 @@ import { Tag } from 'primereact/tag';
 import { root } from 'postcss';
 import { LayoutContext } from '../../../layout/context/layoutcontext';
 import { Toast } from 'primereact/toast';
-import { playErrorNotificationSound, playNotificationSound } from '../../../utilities/notification';
+import { playErrorNotificationSound, playFatalNotificationSound, playNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
 import TerminalDisplay from '../../../components/TerminalDisplay';
 import { Button } from 'primereact/button';
 
@@ -75,6 +75,7 @@ const Dashboard = () => {
             const data = JSON.parse(event.data);
             if (data.type === 'RIO-LOGS') {
                 const msg = JSON.parse(data.message);
+                playSoundNotificationFromMessageStart(msg);
                 setMessages((prevArray) => [...prevArray, { message: msg ?? '', textClass: getColorFromMessageStart(msg) }]);
             }
         };
@@ -311,9 +312,9 @@ const Dashboard = () => {
         if (message.startsWith('error')) {
             return 'text-red-600 font-extrabold';
         }
-        // if (message.startsWith('navx')) {
-        //     return 'text-green-400';
-        // }
+        if (message.includes('contract')) {
+            return 'text-blue-500 font-extrabold text-lg';
+        }
         if (message.startsWith('info')) {
             return 'text-purple-200';
         }
@@ -322,6 +323,22 @@ const Dashboard = () => {
         }
 
         return 'text-white';
+    }
+
+    function playSoundNotificationFromMessageStart(message) {
+        message = message.toLowerCase();
+        if (message.startsWith('warn')) {
+            return playNotificationSound();
+        }
+        if (message.startsWith('error')) {
+            return playErrorNotificationSound();
+        }
+        if (message.includes('contract')) {
+            return playNotificationSound();
+        }
+        if (message.startsWith('log start')) {
+            return playSuccessNotificationSound();
+        }
     }
 };
 
