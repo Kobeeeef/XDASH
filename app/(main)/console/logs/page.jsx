@@ -203,7 +203,7 @@ const Dashboard = () => {
         setMessages([]);
         setSelectedLogFile(filename);
 
-        sendMessageAndWaitForCondition({ type: 'GET-RIO-LOGS', message: filename }, (m) => m.type === 'GET-RIO-LOGS')
+        sendMessageAndWaitForCondition({ type: 'GET-RIO-LOGS', message: filename }, (m) => m.type === 'GET-RIO-LOGS', 3000)
             .then((message) => {
                 setLoading(false);
                 if (message?.message) {
