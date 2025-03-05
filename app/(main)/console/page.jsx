@@ -322,16 +322,16 @@ const Dashboard = () => {
             return 'text-red-600 font-extrabold';
         }
         if (message.includes('contract')) {
-            return 'text-blue-500 font-extrabold text-lg';
+            return 'text-cyan-500 font-extrabold text-xl';
         }
         if (message.startsWith('info')) {
-            return 'text-purple-200';
+            return 'text-blue-500';
         }
         if (message.startsWith('log start')) {
             return 'text-green-400 font-extrabold text-lg';
         }
 
-        return 'text-white';
+        return 'text-gray-400';
     }
 
     function playSoundNotificationFromMessageStart(message) {
