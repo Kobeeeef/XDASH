@@ -14,6 +14,8 @@ public class ConfigProperties {
     private String SERVER_PASSWORD;
     private String ROBORIO_HOSTNAME;
     private String ROBORIO_USERNAME;
+    private String ROBORIO_LOG_DIRECTORY;
+
     private String ROBORIO_SERVER;
     private String ROBORIO_ADDRESS;
     private String WIFI_SSID;
@@ -32,6 +34,15 @@ public class ConfigProperties {
 
     public ConfigProperties setDOCKER_COMPOSE_FILE_DIRECTORY(String DOCKER_COMPOSE_FILE_DIRECTORY) {
         this.DOCKER_COMPOSE_FILE_DIRECTORY = DOCKER_COMPOSE_FILE_DIRECTORY;
+        return this;
+    }
+
+    public String getROBORIO_LOG_DIRECTORY() {
+        return ROBORIO_LOG_DIRECTORY;
+    }
+
+    public ConfigProperties setROBORIO_LOG_DIRECTORY(String ROBORIO_LOG_DIRECTORY) {
+        this.ROBORIO_LOG_DIRECTORY = ROBORIO_LOG_DIRECTORY;
         return this;
     }
 

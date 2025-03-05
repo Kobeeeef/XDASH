@@ -3,6 +3,7 @@ package org.kobe.xbot.xdashbackend.entities;
 import com.google.gson.Gson;
 import com.jcraft.jsch.*;
 import jakarta.servlet.http.HttpServletResponse;
+import org.kobe.xbot.xdashbackend.XdashbackendApplication;
 import org.kobe.xbot.xdashbackend.logs.XDashLogger;
 import org.kobe.xbot.xdashbackend.websocket.WebSocketHandler;
 import org.springframework.http.HttpHeaders;
@@ -131,16 +132,17 @@ public class SSHHostAddress {
             return false;
         }
     }
+
     /**
      * Runs the rsync command with SSH, piping in the password, and processes updates with a Consumer.
      *
-     * @param hostDir    The local directory to sync.
-     * @param targetDir  The remote directory to sync to.
-     * @param consumer   The Consumer that processes updates.
+     * @param hostDir   The local directory to sync.
+     * @param targetDir The remote directory to sync to.
+     * @param consumer  The Consumer that processes updates.
      * @throws IOException If an I/O error occurs.
      */
     public boolean runRsync(String hostDir, String targetDir,
-                                Consumer<DockerImportReturn> consumer) {
+                            Consumer<DockerImportReturn> consumer) {
         try {
             // Construct the rsync command with sshpass for password authentication
             String command = String.format(
@@ -177,6 +179,7 @@ public class SSHHostAddress {
         }
         // Notify consumer that process has finished
     }
+
     public String sendCommandWithSudoPermissions(String command, Consumer<String> lineConsumer) {
         return sendCommand(String.format("echo \"%1$s\" | sudo -S %2$s", password, command), lineConsumer);
     }
@@ -472,30 +475,35 @@ public class SSHHostAddress {
     public boolean isJournalCtlReaderRunning() {
         return journalThread != null && journalThread.isAlive() && !journalThread.isInterrupted();
     }
+
     public boolean isRioLogReaderRunning() {
         return rioThread != null && rioThread.isAlive() && !rioThread.isInterrupted();
     }
 
     public boolean startRoboRIOLogger() {
+        String logDirectory = XdashbackendApplication.getConfigLoader().getRoborioLogDirectory();
         if (session == null || !forceIsConnected()) {
             throw new IllegalStateException("RIO SSH session is not connected.");
         }
         if (isRioLogReaderRunning()) {
             logger.severe("RIO logger reader already running...");
-            return true;
+            rioThread.interrupt();
+            rioThread = null;
+            return startRoboRIOLogger();
         }
 
         // Create the directory if it doesn't exist
-        File logDir = new File("XDASH_RIO_LOGS");
+        File logDir = new File(logDirectory);
         if (!logDir.exists() && !logDir.mkdir()) {
-            logger.severe("Failed to create XDASH_RIO_LOGS directory");
+            logger.severe("Failed to create '" + logDirectory + "' directory");
             return false;
         }
 
         // Log file path in XDASH_LOGS directory
-        String logFileName = "XDASH_RIO_LOGS" + File.separator + getHostname() + "-" +
-                new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) + "-RIO.txt";
-        File logFile = new File(logFileName);
+        String logFileName =
+                new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) + "-" + getHostname() + ".txt";
+        File logFile = new File(logDirectory, logFileName);
+
 
         try {
             // Open a new exec channel for running the command
@@ -874,8 +882,7 @@ public class SSHHostAddress {
             String containerName,
             DockerFlashType type,
             File composeFile,
-            Consumer<DockerImportReturn> updates)
-    {
+            Consumer<DockerImportReturn> updates) {
 
         String imageName = image.getName().toLowerCase().replace(".tar", ""); // Assuming the image name is the file name
         containerName = containerName.toLowerCase();
@@ -1006,7 +1013,7 @@ public class SSHHostAddress {
                     }
                     updates.accept(new DockerImportReturn("Moving script file to /usr/local/bin", server, true, false));
                     boolean moveScriptSuccess = executeCommandDocker(session, "sudo -S mv " + remoteScriptFilePath + " /usr/local/bin/ 2>&1", updates);
-                    if(!moveScriptSuccess) {
+                    if (!moveScriptSuccess) {
                         updates.accept(new DockerImportReturn("Failed to move XDASH watchdog script to /usr/local/bin", server, false, false));
                         return;
                     }
@@ -1054,7 +1061,7 @@ public class SSHHostAddress {
                             } else {
                                 updates.accept(new DockerImportReturn("One of the systemctl commands failed! Printing logs for further details.", server, false, false));
                                 boolean success4 = executeCommandDocker(session, "sudo -S systemctl status xdash-watchdog.service 2>&1", updates);
-                                if(!success4) {
+                                if (!success4) {
                                     updates.accept(new DockerImportReturn("Failed to get status on watchdog service. Giving up on host.", server, false, false));
                                 }
                             }
@@ -1107,7 +1114,7 @@ public class SSHHostAddress {
 
         @Override
         public void end() {
-                // Upload complete
+            // Upload complete
         }
     }
 

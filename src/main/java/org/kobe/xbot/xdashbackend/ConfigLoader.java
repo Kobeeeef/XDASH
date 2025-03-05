@@ -29,6 +29,8 @@ public class ConfigLoader {
     public static final String DEFAULT_ROBORIO_HOSTNAME = "roboRIO-488-FRC";
     public static final String DEFAULT_ROBORIO_USERNAME = "admin";
     public static final String DEFAULT_ROBORIO_SERVER = "roboRIO-488-FRC.local";
+    public static final String DEFAULT_ROBORIO_LOG_DIRECTORY = "XDASH-RIO-LOGS";
+
     public static final String DEFAULT_ROBORIO_ADDRESS = "10.4.88.2";
     public static final String DEFAULT_SERVICES = "";
 
@@ -137,6 +139,7 @@ public class ConfigLoader {
         properties.setProperty("roboRIO.hostname", DEFAULT_ROBORIO_HOSTNAME);
         properties.setProperty("roboRIO.username", DEFAULT_ROBORIO_USERNAME);
         properties.setProperty("roboRIO.server", DEFAULT_ROBORIO_SERVER);
+        properties.setProperty("roboRIO.logDirectory", DEFAULT_ROBORIO_LOG_DIRECTORY);
         properties.setProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
         properties.setProperty("services", DEFAULT_SERVICES);
         properties.setProperty("docker.altBaseImageImportTimeout", String.valueOf(DEFAULT_CONNECT_TIMEOUT));
@@ -231,6 +234,9 @@ public class ConfigLoader {
     public String getRoboRIOAddress() {
         return getProperty("roboRIO.address", DEFAULT_ROBORIO_ADDRESS);
     }
+    public String getRoborioLogDirectory() {
+        return getProperty("roboRIO.logDirectory", DEFAULT_ROBORIO_LOG_DIRECTORY);
+    }
 
     public String getRobotWifiSSID() {
         return getProperty("wifi.robot");
@@ -277,7 +283,7 @@ public class ConfigLoader {
                 .setSERVER_PASSWORD(getServerPassword())
                 .setROBORIO_HOSTNAME(getRoboRIOHostname())
                 .setROBORIO_USERNAME(getRoboRIOUsername())
-
+                .setROBORIO_LOG_DIRECTORY(getRoborioLogDirectory())
                 .setDOCKER_ALT_IMPORT_TIMEOUT(String.valueOf(getDockerAltBaseImageImportTimeout()))
                 .setALT_BASE_IMAGE_URL(getDockerAltBaseImageURL())
                 .setSYNC_DIRECTORY(getSyncDirectory())
@@ -304,6 +310,11 @@ public class ConfigLoader {
             properties.setProperty("project.directory", configProperties.getPROJECT_DIRECTORY());
         } else {
             properties.remove("project.directory");
+        }
+        if (configProperties.getROBORIO_LOG_DIRECTORY() != null && !configProperties.getROBORIO_LOG_DIRECTORY().isEmpty()) {
+            properties.setProperty("roboRIO.logDirectory", configProperties.getROBORIO_LOG_DIRECTORY());
+        } else {
+            properties.setProperty("roboRIO.logDirectory", DEFAULT_ROBORIO_LOG_DIRECTORY);
         }
         if (configProperties.getSYNC_DIRECTORY() != null && !configProperties.getSYNC_DIRECTORY().isEmpty()) {
             properties.setProperty("sync.directory", configProperties.getSYNC_DIRECTORY());

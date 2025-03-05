@@ -1,0 +1,210 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-04 20:54:23
+
+----------------------------------------------------------------
+
+********** Robot program starting **********
+NT: WARNING: error reading persistent file: 106: value type mismatch, expected double
+(NetworkServer.cpp:423)
+NT: Listening on NT3 port 1735, NT4 port 5810
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+INFO | 2024-12-18 06:51:54,578 | 120 | BaseRobot                                | ========== BASE ROBOT INITIALIZING ==========
+Using Competition contract
+INFO | 2024-12-18 06:51:55,178 | 122 | BaseRobot                                | ========== INJECTOR CREATED ==========
+INFO | 2024-12-18 06:51:55,431 | 83 | BaseSwerveDriveSubsystem                 | Creating DriveSubsystem
+INFO | 2024-12-18 06:51:55,457 | 38 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontLeftDrive
+ERROR | 2024-12-18 06:51:57,112 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 39
+ERROR | 2024-12-18 06:51:57,124 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:51:57,348 | 60 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontLeftDrive
+ERROR | 2024-12-18 06:51:57,660 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 38
+ERROR | 2024-12-18 06:51:57,661 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:51:58,252 | 41 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontLeftDrive
+INFO | 2024-12-18 06:51:58,294 | 38 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontRightDrive
+ERROR | 2024-12-18 06:51:58,416 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 31
+ERROR | 2024-12-18 06:51:58,418 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:51:58,623 | 60 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontRightDrive
+ERROR | 2024-12-18 06:51:58,766 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 30
+ERROR | 2024-12-18 06:51:58,779 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:51:59,294 | 41 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontRightDrive
+INFO | 2024-12-18 06:51:59,307 | 38 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearLeftDrive
+ERROR | 2024-12-18 06:51:59,432 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 20
+ERROR | 2024-12-18 06:51:59,443 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:51:59,652 | 60 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearLeftDrive
+ERROR | 2024-12-18 06:51:59,782 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 21
+ERROR | 2024-12-18 06:51:59,784 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:52:00,296 | 41 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearLeftDrive
+INFO | 2024-12-18 06:52:00,309 | 38 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearRightDrive
+ERROR | 2024-12-18 06:52:00,435 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 29
+ERROR | 2024-12-18 06:52:00,447 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:52:00,656 | 60 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearRightDrive
+ERROR | 2024-12-18 06:52:00,782 | 91 | CANTalonFxWpiAdapter                     | Failed to apply configuration to TalonFX for module with ID 28
+ERROR | 2024-12-18 06:52:00,793 | 92 | CANTalonFxWpiAdapter                     | Status code: Could not transmit CAN Frame.
+INFO | 2024-12-18 06:52:01,311 | 41 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearRightDrive
+INFO | 2024-12-18 06:52:01,712 | 49 | DriveSubsystem                           | Creating DriveSubsystem
+INFO | 2024-12-18 06:52:04,970 | 54 | PoseSubsystem                            | Creating
+Instantiating NavX on roboRIO MXP Port.
+NavX: Library for FRC
+INFO | 2024-12-18 06:52:05,008 | 41 | InertialMeasurementUnitAdapter           | AHRS successfully created
+NavX: Connected.
+NavX: Board Type 50 (navX2-MXP (Gen 2))
+NavX: firmware version 4.0.447
+NavX: startup initialization and startup calibration complete.
+NavX: onboard startup calibration complete.
+NavX: Yaw angle auto-reset to 0.0 due to startup calibration.
+INFO | 2024-12-18 06:52:05,529 | 52 | DistanceProperty ("ElevatorSubsystem/l2Height-in-Inches") | Property ElevatorSubsystem/l2Height-in-Inches has the non-default value 1.000e+00 in
+INFO | 2024-12-18 06:52:05,532 | 52 | DistanceProperty ("ElevatorSubsystem/l3Height-in-Inches") | Property ElevatorSubsystem/l3Height-in-Inches has the non-default value 1.588e+01 in
+INFO | 2024-12-18 06:52:05,536 | 52 | DistanceProperty ("ElevatorSubsystem/l4Height-in-Inches") | Property ElevatorSubsystem/l4Height-in-Inches has the non-default value 4.065e+01 in
+INFO | 2024-12-18 06:52:05,539 | 52 | DistanceProperty ("ElevatorSubsystem/humanLoadHeight-in-Inches") | Property ElevatorSubsystem/humanLoadHeight-in-Inches has the non-default value 1.000e+00 in
+INFO | 2024-12-18 06:52:05,543 | 52 | DistanceProperty ("ElevatorSubsystem/baseHeight-in-Inches") | Property ElevatorSubsystem/baseHeight-in-Inches has the non-default value 0.000e+00 in
+INFO | 2024-12-18 06:52:05,548 | 52 | DistanceProperty ("ElevatorSubsystem/upperHeightLimit-in-Inches") | Property ElevatorSubsystem/upperHeightLimit-in-Inches has the non-default value 4.065e+01 in
+INFO | 2024-12-18 06:52:05,553 | 52 | DistanceProperty ("ElevatorSubsystem/lowerHeightLimit-in-Inches") | Property ElevatorSubsystem/lowerHeightLimit-in-Inches has the non-default value 0.000e+00 in
+INFO | 2024-12-18 06:52:06,035 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2024-12-18 06:52:06,091 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2024-12-18 06:52:06,121 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2024-12-18 06:52:06,136 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2024-12-18 06:52:06,139 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2024-12-18 06:52:06,143 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2024-12-18 06:52:06,145 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2024-12-18 06:52:06,149 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2024-12-18 06:52:06,195 | 43 | AdvancedTrigger                          | Creating XboxButton LeftTrigger
+INFO | 2024-12-18 06:52:06,203 | 43 | AdvancedTrigger                          | Creating XboxButton RightTrigger
+INFO | 2024-12-18 06:52:06,207 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2024-12-18 06:52:06,209 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2024-12-18 06:52:06,212 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2024-12-18 06:52:06,214 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2024-12-18 06:52:06,219 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2024-12-18 06:52:06,221 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2024-12-18 06:52:06,376 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2024-12-18 06:52:06,632 | 124 | BaseRobot                                | ========== SYSTEMS INITIALIZED ==========
+thread '<unnamed>' panicked at src/can_bridge.rs:128:30:
+called `Result::unwrap()` on an `Err` value: Cannot assign requested address (os error 99)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+********** Robot program startup complete **********
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+INFO | 2024-12-18 06:52:07,060 | 186 | BaseRobot                                | Disabled init (Optional.emptyOptionalInt.empty, 0.0s, DS disconnected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.951671630859375)
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.003043s
+OracleSubsystem.periodic(): 0.014395s
+CoprocessorCommunicationSubsystem.periodic(): 0.000037s
+PoseSubsystem.periodic(): 0.073142s
+AlgaeCollectionSubsystem.periodic(): 0.000019s
+CoralScorerSubsystem.periodic(): 0.000426s
+buttons.run(): 0.010981s
+SwerveDriveSubsystem.periodic(): 0.305129s
+HumanLoadRampSubsystem.periodic(): 0.000037s
+AutonomousCommandSelector.periodic(): 0.000872s
+AlgaeArmSubsystem.periodic(): 0.000019s
+SuperstructureMechanismSubsystem.periodic(): 0.003023s
+SwerveSteeringSubsystem.periodic(): 0.303867s
+AprilTagVisionSubsystemExtended.periodic(): 0.001113s
+CoralArmPivotSubsystem.periodic(): 0.000760s
+SwerveModuleSubsystem.periodic(): 0.000038s
+ElevatorSubsystem.periodic(): 0.000891s
+DriveSubsystem.periodic(): 0.000297s
+
+Default robotPeriodic() method... Override me!
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002819s
+disabledInit(): 0.018402s
+robotPeriodic(): 0.000464s
+LiveWindow.updateValues(): 0.000056s
+Shuffleboard.update(): 0.000872s
+disabledPeriodic(): 2.796134s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001225s
+robotPeriodic(): 0.000018s
+LiveWindow.updateValues(): 0.000037s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.020331s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002467s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.028901s
+
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+NavX: DISCONNECTED!!!.
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000871s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.020591s
+
+NavX: Connected.
+NavX: startup initialization and startup calibration complete.
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001502s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.019756s
+
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000538s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.002801s
+disabledPeriodic(): 0.019422s
+
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000371s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000075s
+disabledPeriodic(): 0.021796s
+
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000445s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.019830s
+
+NavX: DISCONNECTED!!!.
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+NavX: Connected.
+NavX: startup initialization and startup calibration complete.
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000315s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.024208s
+
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+NavX: DISCONNECTED!!!.

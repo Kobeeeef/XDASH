@@ -508,16 +508,64 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
                 } else if (message.getType().equals("GET-PHOTONVISION-HOSTNAMES")) {
                     WebSocketHandler.getBroadcastService().queueBroadcast(new Message(XdashbackendApplication.getConfigLoader().getPHOTONVISION_COPROCESSOR_HOSTNAMES(), message.getType()));
-                }else if (message.getType().equals("GET-RIO-STATUS")) {
+                } else if (message.getType().equals("GET-RIO-STATUS")) {
                     SSHHostAddress sshHostAddress = SSHConnectionManager.getRioHostAddress();
-                    StatusMessageCode statusMessageCode;
-                    if (sshHostAddress != null) {
-                       statusMessageCode = new StatusMessageCode(true, sshHostAddress.getStatus());
+                    File directory = new File(XdashbackendApplication.getConfigLoader().getRoborioLogDirectory());
+                    String[] fileNames;
+                    if (directory.isDirectory()) {
+                        fileNames = directory.list();
+                        if (fileNames == null) {
+                            logger.severe("Failed to retrieve files from RIO logs: " + directory.getAbsolutePath());
+                        }
                     } else {
-                        statusMessageCode = new StatusMessageCode(false, "UNKNOWN");
+                        fileNames = new String[]{};
+                        logger.severe("The given path is not a directory for RIO logs: " + directory.getAbsolutePath());
+                    }
+                    RioStatus statusMessageCode;
+                    if (sshHostAddress != null) {
+                        statusMessageCode = new RioStatus(sshHostAddress.getStatus(), fileNames);
+                    } else {
+                        statusMessageCode = new RioStatus("UNKNOWN", fileNames);
                     }
                     WebSocketHandler.getBroadcastService().queueBroadcast(new Message(statusMessageCode, message.getType()));
-                }else if (message.getType().equals("DOCKER-BUILD")) {
+                } else if (message.getType().equals("REGISTER-RIO")) {
+                    SSHHostAddress sshHostAddress = SSHConnectionManager.getRioHostAddress();
+                    if (sshHostAddress != null) {
+                        try {
+                            if (!sshHostAddress.startRoboRIOLogger()) {
+                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new StatusMessageCode(false, "The connection failed for the RIO."), message.getType()));
+                            } else {
+                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new StatusMessageCode(true, "The RIO has been registered for logs."), message.getType()));
+                            }
+                        } catch (Exception e) {
+                            WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new StatusMessageCode(false, e.getMessage()), message.getType()));
+                        }
+                    } else
+                        WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new StatusMessageCode(false, "The RIO was not found."), message.getType()));
+                } else if (message.getType().equals("GET-RIO-LOGS")) {
+                    String filename = message.getMessage();
+                    if (filename != null && !filename.isEmpty()) {
+                        File directory = new File(XdashbackendApplication.getConfigLoader().getRoborioLogDirectory());
+                        File[] files = directory.listFiles((dir, name) -> name.equals(filename));
+                        if (files == null || files.length == 0) {
+                            StatusMessagesCode statusMessageCode = new StatusMessagesCode(false, new String[]{"File not found."});
+                            WebSocketHandler.getBroadcastService().queueBroadcast(new Message(statusMessageCode, message.getType()));
+                        } else {
+                            try {
+                                File file = files[0];
+                                Path path = Paths.get(file.getAbsolutePath());
+                                List<String> lines = Files.readAllLines(path);
+                                String[] linesArray = lines.toArray(new String[0]);
+                                StatusMessagesCode statusMessageCode = new StatusMessagesCode(true, linesArray);
+                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(statusMessageCode, message.getType()));
+                            } catch (Exception e) {
+                                StatusMessagesCode statusMessageCode = new StatusMessagesCode(false, new String[]{e.getMessage()});
+                                WebSocketHandler.getBroadcastService().queueBroadcast(new Message(statusMessageCode, message.getType()));
+                            }
+                        }
+                    }
+
+                } else if (message.getType().equals("DOCKER-BUILD")) {
                     String msg = message.getMessage();
                     if (msg != null) {
                         try {
@@ -851,7 +899,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                             session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid directory found at host: " + hostPathSync, null, false, true), message.getType()).toJSON()));
                             return;
                         }
-                        String targetDirectory =  XdashbackendApplication.getConfigLoader().getSyncTargetDirectory();
+                        String targetDirectory = XdashbackendApplication.getConfigLoader().getSyncTargetDirectory();
                         if (targetDirectory == null || targetDirectory.isEmpty()) {
                             session.sendMessage(new TextMessage(new Message(new DockerImportReturn("No valid target sync directory found.", null, false, true), message.getType()).toJSON()));
                             return;
@@ -882,13 +930,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                 if (sshHostAddress != null) {
                                     if (devicesTransferFiles.isSyncOnly()) {
                                         machineThreadManager.execute(server, "Synchronizing file directories on " + sshHostAddress.getAddress(), () -> {
-                                          boolean success =  sshHostAddress.runRsync(hostPathSyncFile.getAbsolutePath(), targetDirectory, (updates) -> {
+                                            boolean success = sshHostAddress.runRsync(hostPathSyncFile.getAbsolutePath(), targetDirectory, (updates) -> {
                                                 try {
                                                     WebSocketHandler.getBroadcastService().queueBroadcast(new Message(updates, message.getType()));
                                                 } catch (Exception ignored) {
                                                 }
                                             });
-                                            if(success) {
+                                            if (success) {
                                                 WebSocketHandler.getBroadcastService().queueBroadcast(new Message(new DockerImportReturn(String.format("Docker synchronization finished for host: %s (%s)", sshHostAddress.getHostname(), sshHostAddress.getAddress()), server, true, false), message.getType()));
                                             } else {
                                                 failures.incrementAndGet();

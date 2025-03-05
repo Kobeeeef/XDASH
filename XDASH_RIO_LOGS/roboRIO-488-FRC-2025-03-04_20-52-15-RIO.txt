@@ -1,0 +1,24 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-04 20:52:15
+
+----------------------------------------------------------------
+
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.02s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000241s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.042925s
+
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
+Error at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:389): Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!
+Warning at org.photonvision.PhotonCamera.verifyVersion(PhotonCamera.java:426): PhotonVision coprocessor at path /photonvision/Apriltag_FrontLeft_Camera has not reported a message interface UUID - is your coprocessor's camera started?
