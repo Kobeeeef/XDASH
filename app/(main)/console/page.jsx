@@ -12,12 +12,7 @@ import { Tag } from 'primereact/tag';
 import { root } from 'postcss';
 import { LayoutContext } from '../../../layout/context/layoutcontext';
 import { Toast } from 'primereact/toast';
-import {
-    playErrorNotificationSound,
-    playFatalNotificationSound,
-    playNotificationSound,
-    playSuccessNotificationSound
-} from '../../../utilities/notification';
+import { playErrorNotificationSound, playFatalNotificationSound, playNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
 import TerminalDisplay from '../../../components/TerminalDisplay';
 import { Button } from 'primereact/button';
 
@@ -81,10 +76,13 @@ const Dashboard = () => {
             if (data.type === 'RIO-LOGS') {
                 const msg = JSON.parse(data.message);
                 playSoundNotificationFromMessageStart(msg);
-                setMessages((prevArray) => [...prevArray, {
-                    message: msg ?? '',
-                    textClass: getColorFromMessageStart(msg)
-                }]);
+                setMessages((prevArray) => [
+                    ...prevArray,
+                    {
+                        message: msg ?? '',
+                        textClass: getColorFromMessageStart(msg)
+                    }
+                ]);
             }
         };
         if (socket.current) {
@@ -119,7 +117,7 @@ const Dashboard = () => {
                     toast.current?.show({
                         severity: 'info',
                         summary: 'Driver Mode Enabled!',
-                        detail: 'Hold \'D\' for 3 seconds to disable.',
+                        detail: "Hold 'D' for 3 seconds to disable.",
                         life: 6000
                     });
                     playNotificationSound();
@@ -150,7 +148,7 @@ const Dashboard = () => {
                     toast.current?.show({
                         severity: 'warn',
                         summary: 'Fullscreen Lock Active!',
-                        detail: 'Press \'D\' for 3 seconds to exit.',
+                        detail: "Press 'D' for 3 seconds to exit.",
                         life: 3000
                     });
                     playErrorNotificationSound();
@@ -211,7 +209,6 @@ const Dashboard = () => {
     }, [isFullScreenEnabled]);
 
     function regsterRio() {
-
         setLoading(true);
         sendMessageAndWaitForCondition({ type: 'REGISTER-RIO' }, (m) => m.type === 'REGISTER-RIO')
             .then((message) => {
@@ -240,9 +237,7 @@ const Dashboard = () => {
                     detail: e?.message || 'Unknown exception client side.'
                 });
                 playErrorNotificationSound();
-
             });
-
     }
 
     // @ts-ignore
@@ -257,11 +252,9 @@ const Dashboard = () => {
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">Backend Status</span>
-                                    <div
-                                        className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                                    <div className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                                 </div>
                             </div>
@@ -274,11 +267,9 @@ const Dashboard = () => {
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">RIO Status</span>
-                                    <div
-                                        className={'text-900 text-xl text-green-600 ' + getColorStatus(rioStatus)}>{rioStatus}</div>
+                                    <div className={'text-900 text-xl text-green-600 ' + getColorStatus(rioStatus)}>{rioStatus}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-qrcode text-blue-500 text-xl" />
                                 </div>
                             </div>
@@ -287,17 +278,11 @@ const Dashboard = () => {
                     </div>
                 </>
             )}
-            {!isFullScreenEnabled &&
-                (<div className="col-12 ">
-                    <Button
-                        disabled={!isConnected || rioStatus != 'CONNECTED'}
-                        loading={loading}
-                        onClick={regsterRio}
-                        label={'Register RIO'}
-                        className={'w-full'}
-                    />
-                </div>)
-            }
+            {!isFullScreenEnabled && (
+                <div className="col-12 ">
+                    <Button disabled={!isConnected || rioStatus != 'CONNECTED'} loading={loading} onClick={regsterRio} label={'Register RIO'} className={'w-full'} />
+                </div>
+            )}
             <div className="col-12">
                 <TerminalDisplay
                     backGroundColor={''}
