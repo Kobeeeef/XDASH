@@ -15,6 +15,7 @@ import { Toast } from 'primereact/toast';
 import { playErrorNotificationSound, playFatalNotificationSound, playNotificationSound, playSuccessNotificationSound } from '../../../utilities/notification';
 import TerminalDisplay from '../../../components/TerminalDisplay';
 import { Button } from 'primereact/button';
+import TerminalDisplayColored from '../../../components/TerminalDisplayColored';
 
 const Dashboard = () => {
     const toast = useRef(null);
@@ -284,7 +285,7 @@ const Dashboard = () => {
                 </div>
             )}
             <div className="col-12">
-                <TerminalDisplay
+                <TerminalDisplayColored
                     backGroundColor={''}
                     messages={messages}
                     loadingDots={true}
