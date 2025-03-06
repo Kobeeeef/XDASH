@@ -197,7 +197,7 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        VisionCoprocessorCommander commander = new VisionCoprocessorCommander(VisionCoprocessor.ORIN3_STATIC);
+        VisionCoprocessorCommander commander = new VisionCoprocessorCommander("10.4.88.7");
         fieldPanel = new FieldPanel(this);
         fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {

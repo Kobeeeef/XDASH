@@ -1,0 +1,593 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-05 18:32:03
+
+----------------------------------------------------------------
+
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53550)
+NT: Got a NT4 connection from 10.4.88.204 port 53552
+NT: CONNECTED RTT client (from 10.4.88.204:53552)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53550): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53552): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53553
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53553)
+NT: Got a NT4 connection from 10.4.88.204 port 53557
+NT: CONNECTED RTT client (from 10.4.88.204:53557)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53553): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.204:53557): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53572
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53572)
+NT: Got a NT4 connection from 10.4.88.204 port 53585
+NT: CONNECTED RTT client (from 10.4.88.204:53585)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53572): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.204:53585): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53587
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53587)
+NT: Got a NT4 connection from 10.4.88.204 port 53588
+NT: CONNECTED RTT client (from 10.4.88.204:53588)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53587): connection timed out
+NT: Got a NT4 connection from 10.4.88.204 port 53604
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53604)
+NT: Got a NT4 connection from 10.4.88.204 port 53605
+NT: CONNECTED RTT client (from 10.4.88.204:53605)
+NT: DISCONNECTED RTT client (from 10.4.88.204:53588): remote close:
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53604): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.204:53605): remote close:
+NT: NT4 socket error: socket is not connected
+NT: Got a NT4 connection from 10.4.88.204 port 53609
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53609)
+NT: Got a NT4 connection from 10.4.88.204 port 53613
+NT: CONNECTED RTT client (from 10.4.88.204:53613)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53609): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53613): remote close:
+NT: NT4 socket error: socket is not connected
+NT: NT4 socket error: connection reset by peer
+NT: Got a NT4 connection from 10.4.88.204 port 53615
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53615)
+NT: Got a NT4 connection from 10.4.88.204 port 53619
+NT: CONNECTED RTT client (from 10.4.88.204:53619)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53615): connection timed out
+NT: DISCONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:57095): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53619): remote close:
+NT: DISCONNECTED RTT client (from 10.4.88.203:57096): remote close:
+NT: Got a NT4 connection from 10.4.88.203 port 62552
+NT: Got a NT4 connection from 10.4.88.203 port 62553
+NT: Got a NT4 connection from 10.4.88.203 port 62554
+NT: Got a NT4 connection from 10.4.88.203 port 62555
+NT: Got a NT4 connection from 10.4.88.203 port 62556
+NT: Got a NT4 connection from 10.4.88.203 port 62557
+NT: Got a NT4 connection from 10.4.88.203 port 62558
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:62558)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002986s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.044910s
+
+NT: Got a NT4 connection from 10.4.88.203 port 62559
+NT: CONNECTED RTT client (from 10.4.88.203:62559)
+NT: Got a NT4 connection from 10.4.88.204 port 53627
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53627)
+NT: Got a NT4 connection from 10.4.88.204 port 53631
+NT: CONNECTED RTT client (from 10.4.88.204:53631)
+NT: DISCONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:62558): connection timed out
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53627): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.203:62559): remote close:
+NT: Got a NT4 connection from 10.4.88.203 port 62560
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:62560)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.020572s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.039048s
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000055s
+PoseSubsystem.periodic(): 0.004823s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.001095s
+buttons.run(): 0.000445s
+SwerveDriveSubsystem.periodic(): 0.000167s
+SuperstructureMechanismSubsystem.periodic(): 0.002542s
+SwerveSteeringSubsystem.periodic(): 0.000074s
+CoralArmSubsystem.periodic(): 0.000167s
+SwerveModuleSubsystem.periodic(): 0.000018s
+LightSubsystem.periodic(): 0.000074s
+AlgaeCollectionSubsystem.periodic(): 0.000111s
+AutonomousCommandSelector.periodic(): 0.000074s
+AlgaeArmSubsystem.periodic(): 0.001280s
+AprilTagVisionSubsystemExtended.periodic(): 0.001169s
+ElevatorSubsystem.periodic(): 0.000371s
+DriveSubsystem.periodic(): 0.000018s
+
+NT: Got a NT4 connection from 10.4.88.203 port 62561
+NT: DISCONNECTED RTT client (from 10.4.88.204:53631): remote close:
+NT: CONNECTED RTT client (from 10.4.88.203:62561)
+NT: Got a NT4 connection from 10.4.88.204 port 53645
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53645)
+NT: Got a NT4 connection from 10.4.88.204 port 53646
+NT: CONNECTED RTT client (from 10.4.88.204:53646)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002801s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.067096s
+
+INFO | 2025-03-05 18:29:31,122 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.41766162109375)
+INFO | 2025-03-05 18:29:31,133 | 230 | BaseRobot                                | Cancelling autonomousCommand.
+INFO | 2025-03-05 18:29:31,157 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-05 18:29:31,159 | 65 | ManualSwerveDriveLogic                   | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-05 18:29:31,166 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:29:31,174 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:29:31,177 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:29:31,178 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.047173s
+SmartDashboard.updateValues(): 0.002931s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.012391s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.039789s
+SmartDashboard.updateValues(): 0.001800s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+
+INFO | 2025-03-05 18:30:05,280 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.361119384765624)
+INFO | 2025-03-05 18:30:05,302 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-05 18:30:18,497 | 30 | SetAutonomousCommand                     | Setting Auto to: FromRightCageScoreRightFacesLevelFours
+INFO | 2025-03-05 18:30:18,498 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.auto_programs.FromRightCageScoreRightFacesLevelFours@1d23296
+INFO | 2025-03-05 18:30:20,252 | 30 | SetAutonomousCommand                     | Setting Auto to: FromRightCageScoreRightFacesLevelFours
+INFO | 2025-03-05 18:30:20,253 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.auto_programs.FromRightCageScoreRightFacesLevelFours@1d23296
+INFO | 2025-03-05 18:31:08,962 | 209 | BaseRobot                                | Autonomous init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: true, Is teleop: false, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.386249267578124)
+INFO | 2025-03-05 18:31:08,964 | 212 | BaseRobot                                | Starting autonomous command: competition.auto_programs.FromRightCageScoreRightFacesLevelFours@1d23296
+INFO | 2025-03-05 18:31:08,985 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:31:08,989 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:31:08,990 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:31:08,992 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+INFO | 2025-03-05 18:31:09,067 | 70 | AlignToTagGlobalMovementWithCalculator   | Initializing
+INFO | 2025-03-05 18:31:09,070 | 25 | MeasureDistanceBeforeScoringCommand      | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002337s
+robotPeriodic(): 0.000186s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+autonomousPeriodic(): 0.053016s
+
+INFO | 2025-03-05 18:31:15,320 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: true, Is teleop: false, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.3548369140625)
+INFO | 2025-03-05 18:31:29,920 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.373684326171874)
+INFO | 2025-03-05 18:31:29,921 | 230 | BaseRobot                                | Cancelling autonomousCommand.
+INFO | 2025-03-05 18:31:29,935 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-05 18:31:29,936 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-05 18:31:29,940 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:31:29,944 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:31:29,946 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:31:29,947 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+INFO | 2025-03-05 18:31:46,521 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.323424560546874)
+INFO | 2025-03-05 18:31:46,535 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-05 18:31:47,842 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.3548369140625)
+INFO | 2025-03-05 18:31:47,843 | 230 | BaseRobot                                | Cancelling autonomousCommand.
+INFO | 2025-03-05 18:31:47,869 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-05 18:31:47,871 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-05 18:31:47,874 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:31:47,880 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-05 18:31:47,881 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:31:47,885 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.042220s
+SmartDashboard.updateValues(): 0.001354s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.002467s
+
+INFO | 2025-03-05 18:31:58,205 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.323424560546874)
+INFO | 2025-03-05 18:31:58,218 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning a********** Robot program starting **********
+NT: WARNING: error reading persistent file: 171: value type mismatch, expected double
+172: value type mismatch, expected double
+173: value type mismatch, expected double
+(NetworkServer.cpp:423)
+NT: Listening on NT3 port 1735, NT4 port 5810
+NT: Got a NT4 connection from 10.4.88.203 port 57870
+NT: Got a NT4 connection from 10.4.88.203 port 57873
+NT: Got a NT4 connection from 10.4.88.204 port 53683
+NT: CONNECTED NT4 client 'Elastic@1' (from 10.4.88.204:53683)
+NT: Got a NT4 connection from 10.4.88.203 port 57875
+NT: CONNECTED NT4 client 'AdvantageScope@2' (from 10.4.88.203:57875)
+NT: Got a NT4 connection from 10.4.88.204 port 53684
+NT: CONNECTED RTT client (from 10.4.88.204:53684)
+NT: Got a NT4 connection from 10.4.88.203 port 57876
+NT: Got a NT4 connection from 10.4.88.203 port 57872
+NT: CONNECTED RTT client (from 10.4.88.203:57876)
+NT: Got a NT4 connection from 10.4.88.203 port 57871
+NT: Got a NT4 connection from 10.4.88.203 port 57874
+NT: Got a NT4 connection from 10.4.88.200 port 56144
+NT: CONNECTED NT4 client 'photonvision@3' (from 10.4.88.200:56144)
+NT: Got a NT4 connection from 10.4.88.201 port 60726
+NT: Got a NT4 connection from 10.4.88.202 port 33968
+NT: CONNECTED NT4 client 'photonvision@4' (from 10.4.88.201:60726)
+NT: CONNECTED NT4 client 'photonvision@5' (from 10.4.88.202:33968)
+[AdvantageKit] Logging to "/U/logs/akit_6de2c7777ec69629.wpilog"
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+INFO | 2025-03-05 18:32:22,424 | 114 | BaseRobot                                | ========== BASE ROBOT INITIALIZING ==========
+INFO | 2025-03-05 18:32:22,489 | 104 | Robot                                    | Using Competition contract
+INFO | 2025-03-05 18:32:23,184 | 116 | BaseRobot                                | ========== INJECTOR CREATED ==========
+INFO | 2025-03-05 18:32:23,529 | 95 | BaseSwerveDriveSubsystem                 | Creating DriveSubsystem
+INFO | 2025-03-05 18:32:23,563 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontLeftDrive
+INFO | 2025-03-05 18:32:24,526 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontLeftDrive
+INFO | 2025-03-05 18:32:25,100 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontLeftDrive
+INFO | 2025-03-05 18:32:25,267 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontRightDrive
+INFO | 2025-03-05 18:32:25,462 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontRightDrive
+INFO | 2025-03-05 18:32:25,729 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontRightDrive
+INFO | 2025-03-05 18:32:25,733 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearLeftDrive
+INFO | 2025-03-05 18:32:25,964 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearLeftDrive
+INFO | 2025-03-05 18:32:26,229 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearLeftDrive
+INFO | 2025-03-05 18:32:26,241 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearRightDrive
+INFO | 2025-03-05 18:32:26,466 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearRightDrive
+INFO | 2025-03-05 18:32:26,741 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearRightDrive
+INFO | 2025-03-05 18:32:27,041 | 46 | DoubleProperty ("DriveSubsystem/MaxAccelerationMps2") | Property DriveSubsystem/MaxAccelerationMps2 has the non-default value 8.0
+INFO | 2025-03-05 18:32:27,151 | 55 | DriveSubsystem                           | Creating DriveSubsystem
+INFO | 2025-03-05 18:32:30,578 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Target Pose") | Property CoprocessorCommunicationSubsystem/Xtables Target Pose has the non-default value target_pose
+INFO | 2025-03-05 18:32:30,597 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Coordinate Location") | Property CoprocessorCommunicationSubsystem/Xtables Coordinate Location has the non-default value target_waypoints
+INFO | 2025-03-05 18:32:30,616 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Heading Location") | Property CoprocessorCommunicationSubsystem/Xtables Heading Location has the non-default value target_heading
+orin-nano-3.local
+SLF4J: No SLF4J providers were found.
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See https://www.slf4j.org/codes.html#noProviders for further details.
+Instantiating NavX on roboRIO MXP Port.
+NavX: Library for FRC
+INFO | 2025-03-05 18:32:34,638 | 42 | InertialMeasurementUnitAdapter           | AHRS successfully created
+INFO | 2025-03-05 18:32:34,641 | 66 | PoseSubsystem                            | Creating
+NavX: Connected.
+NavX: startup initialization and startup calibration complete.
+NavX: onboard startup calibration complete.
+NavX: Yaw angle auto-reset to 0.0 due to startup calibration.
+INFO | 2025-03-05 18:32:35,053 | 50 | DistanceProperty ("ElevatorSubsystem/l2Height-in-Inches") | Property ElevatorSubsystem/l2Height-in-Inches has the non-default value 5.000e-01 in
+INFO | 2025-03-05 18:32:35,077 | 50 | DistanceProperty ("ElevatorSubsystem/l3Height-in-Inches") | Property ElevatorSubsystem/l3Height-in-Inches has the non-default value 1.600e+01 in
+INFO | 2025-03-05 18:32:35,113 | 50 | DistanceProperty ("ElevatorSubsystem/l4Height-in-Inches") | Property ElevatorSubsystem/l4Height-in-Inches has the non-default value 4.600e+01 in
+INFO | 2025-03-05 18:32:35,141 | 50 | DistanceProperty ("ElevatorSubsystem/humanLoadHeight-in-Inches") | Property ElevatorSubsystem/humanLoadHeight-in-Inches has the non-default value 1.000e+00 in
+INFO | 2025-03-05 18:32:35,166 | 50 | DistanceProperty ("ElevatorSubsystem/baseHeight-in-Inches") | Property ElevatorSubsystem/baseHeight-in-Inches has the non-default value 0.000e+00 in
+INFO | 2025-03-05 18:32:35,207 | 50 | DistanceProperty ("ElevatorSubsystem/upperHeightLimit-in-Inches") | Property ElevatorSubsystem/upperHeightLimit-in-Inches has the non-default value 4.600e+01 in
+INFO | 2025-03-05 18:32:35,234 | 50 | DistanceProperty ("ElevatorSubsystem/lowerHeightLimit-in-Inches") | Property ElevatorSubsystem/lowerHeightLimit-in-Inches has the non-default value 0.000e+00 in
+INFO | 2025-03-05 18:32:35,327 | 46 | DoubleProperty ("ElevatorMotorPID/kMinOutput") | Property ElevatorMotorPID/kMinOutput has the non-default value -0.65
+INFO | 2025-03-05 18:32:35,625 | 46 | DoubleProperty ("ElevatorMaintainerCommand/Error Tolerance") | Property ElevatorMaintainerCommand/Error Tolerance has the non-default value 0.0254
+INFO | 2025-03-05 18:32:35,655 | 46 | DoubleProperty ("ElevatorMaintainerCommand/Error Time Stable Window") | Property ElevatorMaintainerCommand/Error Time Stable Window has the non-default value 0.2
+INFO | 2025-03-05 18:32:35,765 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:32:36,277 | 46 | DoubleProperty ("CoralArmMaintainerCommand/Error Time Stable Window") | Property CoralArmMaintainerCommand/Error Time Stable Window has the non-default value 0.25
+INFO | 2025-03-05 18:32:36,754 | 43 | StringProperty ("ScoringQueue/Task1")    | Property ScoringQueue/Task1 has the non-default value No task
+INFO | 2025-03-05 18:32:36,760 | 43 | StringProperty ("ScoringQueue/Task2")    | Property ScoringQueue/Task2 has the non-default value No task
+INFO | 2025-03-05 18:32:36,765 | 43 | StringProperty ("ScoringQueue/Task3")    | Property ScoringQueue/Task3 has the non-default value No task
+INFO | 2025-03-05 18:32:36,770 | 43 | StringProperty ("ScoringQueue/Task4")    | Property ScoringQueue/Task4 has the non-default value No task
+INFO | 2025-03-05 18:32:36,774 | 43 | StringProperty ("ScoringQueue/Task5")    | Property ScoringQueue/Task5 has the non-default value No task
+INFO | 2025-03-05 18:32:37,175 | 46 | DoubleProperty ("ManualSwerveDriveLogic/Decider/Deadband") | Property ManualSwerveDriveLogic/Decider/Deadband has the non-default value 0.001
+INFO | 2025-03-05 18:32:37,301 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2025-03-05 18:32:37,356 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2025-03-05 18:32:37,388 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2025-03-05 18:32:37,434 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2025-03-05 18:32:37,438 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2025-03-05 18:32:37,514 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2025-03-05 18:32:37,530 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2025-03-05 18:32:37,542 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2025-03-05 18:32:37,552 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2025-03-05 18:32:37,595 | 43 | AdvancedTrigger                          | Creating XboxButton LeftTrigger
+INFO | 2025-03-05 18:32:37,609 | 43 | AdvancedTrigger                          | Creating XboxButton RightTrigger
+INFO | 2025-03-05 18:32:37,616 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2025-03-05 18:32:37,664 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2025-03-05 18:32:37,672 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2025-03-05 18:32:37,768 | 43 | AdvancedTrigger                          | Creating XboxButton LeftTrigger
+INFO | 2025-03-05 18:32:37,823 | 43 | AdvancedTrigger                          | Creating XboxButton RightTrigger
+INFO | 2025-03-05 18:32:37,826 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2025-03-05 18:32:37,832 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2025-03-05 18:32:37,842 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2025-03-05 18:32:37,850 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2025-03-05 18:32:37,856 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2025-03-05 18:32:37,864 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2025-03-05 18:32:37,869 | 43 | AdvancedTrigger                          | Creating XboxButton Back
+INFO | 2025-03-05 18:32:37,991 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,001 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,008 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,132 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,143 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,149 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,201 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,207 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,213 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,280 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,299 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,309 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,392 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,411 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,423 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,484 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,491 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,500 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,541 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,549 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,558 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,600 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,607 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,615 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,649 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,657 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,663 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,723 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,728 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,731 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:38,749 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,754 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-05 18:32:38,759 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-05 18:32:39,053 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.subsystems.drive.commands.EmergencyAutonomousCommand@13c6abb
+INFO | 2025-03-05 18:32:39,058 | 118 | BaseRobot                                | ========== SYSTEMS INITIALIZED ==========
+********** Robot program startup complete **********
+INFO | 2025-03-05 18:32:39,863 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.329707031249999)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.001447s
+CoprocessorCommunicationSubsystem.periodic(): 0.000037s
+OracleSubsystem.periodic(): 0.017418s
+InstantCommand.execute(): 0.002745s
+PoseSubsystem.periodic(): 0.592098s
+AlgaeCollectionSubsystem.periodic(): 0.000259s
+ClimberSubsystem.periodic(): 0.000260s
+CoralScorerSubsystem.periodic(): 0.029754s
+buttons.run(): 0.040254s
+SwerveDriveSubsystem.periodic(): 0.030960s
+AutonomousCommandSelector.periodic(): 0.000834s
+InstantCommand.end(false): 0.008051s
+AlgaeArmSubsystem.periodic(): 0.027231s
+SuperstructureMechanismSubsystem.periodic(): 0.004786s
+SwerveSteeringSubsystem.periodic(): 0.020127s
+AprilTagVisionSubsystemExtended.periodic(): 0.038491s
+CoralArmSubsystem.periodic(): 0.032834s
+SwerveModuleSubsystem.periodic(): 0.000074s
+ElevatorSubsystem.periodic(): 0.076723s
+DriveSubsystem.periodic(): 0.000371s
+
+Default robotPeriodic() method... Override me!
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.024671s
+disabledInit(): 0.039234s
+robotPeriodic(): 0.002152s
+LiveWindow.updateValues(): 0.000093s
+Shuffleboard.update(): 0.000056s
+disabledPeriodic(): 1.615408s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.003024s
+robotPeriodic(): 0.000018s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.042573s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-05 18:32:43,300 | 30 | SetAutonomousCommand                     | Setting Auto to: FromRightCageScoreRightFacesLevelFours
+INFO | 2025-03-05 18:32:43,302 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.auto_programs.FromRightCageScoreRightFacesLevelFours@3820bb
+INFO | 2025-03-05 18:32:43,674 | 30 | SetAutonomousCommand                     | Setting Auto to: FromRightCageScoreRightFacesLevelFours
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-05 18:32:43,675 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.auto_programs.FromRightCageScoreRightFacesLevelFours@3820bb
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.005880s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.038825s
+
+INFO | 2025-03-05 18:32:43,829 | 30 | SetAutonomousCommand                     | Setting Auto to: FromRightCageScoreRightFacesLevelFours
+INFO | 2025-03-05 18:32:43,830 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.auto_programs.FromRightCageScoreRightFacesLevelFours@3820bb
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.000130s
+CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.001929s
+PoseSubsystem.periodic(): 0.025896s
+AlgaeCollectionSubsystem.periodic(): 0.001688s
+ClimberSubsystem.periodic(): 0.000019s
+CoralScorerSubsystem.periodic(): 0.001521s
+buttons.run(): 0.002003s
+SwerveDriveSubsystem.periodic(): 0.000223s
+AutonomousCommandSelector.periodic(): 0.000112s
+AlgaeArmSubsystem.periodic(): 0.003320s
+SuperstructureMechanismSubsystem.periodic(): 0.002560s
+SwerveSteeringSubsystem.periodic(): 0.000167s
+AprilTagVisionSubsystemExtended.periodic(): 0.011204s
+SetAutonomousCommand.end(false): 0.000241s
+CoralArmSubsystem.periodic(): 0.000334s
+SetAutonomousCommand.execute(): 0.000056s
+SwerveModuleSubsystem.periodic(): 0.000037s
+ElevatorSubsystem.periodic(): 0.002578s
+DriveSubsystem.periodic(): 0.000037s
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001558s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.034856s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+[AdvantageKit] Renaming log to "/U/logs/akit_25-03-05_18-32-45.wpilog"
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.000149s
+CoprocessorCommunicationSubsystem.periodic(): 0.000037s
+OracleSubsystem.periodic(): 0.000371s
+PoseSubsystem.periodic(): 0.015656s
+AlgaeCollectionSubsystem.periodic(): 0.000556s
+ClimberSubsystem.periodic(): 0.000019s
+CoralScorerSubsystem.periodic(): 0.000723s
+buttons.run(): 0.001113s
+SwerveDriveSubsystem.periodic(): 0.000408s
+AutonomousCommandSelector.periodic(): 0.000111s
+AlgaeArmSubsystem.periodic(): 0.001410s
+SuperstructureMechanismSubsystem.periodic(): 0.001391s
+SwerveSteeringSubsystem.periodic(): 0.000148s
+AprilTagVisionSubsystemExtended.periodic(): 0.001985s
+CoralArmSubsystem.periodic(): 0.000593s
+SwerveModuleSubsystem.periodic(): 0.000056s
+ElevatorSubsystem.periodic(): 0.000854s
+DriveSubsystem.periodic(): 0.000037s
+
+INFO | 2025-03-05 18:32:48,365 | 209 | BaseRobot                                | Autonomous init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: true, Is teleop: false, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.348554443359374)
+INFO | 2025-03-05 18:32:48,368 | 212 | BaseRobot                                | Starting autonomous command: competition.auto_programs.FromRightCageScoreRightFacesLevelFours@3820bb
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-05 18:32:48,420 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:32:48,428 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:32:48,431 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:32:48,434 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000018s
+OracleSubsystem.periodic(): 0.000167s
+SwerveSteeringMaintainerCommand.initialize(): 0.000167s
+PoseSubsystem.periodic(): 0.003729s
+ClimberSubsystem.periodic(): 0.000019s
+AlgaeArmMaintainerCommand.initialize(): 0.002893s
+CoralScorerSubsystem.periodic(): 0.000463s
+buttons.run(): 0.002133s
+SwerveDriveSubsystem.periodic(): 0.000130s
+SuperstructureMechanismSubsystem.periodic(): 0.000705s
+FromRightCageScoreRightFacesLevelFours.execute(): 0.000482s
+SwerveSteeringSubsystem.periodic(): 0.000093s
+CoralArmSubsystem.periodic(): 0.000185s
+SwerveModuleSubsystem.periodic(): 0.000037s
+AlgaeCollectionStopCommand.initialize(): 0.001075s
+SwerveDriveMaintainerCommand.initialize(): 0.000242s
+LightSubsystem.periodic(): 0.000186s
+ElevatorMaintainerCommand.initialize(): 0.011576s
+AlgaeCollectionSubsystem.periodic(): 0.000111s
+AutonomousCommandSelector.periodic(): 0.000093s
+AlgaeArmSubsystem.periodic(): 0.000334s
+AprilTagVisionSubsystemExtended.periodic(): 0.004712s
+CoralArmMaintainerCommand.initialize(): 0.002393s
+ClimbWithJoySticksCommand.initialize(): 0.001039s
+ElevatorSubsystem.periodic(): 0.000464s
+DriveSubsystem.periodic(): 0.000019s
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	autonomousInit(): 0.007401s
+SmartDashboard.updateValues(): 0.002449s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+autonomousPeriodic(): 0.125138s
+
+INFO | 2025-03-05 18:32:48,701 | 43 | AdvancedTrigger                          | Creating XboxButton Back
+INFO | 2025-03-05 18:32:48,721 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+CommandScheduler loop overrun
+INFO | 2025-03-05 18:32:48,845 | 70 | AlignToTagGlobalMovementWithCalculator   | Initializing
+INFO | 2025-03-05 18:32:48,899 | 25 | MeasureDistanceBeforeScoringCommand      | Initializing
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002412s
+robotPeriodic(): 0.000018s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+autonomousPeriodic(): 0.049009s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002987s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+autonomousPeriodic(): 0.044390s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.006251s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000074s
+autonomousPeriodic(): 0.039975s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002726s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000019s
+autonomousPeriodic(): 0.040551s
+
+INFO | 2025-03-05 18:32:55,540 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: true, Is teleop: false, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.222905029296875)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000816s
+disabledInit(): 0.010147s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000037s
+disabledPeriodic(): 0.039215s
+
+INFO | 2025-03-05 18:33:03,228 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.323424560546874)
+INFO | 2025-03-05 18:33:03,229 | 230 | BaseRobot                                | Cancelling autonomousCommand.
+INFO | 2025-03-05 18:33:03,250 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-05 18:33:03,251 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-05 18:33:03,256 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:33:03,260 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:33:03,262 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:33:03,265 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.033186s
+SmartDashboard.updateValues(): 0.001001s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000149s
+Shuffleboard.update(): 0.000037s
+teleopInit(): 0.007142s
+
+INFO | 2025-03-05 18:33:05,356 | 33 | SetElevatorTargetHeightCommand           | initializing
+INFO | 2025-03-05 18:33:05,359 | 23 | SetCoralArmTargetAngleCommand            | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.039790s
+SmartDashboard.updateValues(): 0.002653s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+
+INFO | 2025-03-05 18:33:08,642 | 33 | SetElevatorTargetHeightCommand           | initializing
+INFO | 2025-03-05 18:33:08,653 | 23 | SetCoralArmTargetAngleCommand            | Initializing
+INFO | 2025-03-05 18:33:11,314 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.235469970703125)
+INFO | 2025-03-05 18:33:11,343 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001391s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.043351s
+

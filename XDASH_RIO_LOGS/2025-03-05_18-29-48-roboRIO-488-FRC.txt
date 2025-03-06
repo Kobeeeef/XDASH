@@ -1,0 +1,218 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-05 18:29:48
+
+----------------------------------------------------------------
+
+INFO | 2025-03-05 18:22:01,100 | 185 | BaseRobot                                | Disabled init (Optional[Blue]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.499333740234375)
+INFO | 2025-03-05 18:22:01,116 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:65169): connection timed out
+NT: NT4 socket error: socket is not connected
+NT: NT4 socket error: connection reset by peer
+NT: DISCONNECTED RTT client (from 10.4.88.204:65170): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53523
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53523)
+NT: Got a NT4 connection from 10.4.88.204 port 53524
+NT: CONNECTED RTT client (from 10.4.88.204:53524)
+INFO | 2025-03-05 18:23:05,630 | 30 | SetAutonomousCommand                     | Setting Auto to: BaseAutonomousSequentialCommandGroup
+INFO | 2025-03-05 18:23:05,634 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.auto_programs.BaseAutonomousSequentialCommandGroup@1fc42f
+INFO | 2025-03-05 18:23:05,826 | 30 | SetAutonomousCommand                     | Setting Auto to: BaseAutonomousSequentialCommandGroup
+INFO | 2025-03-05 18:23:05,827 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.auto_programs.BaseAutonomousSequentialCommandGroup@1fc42f
+INFO | 2025-03-05 18:23:20,734 | 209 | BaseRobot                                | Autonomous init (Optional[Blue]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: true, Is teleop: false, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.49305126953125)
+INFO | 2025-03-05 18:23:20,737 | 212 | BaseRobot                                | Starting autonomous command: competition.auto_programs.BaseAutonomousSequentialCommandGroup@1fc42f
+INFO | 2025-03-05 18:23:20,756 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:23:20,760 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:23:20,761 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:23:20,763 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+INFO | 2025-03-05 18:23:20,846 | 70 | AlignToTagGlobalMovementWithCalculator   | Initializing
+INFO | 2025-03-05 18:23:20,851 | 25 | MeasureDistanceBeforeScoringCommand      | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001280s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+autonomousPeriodic(): 0.047191s
+
+INFO | 2025-03-05 18:23:21,337 | 33 | SetElevatorTargetHeightCommand           | initializing
+INFO | 2025-03-05 18:23:21,338 | 23 | SetCoralArmTargetAngleCommand            | Initializing
+INFO | 2025-03-05 18:23:23,217 | 26 | ScoreWhenReadyCommand                    | Initializing
+INFO | 2025-03-05 18:23:24,501 | 33 | SetElevatorTargetHeightCommand           | initializing
+INFO | 2025-03-05 18:23:24,503 | 23 | SetCoralArmTargetAngleCommand            | Initializing
+INFO | 2025-03-05 18:23:24,550 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-05 18:23:24,551 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-05 18:23:29,405 | 185 | BaseRobot                                | Disabled init (Optional[Blue]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: true, Is teleop: false, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.449073974609375)
+INFO | 2025-03-05 18:23:29,426 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53523): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.204:53524): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53543
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53543)
+NT: Got a NT4 connection from 10.4.88.204 port 53544
+NT: CONNECTED RTT client (from 10.4.88.204:53544)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53543): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53544): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53546
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53546)
+NT: Got a NT4 connection from 10.4.88.204 port 53547
+NT: CONNECTED RTT client (from 10.4.88.204:53547)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53546): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53547): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53548
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53548)
+NT: Got a NT4 connection from 10.4.88.204 port 53549
+NT: CONNECTED RTT client (from 10.4.88.204:53549)
+NT: DISCONNECTED RTT client (from 10.4.88.204:53549): remote close:
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53548): connection timed out
+NT: Got a NT4 connection from 10.4.88.204 port 53550
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53550)
+NT: Got a NT4 connection from 10.4.88.204 port 53552
+NT: CONNECTED RTT client (from 10.4.88.204:53552)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53550): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53552): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53553
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53553)
+NT: Got a NT4 connection from 10.4.88.204 port 53557
+NT: CONNECTED RTT client (from 10.4.88.204:53557)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53553): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.204:53557): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53572
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53572)
+NT: Got a NT4 connection from 10.4.88.204 port 53585
+NT: CONNECTED RTT client (from 10.4.88.204:53585)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53572): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.204:53585): remote close:
+NT: Got a NT4 connection from 10.4.88.204 port 53587
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53587)
+NT: Got a NT4 connection from 10.4.88.204 port 53588
+NT: CONNECTED RTT client (from 10.4.88.204:53588)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53587): connection timed out
+NT: Got a NT4 connection from 10.4.88.204 port 53604
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53604)
+NT: Got a NT4 connection from 10.4.88.204 port 53605
+NT: CONNECTED RTT client (from 10.4.88.204:53605)
+NT: DISCONNECTED RTT client (from 10.4.88.204:53588): remote close:
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53604): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.204:53605): remote close:
+NT: NT4 socket error: socket is not connected
+NT: Got a NT4 connection from 10.4.88.204 port 53609
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53609)
+NT: Got a NT4 connection from 10.4.88.204 port 53613
+NT: CONNECTED RTT client (from 10.4.88.204:53613)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53609): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53613): remote close:
+NT: NT4 socket error: socket is not connected
+NT: NT4 socket error: connection reset by peer
+NT: Got a NT4 connection from 10.4.88.204 port 53615
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53615)
+NT: Got a NT4 connection from 10.4.88.204 port 53619
+NT: CONNECTED RTT client (from 10.4.88.204:53619)
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53615): connection timed out
+NT: DISCONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:57095): connection timed out
+NT: NT4 socket error: broken pipe
+NT: DISCONNECTED RTT client (from 10.4.88.204:53619): remote close:
+NT: DISCONNECTED RTT client (from 10.4.88.203:57096): remote close:
+NT: Got a NT4 connection from 10.4.88.203 port 62552
+NT: Got a NT4 connection from 10.4.88.203 port 62553
+NT: Got a NT4 connection from 10.4.88.203 port 62554
+NT: Got a NT4 connection from 10.4.88.203 port 62555
+NT: Got a NT4 connection from 10.4.88.203 port 62556
+NT: Got a NT4 connection from 10.4.88.203 port 62557
+NT: Got a NT4 connection from 10.4.88.203 port 62558
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:62558)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002986s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.044910s
+
+NT: Got a NT4 connection from 10.4.88.203 port 62559
+NT: CONNECTED RTT client (from 10.4.88.203:62559)
+NT: Got a NT4 connection from 10.4.88.204 port 53627
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53627)
+NT: Got a NT4 connection from 10.4.88.204 port 53631
+NT: CONNECTED RTT client (from 10.4.88.204:53631)
+NT: DISCONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:62558): connection timed out
+NT: DISCONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53627): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.203:62559): remote close:
+NT: Got a NT4 connection from 10.4.88.203 port 62560
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.203:62560)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.020572s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.039048s
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000055s
+PoseSubsystem.periodic(): 0.004823s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.001095s
+buttons.run(): 0.000445s
+SwerveDriveSubsystem.periodic(): 0.000167s
+SuperstructureMechanismSubsystem.periodic(): 0.002542s
+SwerveSteeringSubsystem.periodic(): 0.000074s
+CoralArmSubsystem.periodic(): 0.000167s
+SwerveModuleSubsystem.periodic(): 0.000018s
+LightSubsystem.periodic(): 0.000074s
+AlgaeCollectionSubsystem.periodic(): 0.000111s
+AutonomousCommandSelector.periodic(): 0.000074s
+AlgaeArmSubsystem.periodic(): 0.001280s
+AprilTagVisionSubsystemExtended.periodic(): 0.001169s
+ElevatorSubsystem.periodic(): 0.000371s
+DriveSubsystem.periodic(): 0.000018s
+
+NT: Got a NT4 connection from 10.4.88.203 port 62561
+NT: DISCONNECTED RTT client (from 10.4.88.204:53631): remote close:
+NT: CONNECTED RTT client (from 10.4.88.203:62561)
+NT: Got a NT4 connection from 10.4.88.204 port 53645
+NT: CONNECTED NT4 client 'Elastic@5' (from 10.4.88.204:53645)
+NT: Got a NT4 connection from 10.4.88.204 port 53646
+NT: CONNECTED RTT client (from 10.4.88.204:53646)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002801s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.067096s
+
+INFO | 2025-03-05 18:29:31,122 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.41766162109375)
+INFO | 2025-03-05 18:29:31,133 | 230 | BaseRobot                                | Cancelling autonomousCommand.
+INFO | 2025-03-05 18:29:31,157 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-05 18:29:31,159 | 65 | ManualSwerveDriveLogic                   | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-05 18:29:31,166 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:29:31,174 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxGap") | Property ElevatorMaintainerCommand/trapezoidMotion/maxGap has the non-default value 0.1
+INFO | 2025-03-05 18:29:31,177 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-05 18:29:31,178 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.047173s
+SmartDashboard.updateValues(): 0.002931s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.012391s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.039789s
+SmartDashboard.updateValues(): 0.001800s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+
+INFO | 2025-03-05 18:30:05,280 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[1], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.361119384765624)
+INFO | 2025-03-05 18:30:05,302 | 45 | SwerveDriveWithJoysticksCommand          | Ending
