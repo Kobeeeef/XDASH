@@ -217,6 +217,7 @@ public class XTablesViewer extends JFrame {
                         .build(), 3, TimeUnit.SECONDS);
 
                 if (bezierCurvesResponse == null) {
+                    fieldPanel.setBezierCurves(null, 0);
                     throw new Exception("Socket not connected.");
                 }
                 if (bezierCurvesResponse.getCurvesCount() == 0) {
