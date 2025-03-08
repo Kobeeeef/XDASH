@@ -51,7 +51,7 @@ public class XTablesViewer extends JFrame {
             exitItem, speedMPSItem, accelerationItem, safeRadiusInches, finalRotationDefault;
     private final XTablesData cache;
     private JButton reloadButton, addButton, rebootButton, expandButton, addValueLogButton, closeButton;
-    private final XTableContext client;
+    protected final XTableContext client;
     private Thread cacheThread;
     private final Theme theme;
 
@@ -201,6 +201,7 @@ public class XTablesViewer extends JFrame {
         fieldPanel = new FieldPanel(this);
         fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {
+                System.out.println(goalPose);
                 Pose2d robotPose = fieldPanel.getRobotPose();
                 XTableValues.ControlPoint start = XTableValues.ControlPoint.newBuilder()
                         .setX(robotPose.getX())

@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.kobe.xbot.Utilities.Entities.BatchedPushRequests;
 import org.kobe.xbot.Utilities.Entities.XTableValues;
 import org.kobe.xbot.xdashbackend.utilities.Landmarks;
 
@@ -28,6 +29,14 @@ public class FieldPanel extends JPanel {
 
     private static final double NOTE_METERS = 0.3556;
     private static final double ROBOT_METERS = 0.889;
+
+    private boolean close_blue_barge_low = false;
+    private boolean mid_blue_barge_low = false;
+    private boolean far_blue_barge_low = false;
+    private boolean close_red_barge_low = false;
+    private boolean mid_red_barge_low = false;
+    private boolean far_red_barge_low = false;
+
 
     private double[][][] bezierCurves;
     private double finalRotation;
@@ -93,7 +102,7 @@ public class FieldPanel extends JPanel {
                 int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
                 int relativeX = (int) ((e.getX() - xOffset) / scaleFactor);
                 int relativeY = (int) ((e.getY() - yOffset) / scaleFactor);
-//                System.out.println(relativeX + " " + relativeY);
+                System.out.println(relativeX + " " + relativeY);
                 // Check if the mouse is outside the field bounds
                 if (e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
                     tooltip.setVisible(false);
@@ -101,7 +110,6 @@ public class FieldPanel extends JPanel {
                     // Your existing logic for showing tooltips, etc.
                     Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
                     Map.Entry<Pose2d, Double> clickedNote = getClickedNote(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
-//                    System.out.println(Landmarks.getBranchPose(Landmarks.ReefFace.CLOSE, Landmarks.Branch.A));
                     if (clickedEnemy != null && clickCallback != null) {
                         showTooltip(e, "Click to go to robot.");
                     } else if ((relativeY >= 766 && relativeY <= 811) && (relativeX >= 2407 && relativeX <= 2523)) {
@@ -119,7 +127,19 @@ public class FieldPanel extends JPanel {
                     } else if (relativeX < 700 && relativeY < 340) {
                         showTooltip(e, "Click to go to coral station."); // top blue left
                     } else if (relativeX < 700 && relativeY > 1225) {
-                        showTooltip(e, "Click to go to coral station."); // bottom blue left
+                        showTooltip(e, "Click to go to coral station.");
+                    } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 955 && relativeY > 925) {
+                        showTooltip(e, "Click to toggle close red barge.");
+                    } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 1133 && relativeY > 1103) {
+                        showTooltip(e, "Click to toggle mid red barge.");
+                    } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 1317 && relativeY > 1290) {
+                        showTooltip(e, "Click to toggle far red barge.");
+                    } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 603 && relativeY > 574) {
+                        showTooltip(e, "Click to toggle close blue barge.");
+                    } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 419 && relativeY > 390) {
+                        showTooltip(e, "Click to toggle mid blue barge.");
+                    } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 240 && relativeY > 210) {
+                        showTooltip(e, "Click to toggle far blue barge.");
                     } else {
                         showTooltip(e, "Click to go.");
                     }
@@ -151,6 +171,21 @@ public class FieldPanel extends JPanel {
                 int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
                 int relativeX = (int) ((e.getX() - xOffset) / scaleFactor);
                 int relativeY = (int) ((e.getY() - yOffset) / scaleFactor);
+
+                if (relativeX < 1900 && relativeX > 1872 && relativeY < 955 && relativeY > 925) {
+                    close_red_barge_low = !close_red_barge_low;
+                } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 1133 && relativeY > 1103) {
+                    mid_red_barge_low = !mid_red_barge_low;
+                } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 1317 && relativeY > 1290) {
+                    far_red_barge_low = !far_red_barge_low;
+                } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 603 && relativeY > 574) {
+                    close_blue_barge_low = !close_blue_barge_low;
+                } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 419 && relativeY > 390) {
+                    mid_blue_barge_low = !mid_blue_barge_low;
+                } else if (relativeX < 1900 && relativeX > 1872 && relativeY < 240 && relativeY > 210) {
+                    far_blue_barge_low = !far_blue_barge_low;
+                }
+
                 Map.Entry<Pose2d, Double> clickedEnemy = getClickedEnemyPose(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
                 Map.Entry<Pose2d, Double> clickedNote = getClickedNote(leftBound, rightBound, topBound, bottomBound, e.getX(), e.getY());
                 if (clickCallback != null) {
@@ -385,6 +420,33 @@ public class FieldPanel extends JPanel {
             for (int i = 0; i < waypoints.size(); i++) {
                 drawWaypoint(g2d, waypoints.get(i), i, fieldScaleX, fieldScaleY, scaledWaypointSize, xOffset, yOffset, scaleFactor);
             }
+            BatchedPushRequests batchedPushRequests = new BatchedPushRequests();
+            batchedPushRequests.putBoolean("far_red_barge_low", far_red_barge_low);
+            batchedPushRequests.putBoolean("mid_red_barge_low", mid_red_barge_low);
+            batchedPushRequests.putBoolean("close_red_barge_low", close_red_barge_low);
+            batchedPushRequests.putBoolean("far_blue_barge_low", far_blue_barge_low);
+            batchedPushRequests.putBoolean("mid_blue_barge_low", mid_blue_barge_low);
+            batchedPushRequests.putBoolean("close_blue_barge_low", close_blue_barge_low);
+
+            root.client.getxTablesClient().sendBatchedPushRequests(batchedPushRequests);
+            if(far_red_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 0.8, new Rotation2d()), 15,15 , Color.BLACK, xOffset, yOffset, scaleFactor);
+            }
+            if(mid_red_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 1.88, new Rotation2d()), 15,15 , Color.BLACK, xOffset, yOffset, scaleFactor);
+            }
+            if(close_red_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 2.95, new Rotation2d()), 15,15 , Color.BLACK, xOffset, yOffset, scaleFactor);
+            }
+            if(close_blue_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 5.06, new Rotation2d()), 15,15 , Color.WHITE, xOffset, yOffset, scaleFactor);
+            }
+            if(mid_blue_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 6.16, new Rotation2d()), 15,15 , Color.WHITE, xOffset, yOffset, scaleFactor);
+            }
+            if(far_blue_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 7.26, new Rotation2d()), 15,15 , Color.WHITE, xOffset, yOffset, scaleFactor);
+            }
         }
     }
 
@@ -468,11 +530,7 @@ public class FieldPanel extends JPanel {
         int arrowHalfLength = totalArrowLength / 2;
         int arrowHeadSize = Math.max(totalArrowLength / 4, 1);
 
-        BasicStroke roundedStroke = new BasicStroke(
-                4,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND
-        );
+        BasicStroke roundedStroke = new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
         g2d.setColor(Color.BLACK);
         g2d.setStroke(roundedStroke);
         g2d.drawLine(0, arrowHalfLength, 0, -arrowHalfLength);
@@ -523,6 +581,56 @@ public class FieldPanel extends JPanel {
         int textWidth = fm.stringWidth(probabilityText);
         int textHeight = fm.getAscent();
         g2d.drawString(probabilityText, -textWidth / 2, textHeight / 4);
+        g2d.setTransform(oldTransform);
+    }
+    /**
+     * Draws an "X" on the field relative to field coordinates.
+     *
+     * @param g2d       The Graphics2D object to draw on.
+     * @param pose      The Pose2d representing the field coordinates (in meters) for the center of the X.
+     * @param width     The width of the X in pixels.
+     * @param height    The height of the X in pixels.
+     * @param color     The color to draw the X.
+     * @param xOffset   The x-offset used in the field image positioning.
+     * @param yOffset   The y-offset used in the field image positioning.
+     * @param scaleFactor The scaling factor used when drawing the field image.
+     */
+    private void drawFieldRelativeX(Graphics2D g2d, Pose2d pose, int width, int height, Color color,
+                                    int xOffset, int yOffset, double scaleFactor) {
+        // Compute displayed boundaries of the field (same as in drawOtherRobot)
+        int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+        int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+        int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
+
+        // Calculate scaling factors: pixels per meter along each axis
+        double displayFieldWidth = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+
+        // Convert field coordinates (in meters) to pixel coordinates.
+        double computedX = leftBound + (pose.getX() * pixelsPerMeterX);
+        double computedY = bottomBound - (pose.getY() * pixelsPerMeterY);
+
+        // Save the current transform and graphics settings.
+        AffineTransform oldTransform = g2d.getTransform();
+        Stroke originalStroke = g2d.getStroke();
+        Color originalColor = g2d.getColor();
+
+        // Translate the origin to the computed pixel position.
+        // We'll draw the X centered at this point.
+        g2d.translate(computedX, computedY);
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(3)); // You can adjust stroke thickness if needed.
+
+        // Draw the two diagonal lines that form an "X" centered at (0,0).
+        g2d.drawLine(-width / 2, -height / 2, width / 2, height / 2);
+        g2d.drawLine(-width / 2, height / 2, width / 2, -height / 2);
+
+        // Restore the original graphics settings.
+        g2d.setStroke(originalStroke);
+        g2d.setColor(originalColor);
         g2d.setTransform(oldTransform);
     }
 
@@ -596,8 +704,7 @@ public class FieldPanel extends JPanel {
             double robotY = bottomBound - (pose.getKey().getY() * pixelsPerMeterY);
 
             // Check if the click is within the drawn square centered at (robotX, robotY)
-            if (clickX >= robotX - halfRobotSize && clickX <= robotX + halfRobotSize &&
-                    clickY >= robotY - halfRobotSize && clickY <= robotY + halfRobotSize) {
+            if (clickX >= robotX - halfRobotSize && clickX <= robotX + halfRobotSize && clickY >= robotY - halfRobotSize && clickY <= robotY + halfRobotSize) {
                 return pose;
             }
         }
@@ -623,8 +730,7 @@ public class FieldPanel extends JPanel {
             double noteX = leftBound + (pose.getKey().getX() * pixelsPerMeterX);
             double noteY = bottomBound - (pose.getKey().getY() * pixelsPerMeterY);
 
-            if (clickX >= noteX - halfNoteSize && clickX <= noteX + halfNoteSize &&
-                    clickY >= noteY - halfNoteSize && clickY <= noteY + halfNoteSize) {
+            if (clickX >= noteX - halfNoteSize && clickX <= noteX + halfNoteSize && clickY >= noteY - halfNoteSize && clickY <= noteY + halfNoteSize) {
                 return pose;
             }
         }
