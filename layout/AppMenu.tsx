@@ -43,10 +43,15 @@ const AppMenu = () => {
             label: 'Vision',
             items: [
                 { label: 'Probability Mapping', icon: 'pi pi-map', to: '/probability-mapping' },
-                { label: 'April Tags', icon: 'pi pi-qrcode', items: [
-                        { label: 'Status', icon: 'pi pi-eye', to: '/photonvision'},
-                        { label: 'Logs', icon: 'pi pi-align-justify', to: '/photonvision/logs'}
-                    ] }
+                {
+                    label: 'April Tags',
+                    icon: 'pi pi-qrcode',
+                    items: [
+                        { label: 'Status', icon: 'pi pi-eye', to: '/photonvision' },
+                        { label: 'Logs', icon: 'pi pi-file-edit', to: '/photonvision/logs' },
+                        { label: 'Test', icon: 'pi test-virus-icon', to: '/photonvision/test' }
+                    ]
+                }
                 // { label: 'Live Camera', icon: 'pi pi-camera', to: '/camera' }
             ]
         },
@@ -57,7 +62,7 @@ const AppMenu = () => {
                 { label: 'Scripts', icon: 'pi pi-code', to: '/scripts' },
                 {
                     label: 'Dockers',
-                    icon: 'pi pi-box',
+                    icon: 'pi docker',
                     items: [
                         { label: 'Single Pipeline', icon: 'pi pi-clock', to: '/dockers' },
                         { label: 'Compose Pipeline', icon: 'pi pi-book', to: '/dockers/compose' },

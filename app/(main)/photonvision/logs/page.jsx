@@ -8,12 +8,7 @@ import { WebsocketContext } from '../../../../layout/context/websocketcontext';
 import TimeAgo from '../../../../components/TimeAgo';
 import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { Toast } from 'primereact/toast';
-import {
-    loadAllSounds,
-    playErrorNotificationSound,
-    playNotificationSound,
-    playSuccessNotificationSound
-} from '../../../../utilities/notification';
+import { loadAllSounds, playErrorNotificationSound, playNotificationSound, playSuccessNotificationSound } from '../../../../utilities/notification';
 import TerminalDisplay from '../../../../components/TerminalDisplay';
 import { Dropdown } from 'primereact/dropdown';
 import TerminalDisplayColored from '../../../../components/TerminalDisplayColored';
@@ -98,7 +93,7 @@ const Dashboard = () => {
                     toast.current?.show({
                         severity: 'info',
                         summary: 'Driver Mode Enabled!',
-                        detail: 'Hold \'D\' for 3 seconds to disable.',
+                        detail: "Hold 'D' for 3 seconds to disable.",
                         life: 6000
                     });
                     playNotificationSound();
@@ -129,7 +124,7 @@ const Dashboard = () => {
                     toast.current?.show({
                         severity: 'warn',
                         summary: 'Fullscreen Lock Active!',
-                        detail: 'Press \'D\' for 3 seconds to exit.',
+                        detail: "Press 'D' for 3 seconds to exit.",
                         life: 3000
                     });
                     playErrorNotificationSound();
@@ -194,50 +189,56 @@ const Dashboard = () => {
 
     function fetchLogs() {
         setLoading(true);
-        axios.get(`http://${hostname}:5800/api/logs`, {
-            timeout: 3000,
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
-            withCredentials: false
-        }).then((m) => {
-            setLoading(false);
-            setLogFiles(m.data)
-        }).catch((err) => {
-            console.log(err)
-            setLoading(false);
-            playErrorNotificationSound();
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Logs Failed!',
-                detail: 'There was a unknown error fetching logs.'
+        axios
+            .get(`http://${hostname}:5800/api/logs`, {
+                timeout: 3000,
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: false
+            })
+            .then((m) => {
+                setLoading(false);
+                setLogFiles(m.data);
+            })
+            .catch((err) => {
+                console.log(err);
+                setLoading(false);
+                playErrorNotificationSound();
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Logs Failed!',
+                    detail: 'There was a unknown error fetching logs.'
+                });
             });
-        });
     }
 
     function fetchLog(fileData) {
         setLoading(true);
         setMessages([]);
         setSelectedLogFile(fileData);
-        axios.get(`http://${hostname}:5800/api/log?path=${encodeURIComponent(fileData?.path)}`, {
-            timeout: 5000,
-            responseType: "text",
-            withCredentials: false
-        }).then((m) => {
-            setLoading(false);
-            console.log(m.data);
-            setMessages(m.data.split("\n").map(m => ({ message: m.trim(), textClass: getColorFromMessageStart(m) })));
-        }).catch((err) => {
-            console.log(err)
-            setLoading(false);
-            playErrorNotificationSound();
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Log Failed!',
-                detail: 'There was a unknown error fetching log file.'
+        axios
+            .get(`http://${hostname}:5800/api/log?path=${encodeURIComponent(fileData?.path)}`, {
+                timeout: 5000,
+                responseType: 'text',
+                withCredentials: false
+            })
+            .then((m) => {
+                setLoading(false);
+                console.log(m.data);
+                setMessages(m.data.split('\n').map((m) => ({ message: m.trim(), textClass: getColorFromMessageStart(m) })));
+            })
+            .catch((err) => {
+                console.log(err);
+                setLoading(false);
+                playErrorNotificationSound();
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Log Failed!',
+                    detail: 'There was a unknown error fetching log file.'
+                });
             });
-        });
     }
 
     // @ts-ignore
@@ -252,11 +253,9 @@ const Dashboard = () => {
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">Backend Status</span>
-                                    <div
-                                        className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
+                                    <div className="text-900 font-medium text-xl"> {isConnected ? 'Connected' : 'Disconnected'}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-chevron-circle-up text-blue-500 text-xl" />
                                 </div>
                             </div>
@@ -269,11 +268,9 @@ const Dashboard = () => {
                             <div className="flex justify-content-between mb-3">
                                 <div>
                                     <span className="block text-500 font-medium mb-3">Devices</span>
-                                    <div
-                                        className="text-900 font-medium text-xl"> {isConnected ? `${hostnames.length} Devices` : 'Disconnected'}</div>
+                                    <div className="text-900 font-medium text-xl"> {isConnected ? `${hostnames.length} Devices` : 'Disconnected'}</div>
                                 </div>
-                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round"
-                                     style={{ width: '2.5rem', height: '2.5rem' }}>
+                                <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                     <i className="pi pi-qrcode text-blue-500 text-xl" />
                                 </div>
                             </div>
@@ -285,18 +282,11 @@ const Dashboard = () => {
             <div className="col-12">
                 <div className="card mb-0">
                     <div className="grid">
-                        <div className={'col-12'}>
-                            <Dropdown
-                                disabled={loading || !isConnected}
-                                checkmark={true}
-                                onChange={(e) => setHostname(e.value)}
-                                value={hostname}
-                                options={hostnames}
-                                loading={loading}
-                                placeholder={'Select device to view'}
-                                className={'w-full'}
-                            />
-                        </div>
+                        {!isFullScreenEnabled && (
+                            <div className={'col-12'}>
+                                <Dropdown disabled={loading || !isConnected} checkmark={true} onChange={(e) => setHostname(e.value)} value={hostname} options={hostnames} loading={loading} placeholder={'Select device to view'} className={'w-full'} />
+                            </div>
+                        )}
                         <div className={'col-12'}>
                             <Dropdown
                                 virtualScrollerOptions={{
@@ -304,15 +294,18 @@ const Dashboard = () => {
                                     onLazyLoad: () => fetchLogs(),
                                     itemSize: 38,
                                     showLoader: true,
-                                    loading: loading,
+                                    loading: loading
                                 }}
                                 itemTemplate={(m) => {
                                     return (
                                         <>
-                                        {m.path.replace('.log', '')} (<TimeAgo
-                                            className={'font-extrabold text-primary-500'} date={m?.timestamp}
-                                            refresh={100} />) {m?.fmsInfo && (<><Tag className={"font-bold"} severity={m?.fmsInfo?.IsRedAlliance ? "danger" : "secondary"} value={m?.fmsInfo?.IsRedAlliance ? "RED" : "BLUE"} />{" "}
-                                            <Tag severity={"info"} value={`Match ${m?.fmsInfo?.MatchNumber}`}/></>) }
+                                            {m.path.replace('.log', '')} (<TimeAgo className={'font-extrabold text-primary-500'} date={m?.timestamp} refresh={100} />){' '}
+                                            {m?.fmsInfo && (
+                                                <>
+                                                    <Tag className={'font-bold'} severity={m?.fmsInfo?.IsRedAlliance ? 'danger' : 'secondary'} value={m?.fmsInfo?.IsRedAlliance ? 'RED' : 'BLUE'} />{' '}
+                                                    <Tag severity={'info'} value={`Match ${m?.fmsInfo?.MatchNumber}`} />
+                                                </>
+                                            )}
                                         </>
                                     );
                                 }}
@@ -320,10 +313,13 @@ const Dashboard = () => {
                                     if (!m) return loading ? 'Rendering logs now.' : 'Select a log to render.';
                                     return (
                                         <>
-                                            {m.path.replace('.log', '')} (<TimeAgo
-                                            className={'font-extrabold text-primary-500'} date={m?.timestamp}
-                                            refresh={100} />) {m?.fmsInfo && (<><Tag className={"font-bold"} severity={m?.fmsInfo?.IsRedAlliance ? "danger" : "secondary"} value={m?.fmsInfo?.IsRedAlliance ? "RED" : "BLUE"} />{" "}
-                                            <Tag severity={"info"} value={`Match ${m?.fmsInfo?.MatchNumber}`}/></>) }
+                                            {m.path.replace('.log', '')} (<TimeAgo className={'font-extrabold text-primary-500'} date={m?.timestamp} refresh={100} />){' '}
+                                            {m?.fmsInfo && (
+                                                <>
+                                                    <Tag className={'font-bold'} severity={m?.fmsInfo?.IsRedAlliance ? 'danger' : 'secondary'} value={m?.fmsInfo?.IsRedAlliance ? 'RED' : 'BLUE'} />{' '}
+                                                    <Tag severity={'info'} value={`Match ${m?.fmsInfo?.MatchNumber}`} />
+                                                </>
+                                            )}
                                         </>
                                     );
                                 }}
@@ -338,14 +334,17 @@ const Dashboard = () => {
                             />
                         </div>
                     </div>
-
                 </div>
             </div>
             <div className="col-12">
-                <TerminalDisplayColored backGroundColor={''} messages={messages} loadingDots={true}
-                                        scrollLog={scrollLock}
-                                        placeholder={loading ? 'Please wait while rendering logs' : 'Waiting for log selection'}
-                                        maxHeight={isFullScreenEnabled ? '90vh' : '63vh'} />
+                <TerminalDisplayColored
+                    backGroundColor={''}
+                    messages={messages}
+                    loadingDots={true}
+                    scrollLog={scrollLock}
+                    placeholder={loading ? 'Please wait while rendering logs' : 'Waiting for log selection'}
+                    maxHeight={isFullScreenEnabled ? '90vh' : '63vh'}
+                />
             </div>
         </div>
     );
@@ -362,7 +361,6 @@ const Dashboard = () => {
         if (message.includes('[info]')) {
             return 'text-blue-500';
         }
-
 
         return 'text-gray-400';
     }
