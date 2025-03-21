@@ -1,0 +1,208 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-15 13:12:20
+
+----------------------------------------------------------------
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.009925s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.038843s
+
+NT: Got a NT4 connection from 10.4.88.200 port 54136
+NT: Got a NT4 connection from 10.4.88.200 port 54143
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.200:54143)
+NT: Got a NT4 connection from 10.4.88.200 port 54144
+NT: CONNECTED RTT client (from 10.4.88.200:54144)
+NT: Got a NT4 connection from 10.4.88.200 port 54137
+NT: Got a NT4 connection from 10.4.88.200 port 54138
+NT: Got a NT4 connection from 10.4.88.200 port 54139
+NT: Got a NT4 connection from 10.4.88.200 port 54140
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.005583s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.039011s
+
+NT: Got a NT4 connection from 10.4.88.200 port 54141
+NT: Got a NT4 connection from 10.4.88.201 port 61958
+NT: CONNECTED NT4 client 'Dashboard@5' (from 10.4.88.201:61958)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001224s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.001354s
+disabledPeriodic(): 0.061957s
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.000093s
+CoprocessorCommunicationSubsystem.periodic(): 0.000000s
+OracleSubsystem.periodic(): 0.000056s
+PoseSubsystem.periodic(): 0.001410s
+AlgaeCollectionSubsystem.periodic(): 0.000316s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.000872s
+buttons.run(): 0.000148s
+SwerveDriveSubsystem.periodic(): 0.001317s
+AutonomousCommandSelector.periodic(): 0.003580s
+AlgaeArmSubsystem.periodic(): 0.000575s
+SuperstructureMechanismSubsystem.periodic(): 0.001094s
+SwerveSteeringSubsystem.periodic(): 0.001299s
+AprilTagVisionSubsystemExtended.periodic(): 0.001261s
+CoralArmSubsystem.periodic(): 0.001466s
+SwerveModuleSubsystem.periodic(): 0.000037s
+ElevatorSubsystem.periodic(): 0.001205s
+DriveSubsystem.periodic(): 0.000037s
+
+CommandScheduler loop overrun
+[AdvantageKit] Renaming log to "/U/logs/akit_25-03-15_13-04-11.wpilog"
+NT: Got a NT4 connection from 10.4.88.201 port 61966
+NT: CONNECTED NT4 client 'Elastic@6' (from 10.4.88.201:61966)
+NT: Got a NT4 connection from 10.4.88.201 port 61967
+NT: CONNECTED RTT client (from 10.4.88.201:61967)
+NT: Got a NT4 connection from 10.4.88.201 port 61971
+NT: Got a NT4 connection from 10.4.88.201 port 61972
+NT: CONNECTED NT4 client 'AdvantageScope@7' (from 10.4.88.201:61972)
+NT: Got a NT4 connection from 10.4.88.201 port 61973
+NT: CONNECTED RTT client (from 10.4.88.201:61973)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.003450s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.056837s
+
+INFO | 2025-03-15 13:06:43,754 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.712937744140625)
+INFO | 2025-03-15 13:06:43,774 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:06:43,777 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:06:43,794 | 76 | ElevatorMaintainerCommand                | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-15 13:06:43,799 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:06:43,802 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.047358s
+SmartDashboard.updateValues(): 0.002170s
+robotPeriodic(): 0.000130s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.004972s
+
+INFO | 2025-03-15 13:06:43,918 | 43 | AdvancedTrigger                          | Creating XboxButton Back
+INFO | 2025-03-15 13:06:43,930 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000037s
+PoseSubsystem.periodic(): 0.000500s
+ClimberSubsystem.periodic(): 0.000000s
+CoralScorerSubsystem.periodic(): 0.000501s
+buttons.run(): 0.000352s
+SwerveDriveSubsystem.periodic(): 0.000093s
+SuperstructureMechanismSubsystem.periodic(): 0.000464s
+SwerveSteeringSubsystem.periodic(): 0.000055s
+AlgaeCollectionStopCommand.execute(): 0.000037s
+CoralArmSubsystem.periodic(): 0.000890s
+SwerveModuleSubsystem.periodic(): 0.000019s
+SwerveDriveWithJoysticksCommand.execute(): 0.052497s
+AlgaeArmMaintainerCommand.execute(): 0.001132s
+LightSubsystem.periodic(): 0.000204s
+CoralArmMaintainerCommand.execute(): 0.011742s
+AlgaeCollectionSubsystem.periodic(): 0.000093s
+SwerveDriveMaintainerCommand.execute(): 0.000315s
+AutonomousCommandSelector.periodic(): 0.000037s
+SwerveSteeringMaintainerCommand.execute(): 0.000334s
+AlgaeArmSubsystem.periodic(): 0.000408s
+AprilTagVisionSubsystemExtended.periodic(): 0.000816s
+ElevatorSubsystem.periodic(): 0.000520s
+ElevatorMaintainerCommand.execute(): 0.008830s
+DriveSubsystem.periodic(): 0.000019s
+ClimbWithJoySticksCommand.execute(): 0.002263s
+
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.056633s
+SmartDashboard.updateValues(): 0.001076s
+robotPeriodic(): 0.000018s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.045114s
+SmartDashboard.updateValues(): 0.000742s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+
+INFO | 2025-03-15 13:07:13,415 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.69409033203125)
+INFO | 2025-03-15 13:07:13,450 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000631s
+disabledInit(): 0.012558s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.035746s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001818s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.042553s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000890s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.042832s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.003970s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.050864s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.011797s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.029680s
+
+INFO | 2025-03-15 13:11:22,738 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.66896044921875)
+INFO | 2025-03-15 13:11:22,752 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:11:22,753 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:11:22,756 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:11:22,762 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:11:22,765 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+INFO | 2025-03-15 13:12:00,155 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.631265625)
+INFO | 2025-03-15 13:12:00,182 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.007086s
+disabledInit(): 0.006790s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.034187s
+

@@ -197,11 +197,10 @@ public class XTablesViewer extends JFrame {
     }
 
     public void init() {
-        VisionCoprocessorCommander commander = new VisionCoprocessorCommander("10.4.88.7");
+        VisionCoprocessorCommander commander = new VisionCoprocessorCommander(VisionCoprocessor.ORIN3_STATIC);
         fieldPanel = new FieldPanel(this);
         fieldPanel.setClickCallback((goalPose, prob, event) -> {
             try {
-                System.out.println(goalPose);
                 Pose2d robotPose = fieldPanel.getRobotPose();
                 XTableValues.ControlPoint start = XTableValues.ControlPoint.newBuilder()
                         .setX(robotPose.getX())

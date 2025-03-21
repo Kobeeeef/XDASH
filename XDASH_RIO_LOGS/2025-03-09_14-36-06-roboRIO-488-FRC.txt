@@ -1,0 +1,46 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-09 14:36:06
+
+----------------------------------------------------------------
+
+********** Robot program starting **********
+NT: WARNING: error reading persistent file: 189: value type mismatch, expected double
+190: value type mismatch, expected double
+191: value type mismatch, expected double
+(NetworkServer.cpp:423)
+NT: Listening on NT3 port 1735, NT4 port 5810
+NT: Got a NT4 connection from 10.4.88.9 port 47164
+NT: CONNECTED NT4 client 'photonvision@1' (from 10.4.88.9:47164)
+NT: Got a NT4 connection from 10.4.88.8 port 54994
+NT: CONNECTED NT4 client 'photonvision@2' (from 10.4.88.8:54994)
+NT: Got a NT4 connection from 10.4.88.10 port 44198
+NT: CONNECTED NT4 client 'photonvision@3' (from 10.4.88.10:44198)
+[AdvantageKit] Logging to "/U/logs/akit_68320aa131c357b6.wpilog"
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+INFO | 2022-06-30 00:17:40,992 | 114 | BaseRobot                                | ========== BASE ROBOT INITIALIZING ==========
+INFO | 2022-06-30 00:17:41,083 | 107 | Robot                                    | Using Competition contract
+INFO | 2022-06-30 00:17:41,764 | 116 | BaseRobot                                | ========== INJECTOR CREATED ==========
+INFO | 2022-06-30 00:17:42,092 | 95 | BaseSwerveDriveSubsystem                 | Creating DriveSubsystem
+INFO | 2022-06-30 00:17:42,120 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontLeftDrive
+ERROR | 2022-06-30 00:17:45,548 | 109 | CANTalonFxWpiAdapter                     | TalonFX 29 (DriveSubsystem/FrontLeftDrive/Drive) is not online and cannot be configured
+ERROR | 2022-06-30 00:17:46,497 | 141 | CANTalonFxWpiAdapter                     | Configuration set to TalonFX 29 (DriveSubsystem/FrontLeftDrive/Drive/CANMotorController) failed.
+INFO | 2022-06-30 00:17:46,929 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontLeftDrive
+ERROR | 2022-06-30 00:17:49,074 | 109 | CANTalonFxWpiAdapter                     | TalonFX 28 (DriveSubsystem/FrontLeftDrive/Steering) is not online and cannot be configured
+ERROR | 2022-06-30 00:17:49,811 | 141 | CANTalonFxWpiAdapter                     | Configuration set to TalonFX 28 (DriveSubsystem/FrontLeftDrive/Steering/CANMotorController) failed.
+INFO | 2022-06-30 00:17:50,612 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontLeftDrive
+INFO | 2022-06-30 00:17:50,758 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontRightDrive
+INFO | 2022-06-30 00:17:52,307 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontRightDrive
+INFO | 2022-06-30 00:17:52,549 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontRightDrive
+INFO | 2022-06-30 00:17:52,570 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearLeftDrive
+INFO | 2022-06-30 00:17:52,762 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearLeftDrive
+INFO | 2022-06-30 00:17:53,054 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearLeftDrive
+INFO | 2022-06-30 00:17:53,069 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearRightDrive
+INFO | 2022-06-30 00:17:53,263 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearRightDrive
+INFO | 2022-06-30 00:17:53,523 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearRightDrive
+INFO | 2022-06-30 00:17:54,268 | 56 | DriveSubsystem                           | Creating DriveSubsystem
+INFO | 2022-06-30 00:17:57,950 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Target Pose") | Property CoprocessorCommunicationSubsystem/Xtables Target Pose has the non-default value target_pose
+INFO | 2022-06-30 00:17:57,974 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Coordinate Location") | Property CoprocessorCommunicationSubsystem/Xtables Coordinate Location has the non-default value target_waypoints
+INFO | 2022-06-30 00:17:57,990 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Heading Location") | Property CoprocessorCommunicationSubsystem/Xtables Heading Location has the non-default value target_heading

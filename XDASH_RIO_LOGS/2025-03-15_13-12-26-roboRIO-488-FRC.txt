@@ -1,0 +1,1394 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-15 13:12:26
+
+----------------------------------------------------------------
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.009925s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.038843s
+
+NT: Got a NT4 connection from 10.4.88.200 port 54136
+NT: Got a NT4 connection from 10.4.88.200 port 54143
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.200:54143)
+NT: Got a NT4 connection from 10.4.88.200 port 54144
+NT: CONNECTED RTT client (from 10.4.88.200:54144)
+NT: Got a NT4 connection from 10.4.88.200 port 54137
+NT: Got a NT4 connection from 10.4.88.200 port 54138
+NT: Got a NT4 connection from 10.4.88.200 port 54139
+NT: Got a NT4 connection from 10.4.88.200 port 54140
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.005583s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.039011s
+
+NT: Got a NT4 connection from 10.4.88.200 port 54141
+NT: Got a NT4 connection from 10.4.88.201 port 61958
+NT: CONNECTED NT4 client 'Dashboard@5' (from 10.4.88.201:61958)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001224s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.001354s
+disabledPeriodic(): 0.061957s
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.000093s
+CoprocessorCommunicationSubsystem.periodic(): 0.000000s
+OracleSubsystem.periodic(): 0.000056s
+PoseSubsystem.periodic(): 0.001410s
+AlgaeCollectionSubsystem.periodic(): 0.000316s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.000872s
+buttons.run(): 0.000148s
+SwerveDriveSubsystem.periodic(): 0.001317s
+AutonomousCommandSelector.periodic(): 0.003580s
+AlgaeArmSubsystem.periodic(): 0.000575s
+SuperstructureMechanismSubsystem.periodic(): 0.001094s
+SwerveSteeringSubsystem.periodic(): 0.001299s
+AprilTagVisionSubsystemExtended.periodic(): 0.001261s
+CoralArmSubsystem.periodic(): 0.001466s
+SwerveModuleSubsystem.periodic(): 0.000037s
+ElevatorSubsystem.periodic(): 0.001205s
+DriveSubsystem.periodic(): 0.000037s
+
+CommandScheduler loop overrun
+[AdvantageKit] Renaming log to "/U/logs/akit_25-03-15_13-04-11.wpilog"
+NT: Got a NT4 connection from 10.4.88.201 port 61966
+NT: CONNECTED NT4 client 'Elastic@6' (from 10.4.88.201:61966)
+NT: Got a NT4 connection from 10.4.88.201 port 61967
+NT: CONNECTED RTT client (from 10.4.88.201:61967)
+NT: Got a NT4 connection from 10.4.88.201 port 61971
+NT: Got a NT4 connection from 10.4.88.201 port 61972
+NT: CONNECTED NT4 client 'AdvantageScope@7' (from 10.4.88.201:61972)
+NT: Got a NT4 connection from 10.4.88.201 port 61973
+NT: CONNECTED RTT client (from 10.4.88.201:61973)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.003450s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.056837s
+
+INFO | 2025-03-15 13:06:43,754 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.712937744140625)
+INFO | 2025-03-15 13:06:43,774 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:06:43,777 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:06:43,794 | 76 | ElevatorMaintainerCommand                | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-15 13:06:43,799 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:06:43,802 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.047358s
+SmartDashboard.updateValues(): 0.002170s
+robotPeriodic(): 0.000130s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.004972s
+
+INFO | 2025-03-15 13:06:43,918 | 43 | AdvancedTrigger                          | Creating XboxButton Back
+INFO | 2025-03-15 13:06:43,930 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000037s
+PoseSubsystem.periodic(): 0.000500s
+ClimberSubsystem.periodic(): 0.000000s
+CoralScorerSubsystem.periodic(): 0.000501s
+buttons.run(): 0.000352s
+SwerveDriveSubsystem.periodic(): 0.000093s
+SuperstructureMechanismSubsystem.periodic(): 0.000464s
+SwerveSteeringSubsystem.periodic(): 0.000055s
+AlgaeCollectionStopCommand.execute(): 0.000037s
+CoralArmSubsystem.periodic(): 0.000890s
+SwerveModuleSubsystem.periodic(): 0.000019s
+SwerveDriveWithJoysticksCommand.execute(): 0.052497s
+AlgaeArmMaintainerCommand.execute(): 0.001132s
+LightSubsystem.periodic(): 0.000204s
+CoralArmMaintainerCommand.execute(): 0.011742s
+AlgaeCollectionSubsystem.periodic(): 0.000093s
+SwerveDriveMaintainerCommand.execute(): 0.000315s
+AutonomousCommandSelector.periodic(): 0.000037s
+SwerveSteeringMaintainerCommand.execute(): 0.000334s
+AlgaeArmSubsystem.periodic(): 0.000408s
+AprilTagVisionSubsystemExtended.periodic(): 0.000816s
+ElevatorSubsystem.periodic(): 0.000520s
+ElevatorMaintainerCommand.execute(): 0.008830s
+DriveSubsystem.periodic(): 0.000019s
+ClimbWithJoySticksCommand.execute(): 0.002263s
+
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.056633s
+SmartDashboard.updateValues(): 0.001076s
+robotPeriodic(): 0.000018s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.045114s
+SmartDashboard.updateValues(): 0.000742s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+
+INFO | 2025-03-15 13:07:13,415 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.69409033203125)
+INFO | 2025-03-15 13:07:13,450 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000631s
+disabledInit(): 0.012558s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.035746s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001818s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.042553s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.000890s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.042832s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.003970s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.050864s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.011797s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.029680s
+
+INFO | 2025-03-15 13:11:22,738 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.66896044921875)
+INFO | 2025-03-15 13:11:22,752 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:11:22,753 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:11:22,756 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:11:22,762 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:11:22,765 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+INFO | 2025-03-15 13:12:00,155 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.631265625)
+INFO | 2025-03-15 13:12:00,182 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.007086s
+disabledInit(): 0.006790s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.034187s
+
+INFO | 2025-03-15 13:12:34,143 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.64383056640625)
+INFO | 2025-03-15 13:12:34,155 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:12:34,157 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:12:34,173 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:12:34,179 | 76 | CoralArmMaintainerCommand                | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-15 13:12:34,181 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.039215s
+SmartDashboard.updateValues(): 0.002170s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.003024s
+
+INFO | 2025-03-15 13:12:37,544 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+WARN | 2025-03-15 13:12:37,564 | 163 | AlignWithCreeperCommmand                 | Vision offsets are returning null! Is alignment up?
+WARN | 2025-03-15 13:12:37,566 | 35 | AlignWithCreeperCalculatorCommand        | Failed to execute AlignWithCreeperCalculator.
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.039437s
+SmartDashboard.updateValues(): 0.001614s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+
+WARN | 2025-03-15 13:12:37,600 | 163 | AlignWithCreeperCommmand                 | Vision offsets are returning null! Is alignment up?
+WARN | 2025-03-15 13:12:37,601 | 35 | AlignWithCreeperCalculatorCommand        | Failed to execute AlignWithCreeperCalculator.
+INFO | 2025-03-15 13:12:37,653 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:37,698 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:37,764 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:12:37,839 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:12:37,874 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:12:37,882 | 65 | ManualSwerveDriveLogic                   | Initializing
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000018s
+OracleSubsystem.periodic(): 0.000148s
+PoseSubsystem.periodic(): 0.003376s
+ClimberSubsystem.periodic(): 0.000019s
+CoralScorerSubsystem.periodic(): 0.003098s
+buttons.run(): 0.005453s
+SwerveDriveSubsystem.periodic(): 0.000167s
+SwerveDriveWithJoysticksCommand.initialize(): 0.011464s
+SuperstructureMechanismSubsystem.periodic(): 0.007030s
+SwerveSteeringSubsystem.periodic(): 0.000074s
+AlgaeCollectionStopCommand.execute(): 0.000000s
+CoralArmSubsystem.periodic(): 0.000148s
+SwerveModuleSubsystem.periodic(): 0.000000s
+AlgaeArmMaintainerCommand.execute(): 0.000593s
+LightSubsystem.periodic(): 0.000075s
+CoralArmMaintainerCommand.execute(): 0.005157s
+AlgaeCollectionSubsystem.periodic(): 0.000872s
+SwerveDriveMaintainerCommand.execute(): 0.008347s
+AutonomousCommandSelector.periodic(): 0.000037s
+SwerveSteeringMaintainerCommand.execute(): 0.000650s
+AlgaeArmSubsystem.periodic(): 0.000946s
+AprilTagVisionSubsystemExtended.periodic(): 0.000520s
+ElevatorSubsystem.periodic(): 0.000353s
+ElevatorMaintainerCommand.execute(): 0.005101s
+DriveSubsystem.periodic(): 0.000018s
+AlignWithCreeperCalculatorCommand.end(true): 0.006641s
+ClimbWithJoySticksCommand.execute(): 0.000668s
+
+INFO | 2025-03-15 13:12:38,172 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:12:38,179 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,232 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,269 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,310 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,349 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,383 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,437 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,466 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,507 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,554 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,587 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,627 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,666 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,707 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,746 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,787 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,834 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,873 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,915 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,962 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:38,992 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:12:39,030 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:12:39,035 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:12:39,037 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:12:39,149 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:12:39,157 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,198 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,232 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,277 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,313 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,352 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,394 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,433 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,487 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,520 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,559 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,601 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,651 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,698 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,734 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,780 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:39,820 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:12:39,852 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:12:39,860 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:12:39,861 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:12:40,021 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:12:40,028 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,069 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,109 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,146 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,185 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,222 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,264 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,304 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,346 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,386 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,423 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,461 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,520 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,550 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,597 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,631 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,666 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,708 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,743 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,781 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,827 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,869 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,904 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,944 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:40,985 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:41,025 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:12:41,064 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:12:41,070 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:12:41,072 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:12:41,739 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:12:41,745 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:41,785 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:41,832 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:41,864 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:41,904 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:41,943 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:41,985 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:42,027 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:42,063 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:42,101 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:42,143 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:12:42,184 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:12:42,232 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:12:42,239 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:12:42,240 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:02,022 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+WARN | 2025-03-15 13:13:02,264 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:02,272 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:02,273 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:02,507 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:02,548 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,596 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,627 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,667 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,713 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,755 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,784 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,827 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,868 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,908 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,948 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:02,999 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,035 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,069 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,111 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,149 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,187 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,230 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,268 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,309 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,348 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,387 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,429 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:03,464 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:03,470 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:03,471 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:03,588 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:03,593 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,632 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,666 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,707 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,747 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,787 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,827 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,869 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,908 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,949 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:03,987 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,028 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,068 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:04,106 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:04,111 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:04,112 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:04,265 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:04,270 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,313 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,348 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,391 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,431 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,466 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,509 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,548 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,591 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,630 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,667 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,709 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,749 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,788 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,837 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,867 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,905 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:04,947 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:04,986 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:04,995 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:04,997 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:05,109 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:05,115 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,152 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,188 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,229 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,270 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,310 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,351 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,387 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,430 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,467 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,507 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:05,548 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:05,587 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:05,593 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:05,595 | 65 | ManualSwerveDriveLogic                   | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.039270s
+SmartDashboard.updateValues(): 0.001113s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+
+NT: DISCONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.200:54143): remote close:
+NT: DISCONNECTED RTT client (from 10.4.88.200:54144): remote close:
+NT: Got a NT4 connection from 10.4.88.200 port 49739
+NT: Got a NT4 connection from 10.4.88.200 port 49747
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.200:49747)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000037s
+PoseSubsystem.periodic(): 0.001873s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.000520s
+buttons.run(): 0.000279s
+SwerveDriveSubsystem.periodic(): 0.000074s
+SuperstructureMechanismSubsystem.periodic(): 0.003413s
+SwerveSteeringSubsystem.periodic(): 0.000074s
+AlgaeCollectionStopCommand.execute(): 0.000018s
+CoralArmSubsystem.periodic(): 0.003413s
+SwerveModuleSubsystem.periodic(): 0.000019s
+SwerveDriveWithJoysticksCommand.execute(): 0.029791s
+AlgaeArmMaintainerCommand.execute(): 0.001576s
+LightSubsystem.periodic(): 0.000074s
+CoralArmMaintainerCommand.execute(): 0.000668s
+AlgaeCollectionSubsystem.periodic(): 0.000112s
+SwerveDriveMaintainerCommand.execute(): 0.000408s
+AutonomousCommandSelector.periodic(): 0.000037s
+SwerveSteeringMaintainerCommand.execute(): 0.000316s
+AlgaeArmSubsystem.periodic(): 0.000575s
+AprilTagVisionSubsystemExtended.periodic(): 0.002114s
+ElevatorSubsystem.periodic(): 0.001447s
+ElevatorMaintainerCommand.execute(): 0.000928s
+DriveSubsystem.periodic(): 0.000019s
+ClimbWithJoySticksCommand.execute(): 0.000186s
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.170623s
+SmartDashboard.updateValues(): 0.005898s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000019s
+
+NT: Got a NT4 connection from 10.4.88.200 port 49748
+NT: CONNECTED RTT client (from 10.4.88.200:49748)
+NT: Got a NT4 connection from 10.4.88.200 port 49734
+NT: Got a NT4 connection from 10.4.88.200 port 49735
+NT: Got a NT4 connection from 10.4.88.200 port 49736
+NT: Got a NT4 connection from 10.4.88.200 port 49737
+NT: Got a NT4 connection from 10.4.88.200 port 49738
+INFO | 2025-03-15 13:13:42,473 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:42,480 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:42,520 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:42,560 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:42,601 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:42,642 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:42,678 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:42,722 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:42,758 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:42,764 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:42,766 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:42,997 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:43,006 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,042 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,083 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,128 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,164 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,200 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,238 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,278 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,321 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,360 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,400 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,439 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,479 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:43,516 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:43,526 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:43,527 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:43,598 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:43,608 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,650 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,689 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,720 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,758 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,807 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,840 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,880 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,919 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:43,967 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,000 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,041 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,078 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,120 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,160 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,199 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,240 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,280 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,323 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,357 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,399 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,441 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,479 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,520 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,560 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,600 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,643 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:44,679 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:44,716 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:44,722 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:44,723 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:45,115 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:45,121 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,168 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,206 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,244 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,280 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,321 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,359 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,400 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,441 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,482 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,521 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,560 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,598 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,654 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,689 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,724 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,763 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,800 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,840 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,881 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,921 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:45,961 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,003 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,043 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,080 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,119 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,161 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:46,198 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:46,205 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:46,207 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:46,438 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:46,443 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,491 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,527 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,561 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:46,601 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:46,645 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:46,653 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:46,654 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:51,038 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:51,048 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,081 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,119 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,166 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,202 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,243 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,281 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,321 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,362 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,400 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,441 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,482 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,520 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,560 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,603 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,643 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:51,684 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:51,697 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-15 13:13:51,718 | 65 | ManualSwerveDriveLogic                   | Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.050493s
+SmartDashboard.updateValues(): 0.003766s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+
+INFO | 2025-03-15 13:13:51,793 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:51,801 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,835 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,873 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,913 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,954 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:51,997 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,042 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:52,069 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:52,077 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:52,078 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:52,191 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:52,198 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,240 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,282 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,315 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,353 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,395 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,433 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,472 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,512 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,552 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,593 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,636 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,675 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,712 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,753 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:52,794 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:52,830 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:52,837 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:52,839 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:13:53,630 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:13:53,638 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,681 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,720 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,753 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,795 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,835 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,874 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,916 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,953 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:53,996 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,034 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,073 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,116 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,160 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,194 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,244 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,272 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,315 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,354 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,394 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,433 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,473 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,518 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,554 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,594 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,642 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,674 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+NT: Got a NT4 connection from 10.4.88.23 port 52990
+NT: CONNECTED NT4 client 'VR_trackers@8' (from 10.4.88.23:52990)
+INFO | 2025-03-15 13:13:54,719 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,753 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,793 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,837 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+INFO | 2025-03-15 13:13:54,873 | 192 | AlignWithCreeperCommmand                 | Vision is saying we are centered confidently!
+WARN | 2025-03-15 13:13:54,910 | 50 | AlignWithCreeperCalculatorCommand        | Alignment command interrupted before completion.
+INFO | 2025-03-15 13:13:54,915 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:13:54,918 | 65 | ManualSwerveDriveLogic                   | Initializing
+NT: Got a NT4 connection from 10.4.88.23 port 52991
+NT: Got a NT4 connection from 10.4.88.23 port 52992
+NT: CONNECTED NT4 client 'AdvantageScope@9' (from 10.4.88.23:52992)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.061160s
+SmartDashboard.updateValues(): 0.002430s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000018s
+
+NT: Got a NT4 connection from 10.4.88.23 port 52993
+NT: CONNECTED RTT client (from 10.4.88.23:52993)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.051773s
+SmartDashboard.updateValues(): 0.001187s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+
+INFO | 2025-03-15 13:14:05,847 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.53074609375)
+INFO | 2025-03-15 13:14:05,872 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+NT: DISCONNECTED NT4 client 'AdvantageScope@9' (from 10.4.88.23:52992): connection timed out
+NT: Got a NT4 connection from 10.4.88.23 port 52997
+NT: DISCONNECTED RTT client (from 10.4.88.23:52993): remote close:
+NT: Got a NT4 connection from 10.4.88.23 port 52998
+NT: Got a NT4 connection from 10.4.88.23 port 52999
+NT: CONNECTED NT4 client 'AdvantageScope@9' (from 10.4.88.23:52999)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002040s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.051272s
+
+NT: Got a NT4 connection from 10.4.88.23 port 53000
+NT: CONNECTED RTT client (from 10.4.88.23:53000)
+NT: Got a NT4 connection from 10.4.88.23 port 53001
+NT: Got a NT4 connection from 10.4.88.23 port 52996
+NT: CONNECTED NT4 client 'VR_trackers@10' (from 10.4.88.23:53001)
+NT: DISCONNECTED NT4 client 'VR_trackers@8' (from 10.4.88.23:52990): stream error: ECONNRESET
+NT: NT4 socket error: socket is not connected
+NT: NT4 socket error: connection reset by peer
+INFO | 2025-03-15 13:14:09,485 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.624983154296874)
+INFO | 2025-03-15 13:14:09,523 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-15 13:14:09,524 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:14:09,536 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:14:09,546 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:14:09,549 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.064609s
+SmartDashboard.updateValues(): 0.004879s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.001614s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.039344s
+SmartDashboard.updateValues(): 0.001261s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+
+INFO | 2025-03-15 13:15:02,183 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.574723388671874)
+INFO | 2025-03-15 13:15:02,210 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+INFO | 2025-03-15 13:15:05,989 | 228 | BaseRobot                                | Teleop init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: false, Is enabled: true, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: true, Battery voltage: 11.624983154296874)
+INFO | 2025-03-15 13:15:06,009 | 28 | SwerveDriveWithJoysticksCommand          | Initializing
+INFO | 2025-03-15 13:15:06,010 | 65 | ManualSwerveDriveLogic                   | Initializing
+INFO | 2025-03-15 13:15:06,016 | 76 | ElevatorMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:15:06,024 | 76 | CoralArmMaintainerCommand                | Initializing
+INFO | 2025-03-15 13:15:06,026 | 55 | AlgaeArmMaintainerCommand                | Initializing
+Initializing
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	teleopPeriodic(): 0.037118s
+SmartDashboard.updateValues(): 0.003005s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+teleopInit(): 0.001225s
+
+INFO | 2025-03-15 13:15:07,864 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.562158447265624)
+INFO | 2025-03-15 13:15:07,887 | 45 | SwerveDriveWithJoysticksCommand          | Ending
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001225s
+disabledInit(): 0.002226s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000167s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.041830s
+
+NT: Got a NT4 connection from 10.4.88.21 port 12337
+NT: Got a NT4 connection from 10.4.88.21 port 12353
+NT: CONNECTED NT4 client 'AdvantageScope@8' (from 10.4.88.21:12353)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001095s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.044649s
+
+NT: Got a NT4 connection from 10.4.88.21 port 12354
+NT: CONNECTED RTT client (from 10.4.88.21:12354)
+NT: DISCONNECTED NT4 client 'AdvantageScope@8' (from 10.4.88.21:12353): connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.21:12354): remote close:
+NT: Got a NT4 connection from 10.4.88.21 port 12355
+NT: Got a NT4 connection from 10.4.88.21 port 12356
+NT: CONNECTED NT4 client 'AdvantageScope@8' (from 10.4.88.21:12356)
+NT: Got a NT4 connection from 10.4.88.21 port 12357
+NT: CONNECTED RTT client (from 10.4.88.21:12357)
+NT: DISCONNECTED NT4 client 'AdvantageScope@8' (from 10.4.88.21:12356): remote close:
+NT: DISCONNECTED RTT client (from 10.4.88.21:12357): remote close:
+NT: Got a NT4 connection from 10.4.88.21 port 12358
+NT: CONNECTED NT4 client 'AdvantageScope@8' (from 10.4.88.21:12358)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+NT: Got a NT4 connection from 10.4.88.21 port 12359
+NT: CONNECTED RTT client (from 10.4.88.21:12359)
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.004174s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.047154s
+
+NT: DISCONNECTED NT4 client 'AdvantageScope@9' (from 10.4.88.23:52999): connection timed out
+NT: DISCONNECTED NT4 client 'AdvantageScope@8' (from 10.4.88.21:12358): connection timed out
+NT: DISCONNECTED NT4 client 'VR_trackers@10' (from 10.4.88.23:53001): remote close: connection timed out
+NT: DISCONNECTED RTT client (from 10.4.88.21:12359): remote close:
+NT: Got a NT4 connection from 10.4.88.21 port 12444
+NT: CONNECTED NT4 client 'AdvantageScope@8' (from 10.4.88.21:12444)
+NT: DISCONNECTED RTT client (from 10.4.88.23:53000): remote close:
+NT: Got a NT4 connection from 10.4.88.23 port 60729
+NT: Got a NT4 connection from 10.4.88.23 port 60730
+NT: Got a NT4 connection from 10.4.88.23 port 60731
+NT: Got a NT4 connection from 10.4.88.23 port 60732
+NT: Got a NT4 connection from 10.4.88.23 port 60733
+NT: CONNECTED NT4 client 'VR_trackers@9' (from 10.4.88.23:60733)
+NT: Got a NT4 connection from 10.4.88.23 port 60734
+NT: CONNECTED NT4 client 'AdvantageScope@10' (from 10.4.88.23:60734)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002913s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.047803s
+
+NT: Got a NT4 connection from 10.4.88.23 port 60735
+NT: CONNECTED RTT client (from 10.4.88.23:60735)
+CommandScheduler loop overrun
+NT: Got a NT4 connection from 10.4.88.21 port 12445
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000056s
+PoseSubsystem.periodic(): 0.003302s
+ClimberSubsystem.periodic(): 0.000019s
+CoralScorerSubsystem.periodic(): 0.001131s
+buttons.run(): 0.000241s
+SwerveDriveSubsystem.periodic(): 0.000148s
+SuperstructureMechanismSubsystem.periodic(): 0.001948s
+SwerveSteeringSubsystem.periodic(): 0.000557s
+CoralArmSubsystem.periodic(): 0.000705s
+SwerveModuleSubsystem.periodic(): 0.000018s
+LightSubsystem.periodic(): 0.001595s
+AlgaeCollectionSubsystem.periodic(): 0.000111s
+AutonomousCommandSelector.periodic(): 0.000278s
+AlgaeArmSubsystem.periodic(): 0.000371s
+AprilTagVisionSubsystemExtended.periodic(): 0.003432s
+ElevatorSubsystem.periodic(): 0.001020s
+DriveSubsystem.periodic(): 0.000019s
+
+NT: CONNECTED RTT client (from 10.4.88.21:12445)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000037s
+PoseSubsystem.periodic(): 0.003135s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.043630s
+buttons.run(): 0.001892s
+SwerveDriveSubsystem.periodic(): 0.000092s
+SuperstructureMechanismSubsystem.periodic(): 0.004545s
+SwerveSteeringSubsystem.periodic(): 0.001039s
+CoralArmSubsystem.periodic(): 0.001206s
+SwerveModuleSubsystem.periodic(): 0.000538s
+LightSubsystem.periodic(): 0.000074s
+AlgaeCollectionSubsystem.periodic(): 0.000667s
+AutonomousCommandSelector.periodic(): 0.000037s
+AlgaeArmSubsystem.periodic(): 0.000297s
+AprilTagVisionSubsystemExtended.periodic(): 0.001484s
+ElevatorSubsystem.periodic(): 0.006437s
+DriveSubsystem.periodic(): 0.000000s
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.010592s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.198781s
+
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000000s
+OracleSubsystem.periodic(): 0.000037s
+PoseSubsystem.periodic(): 0.003394s
+ClimberSubsystem.periodic(): 0.000000s
+CoralScorerSubsystem.periodic(): 0.002078s
+buttons.run(): 0.003079s
+SwerveDriveSubsystem.periodic(): 0.002467s
+SuperstructureMechanismSubsystem.periodic(): 0.000482s
+SwerveSteeringSubsystem.periodic(): 0.000093s
+CoralArmSubsystem.periodic(): 0.000186s
+SwerveModuleSubsystem.periodic(): 0.000018s
+LightSubsystem.periodic(): 0.000075s
+AlgaeCollectionSubsystem.periodic(): 0.002727s
+AutonomousCommandSelector.periodic(): 0.000074s
+AlgaeArmSubsystem.periodic(): 0.000185s
+AprilTagVisionSubsystemExtended.periodic(): 0.000390s
+ElevatorSubsystem.periodic(): 0.000816s
+DriveSubsystem.periodic(): 0.000019s
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.007661s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.153130s
+
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.004564s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.058432s
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	CoprocessorCommunicationSubsystem.periodic(): 0.000000s
+OracleSubsystem.periodic(): 0.001596s
+PoseSubsystem.periodic(): 0.010333s
+ClimberSubsystem.periodic(): 0.000000s
+CoralScorerSubsystem.periodic(): 0.009126s
+buttons.run(): 0.002077s
+SwerveDriveSubsystem.periodic(): 0.000223s
+SuperstructureMechanismSubsystem.periodic(): 0.019959s
+SwerveSteeringSubsystem.periodic(): 0.000111s
+CoralArmSubsystem.periodic(): 0.002634s
+SwerveModuleSubsystem.periodic(): 0.000018s
+LightSubsystem.periodic(): 0.000075s
+AlgaeCollectionSubsystem.periodic(): 0.000129s
+AutonomousCommandSelector.periodic(): 0.000018s
+AlgaeArmSubsystem.periodic(): 0.000464s
+AprilTagVisionSubsystemExtended.periodic(): 0.000835s
+ElevatorSubsystem.periodic(): 0.002171s
+DriveSubsystem.periodic(): 0.006289s
+
+********** Robot program starting **********
+NT: WARNING: error reading persistent file: 38: value type mismatch, expected double
+48: value type mismatch, expected double
+58: value type mismatch, expected double
+(NetworkServer.cpp:423)
+NT: Listening on NT3 port 1735, NT4 port 5810
+NT: Got a NT4 connection from 10.4.88.23 port 60975
+NT: Got a NT4 connection from 10.4.88.23 port 60955
+NT: Got a NT4 connection from 10.4.88.23 port 60952
+NT: Got a NT4 connection from 10.4.88.23 port 60976
+NT: CONNECTED NT4 client 'AdvantageScope@1' (from 10.4.88.23:60976)
+NT: Got a NT4 connection from 10.4.88.200 port 62888
+NT: Got a NT4 connection from 10.4.88.200 port 62885
+NT: Got a NT4 connection from 10.4.88.201 port 63527
+NT: Got a NT4 connection from 10.4.88.23 port 60977
+NT: CONNECTED RTT client (from 10.4.88.23:60977)
+NT: Got a NT4 connection from 10.4.88.201 port 63522
+NT: Got a NT4 connection from 10.4.88.10 port 39608
+NT: CONNECTED NT4 client 'photonvision@2' (from 10.4.88.10:39608)
+NT: Got a NT4 connection from 10.4.88.200 port 62891
+NT: CONNECTED NT4 client 'AdvantageScope@3' (from 10.4.88.200:62891)
+NT: Got a NT4 connection from 10.4.88.200 port 62890
+NT: Got a NT4 connection from 10.4.88.200 port 62887
+NT: Got a NT4 connection from 10.4.88.23 port 60957
+NT: Got a NT4 connection from 10.4.88.23 port 60953
+NT: Got a NT4 connection from 10.4.88.200 port 62892
+NT: Got a NT4 connection from 10.4.88.201 port 63534
+NT: CONNECTED RTT client (from 10.4.88.200:62892)
+NT: Got a NT4 connection from 10.4.88.201 port 63532
+NT: CONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.201:63534)
+NT: Got a NT4 connection from 10.4.88.201 port 63535
+NT: CONNECTED NT4 client 'Dashboard@5' (from 10.4.88.201:63535)
+NT: Got a NT4 connection from 10.4.88.23 port 60966
+NT: CONNECTED NT4 client 'VR_trackers@6' (from 10.4.88.23:60966)
+NT: Got a NT4 connection from 10.4.88.23 port 60956
+NT: Got a NT4 connection from 10.4.88.201 port 63531
+NT: Got a NT4 connection from 10.4.88.201 port 63536
+NT: Got a NT4 connection from 10.4.88.21 port 56228
+NT: CONNECTED RTT client (from 10.4.88.201:63536)
+NT: Got a NT4 connection from 10.4.88.21 port 56232
+NT: Got a NT4 connection from 10.4.88.21 port 56221
+NT: Got a NT4 connection from 10.4.88.201 port 63528
+NT: Got a NT4 connection from 10.4.88.200 port 62889
+NT: CONNECTED NT4 client 'Elastic@7' (from 10.4.88.201:63528)
+NT: Got a NT4 connection from 10.4.88.200 port 62886
+NT: Got a NT4 connection from 10.4.88.21 port 56226
+NT: Got a NT4 connection from 10.4.88.21 port 56219
+NT: Got a NT4 connection from 10.4.88.201 port 63529
+NT: Got a NT4 connection from 10.4.88.21 port 56223
+NT: Got a NT4 connection from 10.4.88.201 port 63537
+NT: Got a NT4 connection from 10.4.88.8 port 50648
+NT: CONNECTED RTT client (from 10.4.88.201:63537)
+NT: CONNECTED NT4 client 'photonvision@8' (from 10.4.88.8:50648)
+NT: Got a NT4 connection from 10.4.88.9 port 43728
+NT: CONNECTED NT4 client 'photonvision@9' (from 10.4.88.9:43728)
+NT: Got a NT4 connection from 10.4.88.21 port 56235
+NT: CONNECTED NT4 client 'AdvantageScope@10' (from 10.4.88.21:56235)
+NT: Got a NT4 connection from 10.4.88.21 port 56236
+NT: CONNECTED RTT client (from 10.4.88.21:56236)
+NT: DISCONNECTED NT4 client 'AdvantageScope@4' (from 10.4.88.201:63534): connection timed out
+[AdvantageKit] Logging to "/U/logs/akit_cf1a637ed62308c5.wpilog"
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+INFO | 2025-03-15 13:18:40,112 | 114 | BaseRobot                                | ========== BASE ROBOT INITIALIZING ==========
+INFO | 2025-03-15 13:18:40,190 | 107 | Robot                                    | Using Competition contract
+INFO | 2025-03-15 13:18:40,976 | 116 | BaseRobot                                | ========== INJECTOR CREATED ==========
+INFO | 2025-03-15 13:18:41,472 | 95 | BaseSwerveDriveSubsystem                 | Creating DriveSubsystem
+INFO | 2025-03-15 13:18:41,513 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontLeftDrive
+INFO | 2025-03-15 13:18:42,720 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontLeftDrive
+INFO | 2025-03-15 13:18:43,284 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontLeftDrive
+INFO | 2025-03-15 13:18:43,382 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontRightDrive
+INFO | 2025-03-15 13:18:43,628 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontRightDrive
+INFO | 2025-03-15 13:18:43,897 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontRightDrive
+INFO | 2025-03-15 13:18:43,918 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearLeftDrive
+INFO | 2025-03-15 13:18:44,137 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearLeftDrive
+INFO | 2025-03-15 13:18:44,397 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearLeftDrive
+INFO | 2025-03-15 13:18:44,418 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearRightDrive
+INFO | 2025-03-15 13:18:44,638 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearRightDrive
+INFO | 2025-03-15 13:18:44,900 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearRightDrive
+INFO | 2025-03-15 13:18:45,241 | 46 | DoubleProperty ("DriveSubsystem/MaxTargetSpeedMetersPerSecond") | Property DriveSubsystem/MaxTargetSpeedMetersPerSecond has the non-default value 1.5
+INFO | 2025-03-15 13:18:45,333 | 56 | DriveSubsystem                           | Creating DriveSubsystem
+INFO | 2025-03-15 13:18:49,019 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Target Pose") | Property CoprocessorCommunicationSubsystem/Xtables Target Pose has the non-default value target_pose
+INFO | 2025-03-15 13:18:49,040 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Coordinate Location") | Property CoprocessorCommunicationSubsystem/Xtables Coordinate Location has the non-default value target_waypoints
+INFO | 2025-03-15 13:18:49,057 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Heading Location") | Property CoprocessorCommunicationSubsystem/Xtables Heading Location has the non-default value target_heading
+SLF4J: No SLF4J providers were found.
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See https://www.slf4j.org/codes.html#noProviders for further details.
+Instantiating NavX on roboRIO MXP Port.
+NavX: Library for FRC
+INFO | 2025-03-15 13:18:53,610 | 42 | InertialMeasurementUnitAdapter           | AHRS successfully created
+INFO | 2025-03-15 13:18:53,615 | 66 | PoseSubsystem                            | Creating
+NavX: Connected.
+NavX: startup initialization and startup calibration complete.
+NavX: onboard startup calibration complete.
+NavX: Yaw angle auto-reset to 0.0 due to startup calibration.
+INFO | 2025-03-15 13:18:54,240 | 50 | DistanceProperty ("ElevatorSubsystem/l2Height-in-Inches") | Property ElevatorSubsystem/l2Height-in-Inches has the non-default value 5.000e-01 in
+INFO | 2025-03-15 13:18:54,269 | 50 | DistanceProperty ("ElevatorSubsystem/l3Height-in-Inches") | Property ElevatorSubsystem/l3Height-in-Inches has the non-default value 1.600e+01 in
+INFO | 2025-03-15 13:18:54,294 | 50 | DistanceProperty ("ElevatorSubsystem/l4Height-in-Inches") | Property ElevatorSubsystem/l4Height-in-Inches has the non-default value 4.600e+01 in
+INFO | 2025-03-15 13:18:54,304 | 50 | DistanceProperty ("ElevatorSubsystem/humanLoadHeight-in-Inches") | Property ElevatorSubsystem/humanLoadHeight-in-Inches has the non-default value 1.000e+00 in
+INFO | 2025-03-15 13:18:54,316 | 50 | DistanceProperty ("ElevatorSubsystem/baseHeight-in-Inches") | Property ElevatorSubsystem/baseHeight-in-Inches has the non-default value 0.000e+00 in
+INFO | 2025-03-15 13:18:54,333 | 50 | DistanceProperty ("ElevatorSubsystem/upperHeightLimit-in-Inches") | Property ElevatorSubsystem/upperHeightLimit-in-Inches has the non-default value 4.600e+01 in
+INFO | 2025-03-15 13:18:54,343 | 50 | DistanceProperty ("ElevatorSubsystem/lowerHeightLimit-in-Inches") | Property ElevatorSubsystem/lowerHeightLimit-in-Inches has the non-default value 0.000e+00 in
+ERROR | 2025-03-15 13:18:57,248 | 109 | CANTalonFxWpiAdapter                     | TalonFX 33 (AlgaeArmPivotMotor) is not online and cannot be configured
+ERROR | 2025-03-15 13:18:58,121 | 141 | CANTalonFxWpiAdapter                     | Configuration set to TalonFX 33 (AlgaeArmPivotMotor/CANMotorController) failed.
+INFO | 2025-03-15 13:18:58,681 | 43 | StringProperty ("ScoringQueue/Task1")    | Property ScoringQueue/Task1 has the non-default value No task
+INFO | 2025-03-15 13:18:58,694 | 43 | StringProperty ("ScoringQueue/Task2")    | Property ScoringQueue/Task2 has the non-default value No task
+INFO | 2025-03-15 13:18:58,699 | 43 | StringProperty ("ScoringQueue/Task3")    | Property ScoringQueue/Task3 has the non-default value No task
+INFO | 2025-03-15 13:18:58,733 | 43 | StringProperty ("ScoringQueue/Task4")    | Property ScoringQueue/Task4 has the non-default value No task
+INFO | 2025-03-15 13:18:58,742 | 43 | StringProperty ("ScoringQueue/Task5")    | Property ScoringQueue/Task5 has the non-default value No task
+INFO | 2025-03-15 13:18:59,253 | 46 | DoubleProperty ("ManualSwerveDriveLogic/Decider/Deadband") | Property ManualSwerveDriveLogic/Decider/Deadband has the non-default value 0.001
+INFO | 2025-03-15 13:18:59,312 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2025-03-15 13:18:59,456 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2025-03-15 13:18:59,495 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2025-03-15 13:18:59,567 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2025-03-15 13:18:59,588 | 46 | DoubleProperty ("AlignWithCreeperCommand/P") | Property AlignWithCreeperCommand/P has the non-default value 0.8
+INFO | 2025-03-15 13:18:59,634 | 46 | DoubleProperty ("AlignWithCreeperCommand/Cost Function Error slope") | Property AlignWithCreeperCommand/Cost Function Error slope has the non-default value 0.1
+INFO | 2025-03-15 13:18:59,647 | 43 | StringProperty ("AlignWithCreeperCommand/Photon Vision Front Left Hostname") | Property AlignWithCreeperCommand/Photon Vision Front Left Hostname has the non-default value photonvisionfrontleft
+INFO | 2025-03-15 13:18:59,655 | 43 | StringProperty ("AlignWithCreeperCommand/Photon Vision Front Right Hostname") | Property AlignWithCreeperCommand/Photon Vision Front Right Hostname has the non-default value photonvisionfrontright
+INFO | 2025-03-15 13:18:59,664 | 46 | DoubleProperty ("AlignWithCreeperCommand/Pixel error Threshold") | Property AlignWithCreeperCommand/Pixel error Threshold has the non-default value 15.0
+INFO | 2025-03-15 13:18:59,678 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2025-03-15 13:18:59,684 | 46 | DoubleProperty ("AlignWithCreeperCommand/P") | Property AlignWithCreeperCommand/P has the non-default value 0.8
+INFO | 2025-03-15 13:18:59,741 | 46 | DoubleProperty ("AlignWithCreeperCommand/Cost Function Error slope") | Property AlignWithCreeperCommand/Cost Function Error slope has the non-default value 0.1
+INFO | 2025-03-15 13:18:59,753 | 43 | StringProperty ("AlignWithCreeperCommand/Photon Vision Front Left Hostname") | Property AlignWithCreeperCommand/Photon Vision Front Left Hostname has the non-default value photonvisionfrontleft
+INFO | 2025-03-15 13:18:59,758 | 43 | StringProperty ("AlignWithCreeperCommand/Photon Vision Front Right Hostname") | Property AlignWithCreeperCommand/Photon Vision Front Right Hostname has the non-default value photonvisionfrontright
+INFO | 2025-03-15 13:18:59,763 | 46 | DoubleProperty ("AlignWithCreeperCommand/Pixel error Threshold") | Property AlignWithCreeperCommand/Pixel error Threshold has the non-default value 15.0
+INFO | 2025-03-15 13:18:59,870 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2025-03-15 13:18:59,944 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2025-03-15 13:18:59,995 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2025-03-15 13:19:00,021 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2025-03-15 13:19:00,071 | 43 | AdvancedTrigger                          | Creating XboxButton LeftTrigger
+INFO | 2025-03-15 13:19:00,089 | 43 | AdvancedTrigger                          | Creating XboxButton RightTrigger
+INFO | 2025-03-15 13:19:00,098 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2025-03-15 13:19:00,135 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2025-03-15 13:19:00,137 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2025-03-15 13:19:00,247 | 43 | AdvancedTrigger                          | Creating XboxButton LeftTrigger
+INFO | 2025-03-15 13:19:00,251 | 43 | AdvancedTrigger                          | Creating XboxButton RightTrigger
+INFO | 2025-03-15 13:19:00,256 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2025-03-15 13:19:00,260 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2025-03-15 13:19:00,264 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2025-03-15 13:19:00,268 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2025-03-15 13:19:00,272 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2025-03-15 13:19:00,275 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2025-03-15 13:19:00,279 | 43 | AdvancedTrigger                          | Creating XboxButton Back
+INFO | 2025-03-15 13:19:00,318 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,327 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,337 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:00,823 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,827 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,830 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:00,888 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,910 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,915 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:00,953 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,961 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:00,969 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:01,031 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,039 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,051 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:01,080 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,088 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,095 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:01,147 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,154 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,168 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:01,195 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,203 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2025-03-15 13:19:01,214 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2025-03-15 13:19:01,617 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.subsystems.drive.commands.EmergencyAutonomousCommand@8816cc
+INFO | 2025-03-15 13:19:01,620 | 118 | BaseRobot                                | ========== SYSTEMS INITIALIZED ==========
+********** Robot program startup complete **********
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2025-03-15 13:19:02,378 | 185 | BaseRobot                                | Disabled init (Optional[Red]OptionalInt[2], -1.0s, DS connected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 11.562158447265624)
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.002004s
+CoprocessorCommunicationSubsystem.periodic(): 0.000037s
+OracleSubsystem.periodic(): 0.031239s
+InstantCommand.execute(): 0.002468s
+PoseSubsystem.periodic(): 0.588981s
+AlgaeCollectionSubsystem.periodic(): 0.000501s
+ClimberSubsystem.periodic(): 0.000037s
+CoralScorerSubsystem.periodic(): 0.020998s
+buttons.run(): 0.011964s
+SwerveDriveSubsystem.periodic(): 0.022650s
+AutonomousCommandSelector.periodic(): 0.000871s
+InstantCommand.end(false): 0.001632s
+AlgaeArmSubsystem.periodic(): 0.006011s
+SuperstructureMechanismSubsystem.periodic(): 0.004173s
+SwerveSteeringSubsystem.periodic(): 0.031349s
+AprilTagVisionSubsystemExtended.periodic(): 0.018865s
+CoralArmSubsystem.periodic(): 0.033872s
+SwerveModuleSubsystem.periodic(): 0.000093s
+ElevatorSubsystem.periodic(): 0.039122s
+DriveSubsystem.periodic(): 0.000297s
+
+Default robotPeriodic() method... Override me!
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.017456s
+disabledInit(): 0.123005s
+robotPeriodic(): 0.008162s
+LiveWindow.updateValues(): 0.000092s
+Shuffleboard.update(): 0.000075s
+disabledPeriodic(): 1.493887s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.000557s
+CoprocessorCommunicationSubsystem.periodic(): 0.000205s
+OracleSubsystem.periodic(): 0.000297s
+PoseSubsystem.periodic(): 0.026174s
+AlgaeCollectionSubsystem.periodic(): 0.000408s
+ClimberSubsystem.periodic(): 0.000037s
+CoralScorerSubsystem.periodic(): 0.000779s
+buttons.run(): 0.001892s
+SwerveDriveSubsystem.periodic(): 0.000612s
+AutonomousCommandSelector.periodic(): 0.000223s
+AlgaeArmSubsystem.periodic(): 0.000724s
+SuperstructureMechanismSubsystem.periodic(): 0.002114s
+SwerveSteeringSubsystem.periodic(): 0.000779s
+AprilTagVisionSubsystemExtended.periodic(): 0.003246s
+CoralArmSubsystem.periodic(): 0.000797s
+SwerveModuleSubsystem.periodic(): 0.000371s
+ElevatorSubsystem.periodic(): 0.001651s
+DriveSubsystem.periodic(): 0.000074s
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.007327s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.074775s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.003116s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000037s
+disabledPeriodic(): 0.083364s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002578s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.068895s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+[AdvantageKit] Renaming log to "/U/logs/akit_25-03-15_13-19-07.wpilog"
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.006901s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.042665s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002300s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.029550s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002597s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.042405s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002114s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.046449s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002523s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.038546s
+
+NT: DISCONNECTED NT4 client 'AdvantageScope@3' (from 10.4.88.200:62891): connection timed out
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.000297s
+CoprocessorCommunicationSubsystem.periodic(): 0.000018s
+OracleSubsystem.periodic(): 0.000112s
+PoseSubsystem.periodic(): 0.003098s
+AlgaeCollectionSubsystem.periodic(): 0.000111s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.000649s
+buttons.run(): 0.000260s
+SwerveDriveSubsystem.periodic(): 0.000149s
+AutonomousCommandSelector.periodic(): 0.000111s
+AlgaeArmSubsystem.periodic(): 0.000371s
+SuperstructureMechanismSubsystem.periodic(): 0.001094s
+SwerveSteeringSubsystem.periodic(): 0.000482s
+AprilTagVisionSubsystemExtended.periodic(): 0.000631s
+CoralArmSubsystem.periodic(): 0.000390s
+SwerveModuleSubsystem.periodic(): 0.000037s
+ElevatorSubsystem.periodic(): 0.000798s
+DriveSubsystem.periodic(): 0.000186s
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002393s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.110633s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002764s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000037s
+disabledPeriodic(): 0.040439s
+
+NT: DISCONNECTED RTT client (from 10.4.88.201:63536): remote close:
+NT: Got a NT4 connection from 10.4.88.201 port 63633
+NT: CONNECTED NT4 client 'AdvantageScope@3' (from 10.4.88.201:63633)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002931s
+robotPeriodic(): 0.000018s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.037490s
+
+NT: Got a NT4 connection from 10.4.88.201 port 63634
+NT: CONNECTED RTT client (from 10.4.88.201:63634)
+NT: DISCONNECTED NT4 client 'VR_trackers@6' (from 10.4.88.23:60966): remote end closed connection
+NT: NT4 socket error: operation canceled
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001892s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.040773s
+
+NT: DISCONNECTED NT4 client 'AdvantageScope@10' (from 10.4.88.21:56235): remote end closed connection
+NT: NT4 socket error: operation canceled
+NT: DISCONNECTED RTT client (from 10.4.88.21:56236): remote end closed connection
+NT: NT4 socket error: operation canceled
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.051198s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.031498s
+
+NT: Got a NT4 connection from 10.4.88.23 port 49784
+NT: CONNECTED NT4 client 'VR_trackers@4' (from 10.4.88.23:49784)
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001892s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.075907s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.005602s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000000s
+disabledPeriodic(): 0.069229s
+
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.000260s
+CoprocessorCommunicationSubsystem.periodic(): 0.000019s
+OracleSubsystem.periodic(): 0.000037s
+PoseSubsystem.periodic(): 0.009442s
+AlgaeCollectionSubsystem.periodic(): 0.000092s
+ClimberSubsystem.periodic(): 0.000018s
+CoralScorerSubsystem.periodic(): 0.000260s
+buttons.run(): 0.000705s
+SwerveDriveSubsystem.periodic(): 0.002097s
+AutonomousCommandSelector.periodic(): 0.001373s
+AlgaeArmSubsystem.periodic(): 0.000427s
+SuperstructureMechanismSubsystem.periodic(): 0.003172s
+SwerveSteeringSubsystem.periodic(): 0.000649s
+AprilTagVisionSubsystemExtended.periodic(): 0.005212s
+CoralArmSubsystem.periodic(): 0.000482s
+SwerveModuleSubsystem.periodic(): 0.000631s
+ElevatorSubsystem.periodic(): 0.000316s
+DriveSubsystem.periodic(): 0.000037s
+
+CommandScheduler loop overrun
+Exception in thread "main" java.lang.NoClassDefFoundError: xbot/common/command/BaseRobot
+at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+at java.base/java.lang.ClassLoader.defineClass(Unknown Source)
+at java.base/java.security.SecureClassLoader.defineClass(Unknown Source)
+at java.base/jdk.internal.loader.BuiltinClassLoader.defineClass(Unknown Source)
+at java.base/jdk.internal.loader.BuiltinClassLoader.findClassOnClassPathOrNull(Unknown Source)
+at java.base/jdk.internal.loader.BuiltinClassLoader.loadClassOrNull(Unknown Source)
+at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(Unknown Source)
+at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(Unknown Source)
+at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+at competition.Main.main(Main.java:27)
+Caused by: java.lang.ClassNotFoundException: xbot.common.command.BaseRobot
+at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(Unknown Source)
+at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(Unknown Source)
+at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+... 10 more

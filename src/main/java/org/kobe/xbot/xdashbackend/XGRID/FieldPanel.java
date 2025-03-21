@@ -102,7 +102,7 @@ public class FieldPanel extends JPanel {
                 int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
                 int relativeX = (int) ((e.getX() - xOffset) / scaleFactor);
                 int relativeY = (int) ((e.getY() - yOffset) / scaleFactor);
-                System.out.println(relativeX + " " + relativeY);
+//                System.out.println(relativeX + " " + relativeY);
                 // Check if the mouse is outside the field bounds
                 if (e.getX() < leftBound || e.getX() > rightBound || e.getY() < topBound || e.getY() > bottomBound) {
                     tooltip.setVisible(false);

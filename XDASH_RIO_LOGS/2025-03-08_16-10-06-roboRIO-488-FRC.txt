@@ -1,0 +1,188 @@
+
+
+----------------------------------------------------------------
+
+LOG START - 2025-03-08 16:10:06
+
+----------------------------------------------------------------
+
+********** Robot program starting **********
+NT: WARNING: error reading persistent file: 188: value type mismatch, expected double
+189: value type mismatch, expected double
+190: value type mismatch, expected double
+(NetworkServer.cpp:423)
+NT: Listening on NT3 port 1735, NT4 port 5810
+NT: Got a NT4 connection from 10.4.88.202 port 43080
+NT: CONNECTED NT4 client 'photonvision@1' (from 10.4.88.202:43080)
+NT: Got a NT4 connection from 10.4.88.201 port 58704
+NT: CONNECTED NT4 client 'photonvision@2' (from 10.4.88.201:58704)
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+INFO | 2022-06-30 00:17:36,538 | 114 | BaseRobot                                | ========== BASE ROBOT INITIALIZING ==========
+INFO | 2022-06-30 00:17:36,624 | 107 | Robot                                    | Using Competition contract
+INFO | 2022-06-30 00:17:37,306 | 116 | BaseRobot                                | ========== INJECTOR CREATED ==========
+INFO | 2022-06-30 00:17:37,631 | 95 | BaseSwerveDriveSubsystem                 | Creating DriveSubsystem
+INFO | 2022-06-30 00:17:37,662 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontLeftDrive
+NT: Got a NT4 connection from 10.4.88.204 port 40894
+NT: CONNECTED NT4 client 'photonvision@3' (from 10.4.88.204:40894)
+INFO | 2022-06-30 00:17:41,037 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontLeftDrive
+INFO | 2022-06-30 00:17:41,766 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontLeftDrive
+INFO | 2022-06-30 00:17:41,908 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem FrontRightDrive
+INFO | 2022-06-30 00:17:42,093 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem FrontRightDrive
+INFO | 2022-06-30 00:17:42,356 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem FrontRightDrive
+INFO | 2022-06-30 00:17:42,360 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearLeftDrive
+INFO | 2022-06-30 00:17:42,591 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearLeftDrive
+INFO | 2022-06-30 00:17:42,847 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearLeftDrive
+INFO | 2022-06-30 00:17:42,861 | 42 | SwerveDriveSubsystem                     | Creating SwerveDriveSubsystem RearRightDrive
+INFO | 2022-06-30 00:17:43,082 | 56 | SwerveSteeringSubsystem                  | Creating SwerveRotationSubsystem RearRightDrive
+INFO | 2022-06-30 00:17:43,356 | 52 | SwerveModuleSubsystem                    | Creating SwerveModuleSubsystem RearRightDrive
+INFO | 2022-06-30 00:17:43,885 | 55 | DriveSubsystem                           | Creating DriveSubsystem
+INFO | 2022-06-30 00:17:48,316 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Target Pose") | Property CoprocessorCommunicationSubsystem/Xtables Target Pose has the non-default value target_pose
+INFO | 2022-06-30 00:17:48,344 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Coordinate Location") | Property CoprocessorCommunicationSubsystem/Xtables Coordinate Location has the non-default value target_waypoints
+INFO | 2022-06-30 00:17:48,378 | 43 | StringProperty ("CoprocessorCommunicationSubsystem/Xtables Heading Location") | Property CoprocessorCommunicationSubsystem/Xtables Heading Location has the non-default value target_heading
+SLF4J: No SLF4J providers were found.
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See https://www.slf4j.org/codes.html#noProviders for further details.
+Instantiating NavX on roboRIO MXP Port.
+NavX: Library for FRC
+INFO | 2022-06-30 00:17:54,345 | 42 | InertialMeasurementUnitAdapter           | AHRS successfully created
+INFO | 2022-06-30 00:17:54,349 | 66 | PoseSubsystem                            | Creating
+NavX: Connected.
+NavX: Board Type 50 (navX-MXP (Classic))
+NavX: firmware version 3.0.0
+NavX: startup initialization and startup calibration complete.
+NavX: onboard startup calibration complete.
+NavX: Yaw angle auto-reset to 0.0 due to startup calibration.
+INFO | 2022-06-30 00:17:54,996 | 50 | DistanceProperty ("ElevatorSubsystem/l2Height-in-Inches") | Property ElevatorSubsystem/l2Height-in-Inches has the non-default value 5.000e-01 in
+INFO | 2022-06-30 00:17:55,007 | 50 | DistanceProperty ("ElevatorSubsystem/l3Height-in-Inches") | Property ElevatorSubsystem/l3Height-in-Inches has the non-default value 1.700e+01 in
+INFO | 2022-06-30 00:17:55,015 | 50 | DistanceProperty ("ElevatorSubsystem/l4Height-in-Inches") | Property ElevatorSubsystem/l4Height-in-Inches has the non-default value 4.600e+01 in
+INFO | 2022-06-30 00:17:55,024 | 50 | DistanceProperty ("ElevatorSubsystem/humanLoadHeight-in-Inches") | Property ElevatorSubsystem/humanLoadHeight-in-Inches has the non-default value 1.000e+00 in
+INFO | 2022-06-30 00:17:55,033 | 50 | DistanceProperty ("ElevatorSubsystem/baseHeight-in-Inches") | Property ElevatorSubsystem/baseHeight-in-Inches has the non-default value 0.000e+00 in
+INFO | 2022-06-30 00:17:55,050 | 50 | DistanceProperty ("ElevatorSubsystem/upperHeightLimit-in-Inches") | Property ElevatorSubsystem/upperHeightLimit-in-Inches has the non-default value 4.600e+01 in
+INFO | 2022-06-30 00:17:55,059 | 50 | DistanceProperty ("ElevatorSubsystem/lowerHeightLimit-in-Inches") | Property ElevatorSubsystem/lowerHeightLimit-in-Inches has the non-default value 0.000e+00 in
+INFO | 2022-06-30 00:17:55,822 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxVelocity") | Property ElevatorMaintainerCommand/trapezoidMotion/maxVelocity has the non-default value 3.5
+INFO | 2022-06-30 00:17:55,829 | 46 | DoubleProperty ("ElevatorMaintainerCommand/trapezoidMotion/maxAcceleration") | Property ElevatorMaintainerCommand/trapezoidMotion/maxAcceleration has the non-default value 5.0
+INFO | 2022-06-30 00:17:56,139 | 46 | DoubleProperty ("CoralArmSubsystem/Level 4 Scoring Angle") | Property CoralArmSubsystem/Level 4 Scoring Angle has the non-default value 155.0
+INFO | 2022-06-30 00:17:56,959 | 43 | StringProperty ("ScoringQueue/Task1")    | Property ScoringQueue/Task1 has the non-default value No task
+INFO | 2022-06-30 00:17:56,969 | 43 | StringProperty ("ScoringQueue/Task2")    | Property ScoringQueue/Task2 has the non-default value No task
+INFO | 2022-06-30 00:17:56,989 | 43 | StringProperty ("ScoringQueue/Task3")    | Property ScoringQueue/Task3 has the non-default value No task
+INFO | 2022-06-30 00:17:57,003 | 43 | StringProperty ("ScoringQueue/Task4")    | Property ScoringQueue/Task4 has the non-default value No task
+INFO | 2022-06-30 00:17:57,016 | 43 | StringProperty ("ScoringQueue/Task5")    | Property ScoringQueue/Task5 has the non-default value No task
+INFO | 2022-06-30 00:17:57,688 | 46 | DoubleProperty ("ManualSwerveDriveLogic/Decider/Deadband") | Property ManualSwerveDriveLogic/Decider/Deadband has the non-default value 0.001
+INFO | 2022-06-30 00:17:57,772 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2022-06-30 00:17:57,994 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2022-06-30 00:17:58,011 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2022-06-30 00:17:58,061 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2022-06-30 00:17:58,075 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2022-06-30 00:17:58,111 | 43 | AdvancedTrigger                          | Creating XboxButton Y
+INFO | 2022-06-30 00:17:58,127 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2022-06-30 00:17:58,150 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2022-06-30 00:17:58,169 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2022-06-30 00:17:58,219 | 43 | AdvancedTrigger                          | Creating XboxButton LeftTrigger
+INFO | 2022-06-30 00:17:58,243 | 43 | AdvancedTrigger                          | Creating XboxButton RightTrigger
+INFO | 2022-06-30 00:17:58,252 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2022-06-30 00:17:58,258 | 43 | AdvancedTrigger                          | Creating XboxButton RightStick
+INFO | 2022-06-30 00:17:58,303 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2022-06-30 00:17:58,308 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2022-06-30 00:17:58,497 | 43 | AdvancedTrigger                          | Creating XboxButton LeftTrigger
+INFO | 2022-06-30 00:17:58,500 | 43 | AdvancedTrigger                          | Creating XboxButton RightTrigger
+INFO | 2022-06-30 00:17:58,504 | 43 | AdvancedTrigger                          | Creating XboxButton LeftBumper
+INFO | 2022-06-30 00:17:58,508 | 43 | AdvancedTrigger                          | Creating XboxButton RightBumper
+INFO | 2022-06-30 00:17:58,513 | 43 | AdvancedTrigger                          | Creating XboxButton Start
+INFO | 2022-06-30 00:17:58,517 | 43 | AdvancedTrigger                          | Creating XboxButton A
+INFO | 2022-06-30 00:17:58,520 | 43 | AdvancedTrigger                          | Creating XboxButton B
+INFO | 2022-06-30 00:17:58,525 | 43 | AdvancedTrigger                          | Creating XboxButton X
+INFO | 2022-06-30 00:17:58,528 | 43 | AdvancedTrigger                          | Creating XboxButton Back
+INFO | 2022-06-30 00:17:58,564 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:58,573 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:58,583 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:58,946 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:58,956 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:58,970 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:59,041 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,055 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,066 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:59,134 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,146 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,161 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:59,230 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,242 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,254 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:59,295 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,305 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,317 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:59,438 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,450 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,462 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:59,497 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelOneDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,509 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelTwoDistanceThresholdInMeters-in-Meters has the non-default value 2.000e+00 m
+INFO | 2022-06-30 00:17:59,521 | 50 | DistanceProperty ("DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters") | Property DriveToFaceAndScoreCommandGroupFactory/LevelFourDistanceThresholdInMeters-in-Meters has the non-default value 1.500e+00 m
+INFO | 2022-06-30 00:17:59,938 | 42 | AutonomousCommandSelector                | Setting CurrentAutonomousCommand to competition.subsystems.drive.commands.EmergencyAutonomousCommand@1e0b505
+INFO | 2022-06-30 00:17:59,943 | 118 | BaseRobot                                | ========== SYSTEMS INITIALIZED ==========
+********** Robot program startup complete **********
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+INFO | 2022-06-30 00:18:00,887 | 185 | BaseRobot                                | Disabled init (Optional.emptyOptionalInt.empty, 0.0s, DS disconnected, FMS disconnected, Is disabled: true, Is enabled: false, Is auto: false, Is teleop: true, Is test: false, Is browned out: false, Is output enabled: false, Battery voltage: 12.140145751953124)
+CommandScheduler loop overrun
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	LightSubsystem.periodic(): 0.002078s
+CoprocessorCommunicationSubsystem.periodic(): 0.000037s
+OracleSubsystem.periodic(): 0.021945s
+InstantCommand.execute(): 0.001113s
+PoseSubsystem.periodic(): 0.658784s
+AlgaeCollectionSubsystem.periodic(): 0.000204s
+ClimberSubsystem.periodic(): 0.000037s
+CoralScorerSubsystem.periodic(): 0.019162s
+buttons.run(): 0.012465s
+SwerveDriveSubsystem.periodic(): 0.018308s
+AutonomousCommandSelector.periodic(): 0.000891s
+InstantCommand.end(false): 0.001225s
+AlgaeArmSubsystem.periodic(): 0.029810s
+SuperstructureMechanismSubsystem.periodic(): 0.003821s
+SwerveSteeringSubsystem.periodic(): 0.021630s
+AprilTagVisionSubsystemExtended.periodic(): 0.005695s
+CoralArmSubsystem.periodic(): 0.030088s
+SwerveModuleSubsystem.periodic(): 0.000167s
+ElevatorSubsystem.periodic(): 0.089634s
+DriveSubsystem.periodic(): 0.000482s
+
+Default robotPeriodic() method... Override me!
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.016621s
+disabledInit(): 0.056151s
+robotPeriodic(): 0.001521s
+LiveWindow.updateValues(): 0.002337s
+Shuffleboard.update(): 0.000408s
+disabledPeriodic(): 1.329627s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002968s
+robotPeriodic(): 0.000018s
+LiveWindow.updateValues(): 0.000019s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.054389s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001651s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.000018s
+Shuffleboard.update(): 0.000019s
+disabledPeriodic(): 0.043536s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.002022s
+robotPeriodic(): 0.000019s
+LiveWindow.updateValues(): 0.001280s
+Shuffleboard.update(): 0.000111s
+disabledPeriodic(): 0.045559s
+
+Warning at edu.wpi.first.wpilibj.IterativeRobotBase.printLoopOverrunMessage(IterativeRobotBase.java:436): Loop time of 0.04s overrun
+
+Warning at edu.wpi.first.wpilibj.Tracer.lambda$printEpochs$0(Tracer.java:62): 	SmartDashboard.updateValues(): 0.001113s
+robotPeriodic(): 0.000000s
+LiveWindow.updateValues(): 0.000000s
+Shuffleboard.update(): 0.000018s
+disabledPeriodic(): 0.054556s
+

@@ -508,13 +508,15 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
                 } else if (message.getType().equals("GET-PHOTONVISION-HOSTNAMES")) {
                     WebSocketHandler.getBroadcastService().queueBroadcast(new Message(XdashbackendApplication.getConfigLoader().getPHOTONVISION_COPROCESSOR_HOSTNAMES(), message.getType()));
+                } else if (message.getType().equals("PHOTONVISION-SYSTEM-TEST")) {
+                    // ----
                 } else if (message.getType().equals("GET-RIO-STATUS")) {
                     SSHHostAddress sshHostAddress = SSHConnectionManager.getRioHostAddress();
                     File directory = new File(XdashbackendApplication.getConfigLoader().getRoborioLogDirectory());
                     FilePathWIthTimestamp[] filesWithTimestamp = new FilePathWIthTimestamp[0];
 
                     if (directory.isDirectory()) {
-                       File[] files = directory.listFiles();
+                        File[] files = directory.listFiles();
                         if (files == null) {
                             logger.severe("Failed to retrieve files from RIO logs: " + directory.getAbsolutePath());
                         } else {
