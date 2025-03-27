@@ -28,16 +28,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class XTablesViewer extends JFrame {
     private static final String ROBOT_POSE_TABLE = "PoseSubsystem.RobotPose";
     private static final String TARGET_WAYPOINTS_TABLE = "target_waypoints";
     private static final String BEZIER_CURVES_TABLE = "bezier_path";
+    private static final String BEZIER_CURVES_TO_NEAREST_CORAL_STATION_TABLE = "BEZIER_PATH_TO_NEAREST_CORAL_STATION";
+
     private static double SPEED_METERS_PER_SECOND = 4;
     private static double ACCELERATION_METERS_PER_SECOND = 1;
 
     private static double SAFE_RADIUS_INCHES = 10;
     public double FINAL_ROTATION_DEFAULT = 0;
+    public AtomicBoolean isBranchAlignmentTuningEnabled = new AtomicBoolean(false);
+    public AtomicBoolean isViewPathsEnabled = new AtomicBoolean(true);
 
 
     private static final XDashLogger logger = XDashLogger.getLogger();
@@ -46,9 +51,9 @@ public class XTablesViewer extends JFrame {
     public JPanel toolPanel;
     public String currentFileParentPath;
     public JMenuBar menuBar;
-    public JMenu settingsMenu, themeItem, plannerItem;
+    public JMenu settingsMenu, themeItem, plannerItem, tunningItem;
     public JMenuItem darkThemeItem, lightThemeItem,
-            exitItem, speedMPSItem, accelerationItem, safeRadiusInches, finalRotationDefault;
+            exitItem, speedMPSItem, accelerationItem, safeRadiusInches, finalRotationDefault, enableBranchAlignTuning, enablePathViewing;
     private final XTablesData cache;
     private JButton reloadButton, addButton, rebootButton, expandButton, addValueLogButton, closeButton;
     protected final XTableContext client;
@@ -179,7 +184,13 @@ public class XTablesViewer extends JFrame {
                         fieldPanel.setBezierCurves(Utilities.to3DArray(curves.getCurvesList()), curves.hasOptions() ? curves.getOptions().hasFinalRotationDegrees() ? curves.getOptions().getFinalRotationDegrees() : 0 : 0);
                     } catch (Exception ignored) {
                     }
+                } else if (updateEvent.getKey().equals(BEZIER_CURVES_TO_NEAREST_CORAL_STATION_TABLE)) {
+                    try {
+                        XTableValues.BezierCurves curves = XTablesByteUtils.unpack_bezier_curves(updateEvent.getValue().toByteArray());
+                        fieldPanel.setPathToNearestCoralStationBezierCurves(Utilities.to3DArray(curves.getCurvesList()), curves.hasOptions() ? curves.getOptions().hasFinalRotationDegrees() ? curves.getOptions().getFinalRotationDegrees() : 0 : 0);
+                    } catch (Exception ignored) {
                     }
+                }
                 if (XTablesValueLogs.logWindows.containsKey(updateEvent.getKey())) {
                     XTablesValueLogs.addLogToKey(updateEvent.getKey(), updateEvent);
                 }
@@ -254,10 +265,19 @@ public class XTablesViewer extends JFrame {
         darkThemeItem = new JMenuItem("Dark");
         lightThemeItem = new JMenuItem("Light");
         plannerItem = new JMenu("Planner");
+        tunningItem = new JMenu("Tuning");
+        enableBranchAlignTuning = new JMenuItem("Toggle Branch Align Tuning");
+
+        enableBranchAlignTuning.addActionListener((e) -> {
+            isBranchAlignmentTuningEnabled.set(!isBranchAlignmentTuningEnabled.get());
+        });
+
         accelerationItem = new JMenuItem("Acceleration");
         speedMPSItem = new JMenuItem("Meters Per Second");
         safeRadiusInches = new JMenuItem("Safe Radius Inches");
         finalRotationDefault = new JMenuItem("Default Rotation Degrees");
+        enablePathViewing = new JMenuItem("Toggle Path Viewing");
+
         toolPanel.add(createControlPanel());
 
         safeRadiusInches.addActionListener(e -> {
@@ -299,6 +319,9 @@ public class XTablesViewer extends JFrame {
                     JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+        });
+        enablePathViewing.addActionListener(e -> {
+           isViewPathsEnabled.set(!isViewPathsEnabled.get());
         });
         darkThemeItem.addActionListener(e -> {
             try {
@@ -547,10 +570,13 @@ public class XTablesViewer extends JFrame {
         themeItem.add(darkThemeItem);
         themeItem.add(lightThemeItem);
         settingsMenu.add(plannerItem);
+        settingsMenu.add(tunningItem);
+        tunningItem.add(enableBranchAlignTuning);
         plannerItem.add(speedMPSItem);
         plannerItem.add(accelerationItem);
         plannerItem.add(safeRadiusInches);
         plannerItem.add(finalRotationDefault);
+        plannerItem.add(enablePathViewing);
 
 
         settingsMenu.add(exitItem);

@@ -25,6 +25,45 @@ import java.util.List;
 import java.util.Map;
 
 public class FieldPanel extends JPanel {
+
+
+    public static final Pose2d RED_CLOSE_A = new Pose2d(3.20, 4.19, Rotation2d.fromDegrees(0.0));
+    public static final Pose2d RED_CLOSE_B = new Pose2d(3.20, 3.86, Rotation2d.fromDegrees(0.0));
+
+    public static final Pose2d RED_CLOSE_LEFT_A = new Pose2d(3.99, 5.22, Rotation2d.fromDegrees(-60.0));
+    public static final Pose2d RED_CLOSE_LEFT_B = new Pose2d(3.70, 5.06, Rotation2d.fromDegrees(-60.0));
+
+    public static final Pose2d RED_CLOSE_RIGHT_A = new Pose2d(3.70, 2.99, Rotation2d.fromDegrees(60.0));
+    public static final Pose2d RED_CLOSE_RIGHT_B = new Pose2d(3.99, 2.83, Rotation2d.fromDegrees(60.0));
+
+    public static final Pose2d RED_FAR_A = new Pose2d(5.78, 3.86, Rotation2d.fromDegrees(180.0));
+    public static final Pose2d RED_FAR_B = new Pose2d(5.78, 4.19, Rotation2d.fromDegrees(180.0));
+
+    public static final Pose2d RED_FAR_LEFT_A = new Pose2d(5.28, 5.06, Rotation2d.fromDegrees(-120.0));
+    public static final Pose2d RED_FAR_LEFT_B = new Pose2d(4.99, 5.22, Rotation2d.fromDegrees(-120.0));
+
+    public static final Pose2d RED_FAR_RIGHT_A = new Pose2d(4.99, 2.83, Rotation2d.fromDegrees(120.0));
+    public static final Pose2d RED_FAR_RIGHT_B = new Pose2d(5.28, 2.99, Rotation2d.fromDegrees(120.0));
+
+    public static final Pose2d BLUE_CLOSE_A = new Pose2d(3.20, 4.19, Rotation2d.fromDegrees(0.0));
+    public static final Pose2d BLUE_CLOSE_B = new Pose2d(3.20, 3.86, Rotation2d.fromDegrees(0.0));
+
+    public static final Pose2d BLUE_CLOSE_LEFT_A = new Pose2d(3.99, 5.22, Rotation2d.fromDegrees(-60.0));
+    public static final Pose2d BLUE_CLOSE_LEFT_B = new Pose2d(3.70, 5.06, Rotation2d.fromDegrees(-60.0));
+
+    public static final Pose2d BLUE_CLOSE_RIGHT_A = new Pose2d(3.70, 2.99, Rotation2d.fromDegrees(60.0));
+    public static final Pose2d BLUE_CLOSE_RIGHT_B = new Pose2d(3.99, 2.83, Rotation2d.fromDegrees(60.0));
+
+    public static final Pose2d BLUE_FAR_A = new Pose2d(5.78, 3.86, Rotation2d.fromDegrees(0));
+    public static final Pose2d BLUE_FAR_B = new Pose2d(5.78, 4.19, Rotation2d.fromDegrees(0));
+
+    public static final Pose2d BLUE_FAR_LEFT_A = new Pose2d(5.28, 5.06, Rotation2d.fromDegrees(60));
+    public static final Pose2d BLUE_FAR_LEFT_B = new Pose2d(4.99, 5.22, Rotation2d.fromDegrees(60));
+
+    public static final Pose2d BLUE_FAR_RIGHT_A = new Pose2d(4.99, 2.83, Rotation2d.fromDegrees(300));
+    public static final Pose2d BLUE_FAR_RIGHT_B = new Pose2d(5.28, 2.99, Rotation2d.fromDegrees(300));
+
+
     private static final int MAX_ROBOT_SIZE = 60;
 
     private static final double NOTE_METERS = 0.3556;
@@ -40,6 +79,9 @@ public class FieldPanel extends JPanel {
 
     private double[][][] bezierCurves;
     private double finalRotation;
+    private double[][][] pathToNearestCoralStationBezierCurves;
+    private double pathToNearestCoralStationFinalRotation;
+
 
     // Robot pose
     private Pose2d robotPose = new Pose2d(0, 0, new Rotation2d());
@@ -52,6 +94,7 @@ public class FieldPanel extends JPanel {
     private List<Point> pathPoints = new ArrayList<>();
     private BufferedImage fieldImage;
     private BufferedImage robotImage;
+    private boolean inputsAdded = false;
 
     // Field dimensions in meters
     private final double fieldWidthMeters = 17.55;
@@ -256,8 +299,13 @@ public class FieldPanel extends JPanel {
         repaint();
     }
 
-    public void setRobotPose(Pose2d pose) {
+    public void setPathToNearestCoralStationBezierCurves(double[][][] curves, double finalRotation) {
+        this.pathToNearestCoralStationBezierCurves = curves;
+        this.pathToNearestCoralStationFinalRotation = finalRotation;
+        repaint();
+    }
 
+    public void setRobotPose(Pose2d pose) {
         this.robotPose = pose;
         repaint();
     }
@@ -344,69 +392,15 @@ public class FieldPanel extends JPanel {
 
             int robotPixelSize = (int) (ROBOT_METERS * pixelsPerMeterX);
             int notePixelSize = (int) (NOTE_METERS * pixelsPerMeterX);
-            if (bezierCurves != null) {
-                g2d.setColor(Color.BLUE);
-                g2d.setStroke(new BasicStroke(4));
 
-                for (double[][] curve : bezierCurves) {
-                    if (curve.length < 2) continue; // Need at least 2 points
-
-                    Path2D.Double path = new Path2D.Double();
-
-                    // Convert first point to pixels and move to start position
-                    double[] firstPoint = curve[0];
-                    double startX = leftBound + (firstPoint[0] * pixelsPerMeterX);
-                    double startY = bottomBound - (firstPoint[1] * pixelsPerMeterY);
-                    path.moveTo(startX, startY);
-
-                    if (curve.length == 3) {
-                        // Quadratic Bézier Curve (1 control point, 1 end point)
-                        double[] cp = curve[1];
-                        double[] endPoint = curve[2];
-                        double cpX = leftBound + (cp[0] * pixelsPerMeterX);
-                        double cpY = bottomBound - (cp[1] * pixelsPerMeterY);
-                        double endX = leftBound + (endPoint[0] * pixelsPerMeterX);
-                        double endY = bottomBound - (endPoint[1] * pixelsPerMeterY);
-                        path.quadTo(cpX, cpY, endX, endY);
-
-                    } else if (curve.length == 4) {
-                        // Cubic Bézier Curve (2 control points, 1 end point)
-                        double[] cp1 = curve[1];
-                        double[] cp2 = curve[2];
-                        double[] endPoint = curve[3];
-                        double cp1X = leftBound + (cp1[0] * pixelsPerMeterX);
-                        double cp1Y = bottomBound - (cp1[1] * pixelsPerMeterY);
-                        double cp2X = leftBound + (cp2[0] * pixelsPerMeterX);
-                        double cp2Y = bottomBound - (cp2[1] * pixelsPerMeterY);
-                        double endX = leftBound + (endPoint[0] * pixelsPerMeterX);
-                        double endY = bottomBound - (endPoint[1] * pixelsPerMeterY);
-                        path.curveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
-
-                    } else {
-                        // Multiple Segments (Handling >4 points correctly)
-                        int samples = 100;  // Increase for a smoother curve
-                        for (int i = 0; i <= samples; i++) {
-                            double t = (double) i / samples;
-                            Point2D pt = evaluateBezier(curve, t);
-                            double x = leftBound + (pt.getX() * pixelsPerMeterX);
-                            double y = bottomBound - (pt.getY() * pixelsPerMeterY);
-                            if (i == 0) {
-                                path.moveTo(x, y);
-                            } else {
-                                path.lineTo(x, y);
-                            }
-                        }
-                    }
-                    g2d.draw(path);
+            if (root.isViewPathsEnabled.get()) {
+                if (pathToNearestCoralStationBezierCurves != null) {
+                    drawBezierCurves(g2d, leftBound, pixelsPerMeterX, bottomBound, pixelsPerMeterY, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, pathToNearestCoralStationBezierCurves, pathToNearestCoralStationFinalRotation, Color.BLACK);
                 }
-                double[][] lastSegment = bezierCurves[bezierCurves.length - 1];
-                double[] lastPoints = lastSegment[lastSegment.length - 1];
-                double lastX = lastPoints[0];
-                double lastY = lastPoints[1];
-                drawRobot(g2d, new Pose2d(lastX, lastY, Rotation2d.fromDegrees(this.finalRotation)), robotImage, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, true, Color.WHITE);
-
+                if (bezierCurves != null) {
+                    drawBezierCurves(g2d, leftBound, pixelsPerMeterX, bottomBound, pixelsPerMeterY, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, bezierCurves, finalRotation, Color.GREEN);
+                }
             }
-
 
             drawRobot(g2d, robotPose, robotImage, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, false, Color.RED);
 
@@ -429,25 +423,107 @@ public class FieldPanel extends JPanel {
             batchedPushRequests.putBoolean("close_blue_barge_low", close_blue_barge_low);
 
             root.client.getxTablesClient().sendBatchedPushRequests(batchedPushRequests);
-            if(far_red_barge_low) {
-                drawFieldRelativeX(g2d, new Pose2d(8.755, 0.8, new Rotation2d()), 15,15 , Color.BLACK, xOffset, yOffset, scaleFactor);
+            if (far_red_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 0.8, new Rotation2d()), 15, 15, Color.BLACK, xOffset, yOffset, scaleFactor);
             }
-            if(mid_red_barge_low) {
-                drawFieldRelativeX(g2d, new Pose2d(8.755, 1.88, new Rotation2d()), 15,15 , Color.BLACK, xOffset, yOffset, scaleFactor);
+            if (mid_red_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 1.88, new Rotation2d()), 15, 15, Color.BLACK, xOffset, yOffset, scaleFactor);
             }
-            if(close_red_barge_low) {
-                drawFieldRelativeX(g2d, new Pose2d(8.755, 2.95, new Rotation2d()), 15,15 , Color.BLACK, xOffset, yOffset, scaleFactor);
+            if (close_red_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 2.95, new Rotation2d()), 15, 15, Color.BLACK, xOffset, yOffset, scaleFactor);
             }
-            if(close_blue_barge_low) {
-                drawFieldRelativeX(g2d, new Pose2d(8.755, 5.06, new Rotation2d()), 15,15 , Color.WHITE, xOffset, yOffset, scaleFactor);
+            if (close_blue_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 5.06, new Rotation2d()), 15, 15, Color.WHITE, xOffset, yOffset, scaleFactor);
             }
-            if(mid_blue_barge_low) {
-                drawFieldRelativeX(g2d, new Pose2d(8.755, 6.16, new Rotation2d()), 15,15 , Color.WHITE, xOffset, yOffset, scaleFactor);
+            if (mid_blue_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 6.16, new Rotation2d()), 15, 15, Color.WHITE, xOffset, yOffset, scaleFactor);
             }
-            if(far_blue_barge_low) {
-                drawFieldRelativeX(g2d, new Pose2d(8.755, 7.26, new Rotation2d()), 15,15 , Color.WHITE, xOffset, yOffset, scaleFactor);
+            if (far_blue_barge_low) {
+                drawFieldRelativeX(g2d, new Pose2d(8.755, 7.26, new Rotation2d()), 15, 15, Color.WHITE, xOffset, yOffset, scaleFactor);
             }
+
+
+            if (this.root.isBranchAlignmentTuningEnabled.get()) {
+                drawFieldRelativeString(g2d, BLUE_CLOSE_RIGHT_A, "-1.3 (in)", new Font("Arial", Font.BOLD, 13), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_CLOSE_RIGHT_B, "-0.2 (in)", new Font("Arial", Font.BOLD, 13), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_CLOSE_LEFT_A, "0.53 (in)", new Font("Arial", Font.BOLD, 13), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_CLOSE_LEFT_B, "0.43 (in)", new Font("Arial", Font.BOLD, 13), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_CLOSE_A, "1.2 (in)", new Font("Arial", Font.BOLD, 13), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_CLOSE_B, "-0.34 (in)", new Font("Arial", Font.BOLD, 14), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_FAR_RIGHT_A, "2.1 (in)", new Font("Arial", Font.BOLD, 14), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_FAR_RIGHT_B, "0 (in)", new Font("Arial", Font.BOLD, 14), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_FAR_LEFT_A, "0 (in)", new Font("Arial", Font.BOLD, 14), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_FAR_LEFT_B, "1.1 (in)", new Font("Arial", Font.BOLD, 14), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_FAR_A, "0 (in)", new Font("Arial", Font.BOLD, 14), Color.WHITE, xOffset, yOffset, scaleFactor);
+                drawFieldRelativeString(g2d, BLUE_FAR_B, "0 (in)", new Font("Arial", Font.BOLD, 14), Color.WHITE, xOffset, yOffset, scaleFactor);
+            }
+
+
         }
+
+
+    }
+
+    private void drawBezierCurves(Graphics2D g2d, int leftBound, double pixelsPerMeterX, int bottomBound, double pixelsPerMeterY, double fieldScaleX, double fieldScaleY, int robotPixelSize, int xOffset, int yOffset, double scaleFactor, double[][][] bezierCurvesC, double finalRot, Color color) {
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(4));
+
+        for (double[][] curve : bezierCurvesC) {
+            if (curve.length < 2) continue; // Need at least 2 points
+
+            Path2D.Double path = new Path2D.Double();
+
+            // Convert first point to pixels and move to start position
+            double[] firstPoint = curve[0];
+            double startX = leftBound + (firstPoint[0] * pixelsPerMeterX);
+            double startY = bottomBound - (firstPoint[1] * pixelsPerMeterY);
+            path.moveTo(startX, startY);
+
+            if (curve.length == 3) {
+                // Quadratic Bézier Curve (1 control point, 1 end point)
+                double[] cp = curve[1];
+                double[] endPoint = curve[2];
+                double cpX = leftBound + (cp[0] * pixelsPerMeterX);
+                double cpY = bottomBound - (cp[1] * pixelsPerMeterY);
+                double endX = leftBound + (endPoint[0] * pixelsPerMeterX);
+                double endY = bottomBound - (endPoint[1] * pixelsPerMeterY);
+                path.quadTo(cpX, cpY, endX, endY);
+
+            } else if (curve.length == 4) {
+                // Cubic Bézier Curve (2 control points, 1 end point)
+                double[] cp1 = curve[1];
+                double[] cp2 = curve[2];
+                double[] endPoint = curve[3];
+                double cp1X = leftBound + (cp1[0] * pixelsPerMeterX);
+                double cp1Y = bottomBound - (cp1[1] * pixelsPerMeterY);
+                double cp2X = leftBound + (cp2[0] * pixelsPerMeterX);
+                double cp2Y = bottomBound - (cp2[1] * pixelsPerMeterY);
+                double endX = leftBound + (endPoint[0] * pixelsPerMeterX);
+                double endY = bottomBound - (endPoint[1] * pixelsPerMeterY);
+                path.curveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+
+            } else {
+                // Multiple Segments (Handling >4 points correctly)
+                int samples = 100;  // Increase for a smoother curve
+                for (int i = 0; i <= samples; i++) {
+                    double t = (double) i / samples;
+                    Point2D pt = evaluateBezier(curve, t);
+                    double x = leftBound + (pt.getX() * pixelsPerMeterX);
+                    double y = bottomBound - (pt.getY() * pixelsPerMeterY);
+                    if (i == 0) {
+                        path.moveTo(x, y);
+                    } else {
+                        path.lineTo(x, y);
+                    }
+                }
+            }
+            g2d.draw(path);
+        }
+        double[][] lastSegment = bezierCurvesC[bezierCurvesC.length - 1];
+        double[] lastPoints = lastSegment[lastSegment.length - 1];
+        double lastX = lastPoints[0];
+        double lastY = lastPoints[1];
+        drawRobot(g2d, new Pose2d(lastX, lastY, Rotation2d.fromDegrees(finalRot)), robotImage, fieldScaleX, fieldScaleY, robotPixelSize, xOffset, yOffset, scaleFactor, true, Color.WHITE);
     }
 
     private void drawWaypoint(Graphics2D g2d, XTableValues.Coordinate pose, int index, double scaleX, double scaleY, int waypointSize, int xOffset, int yOffset, double scaleFactor) {
@@ -583,20 +659,20 @@ public class FieldPanel extends JPanel {
         g2d.drawString(probabilityText, -textWidth / 2, textHeight / 4);
         g2d.setTransform(oldTransform);
     }
+
     /**
      * Draws an "X" on the field relative to field coordinates.
      *
-     * @param g2d       The Graphics2D object to draw on.
-     * @param pose      The Pose2d representing the field coordinates (in meters) for the center of the X.
-     * @param width     The width of the X in pixels.
-     * @param height    The height of the X in pixels.
-     * @param color     The color to draw the X.
-     * @param xOffset   The x-offset used in the field image positioning.
-     * @param yOffset   The y-offset used in the field image positioning.
+     * @param g2d         The Graphics2D object to draw on.
+     * @param pose        The Pose2d representing the field coordinates (in meters) for the center of the X.
+     * @param width       The width of the X in pixels.
+     * @param height      The height of the X in pixels.
+     * @param color       The color to draw the X.
+     * @param xOffset     The x-offset used in the field image positioning.
+     * @param yOffset     The y-offset used in the field image positioning.
      * @param scaleFactor The scaling factor used when drawing the field image.
      */
-    private void drawFieldRelativeX(Graphics2D g2d, Pose2d pose, int width, int height, Color color,
-                                    int xOffset, int yOffset, double scaleFactor) {
+    private void drawFieldRelativeX(Graphics2D g2d, Pose2d pose, int width, int height, Color color, int xOffset, int yOffset, double scaleFactor) {
         // Compute displayed boundaries of the field (same as in drawOtherRobot)
         int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
         int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
@@ -631,6 +707,53 @@ public class FieldPanel extends JPanel {
         // Restore the original graphics settings.
         g2d.setStroke(originalStroke);
         g2d.setColor(originalColor);
+        g2d.setTransform(oldTransform);
+    }
+
+    /**
+     * Draws a string on the field at a position and rotation based on field coordinates.
+     *
+     * @param g2d         The Graphics2D object to draw on.
+     * @param pose        The Pose2d representing the field coordinates (in meters) and rotation.
+     * @param text        The string to draw.
+     * @param font        The font to use.
+     * @param color       The color to draw the text.
+     * @param xOffset     The x-offset used in the field image positioning.
+     * @param yOffset     The y-offset used in the field image positioning.
+     * @param scaleFactor The scaling factor used when drawing the field image.
+     */
+    private void drawFieldRelativeString(Graphics2D g2d, Pose2d pose, String text, Font font, Color color, int xOffset, int yOffset, double scaleFactor) {
+        // Compute displayed boundaries of the field
+        int leftBound = xOffset + (int) (fieldPixelX1 * scaleFactor);
+        int rightBound = xOffset + (int) (fieldPixelX2 * scaleFactor);
+        int topBound = yOffset + (int) (fieldPixelY2 * scaleFactor);
+        int bottomBound = yOffset + (int) (fieldPixelY1 * scaleFactor);
+
+        double displayFieldWidth = rightBound - leftBound;
+        double displayFieldHeight = bottomBound - topBound;
+        double pixelsPerMeterX = displayFieldWidth / fieldWidthMeters;
+        double pixelsPerMeterY = displayFieldHeight / fieldHeightMeters;
+
+        // Convert field coordinates to image pixel coordinates
+        double pixelX = leftBound + (pose.getX() * pixelsPerMeterX);
+        double pixelY = bottomBound - (pose.getY() * pixelsPerMeterY);
+
+        // Save old transform
+        AffineTransform oldTransform = g2d.getTransform();
+        g2d.translate(pixelX, pixelY);
+        g2d.rotate(-pose.getRotation().getRadians());
+
+        g2d.setFont(font);
+        g2d.setColor(color);
+
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        int textHeight = fm.getAscent();
+
+        // Center the text at the transformed origin
+        g2d.drawString(text, -textWidth / 2, textHeight / 2);
+
+        // Restore transform
         g2d.setTransform(oldTransform);
     }
 
