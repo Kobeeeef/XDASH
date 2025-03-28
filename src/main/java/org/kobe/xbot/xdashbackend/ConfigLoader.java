@@ -39,9 +39,9 @@ public class ConfigLoader {
     private LocalDateTime lastUpdated;
 
     public ConfigLoader() {
-        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("photonvisionfrontright.local");
-        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("photonvisionback.local");
-        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("photonvisionfrontleft.local");
+        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("10.4.88.8");
+        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("10.4.88.9");
+        this.PHOTONVISION_COPROCESSOR_HOSTNAMES.add("10.4.88.10");
 
         loadProperties();
         this.lastReloaded = LocalDateTime.now();

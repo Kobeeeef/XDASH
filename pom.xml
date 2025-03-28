@@ -109,7 +109,19 @@
             <artifactId>oshi-core</artifactId>
             <version>6.1.1</version>
         </dependency>
-
+        <!-- NetworkTables Core -->
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-java</artifactId>
+            <version>2025.1.1</version> <!-- Use the latest version -->
+        </dependency>
+        <!-- NetworkTables JNI (Java Native Interface) -->
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-jni</artifactId>
+            <version>2025.1.1</version> <!-- Use the latest version -->
+            <classifier>linuxx86-64</classifier> <!-- Adjust based on your OS -->
+        </dependency>
 
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->
@@ -154,6 +166,10 @@
         </plugins>
     </build>
     <repositories>
+        <repository>
+            <id>wpi-maven</id>
+            <url>https://frcmaven.wpi.edu/artifactory/release/</url>
+        </repository>
         <repository>
             <id>github</id>
             <url>https://maven.pkg.github.com/kobeeeef/XTABLES</url>
