@@ -191,3 +191,278 @@ a {
     min-height: 100vh;
 }
 
+
+
+
+
+
+.animated-gradient-text {
+    position: relative;
+    margin: 0 auto;
+    display: flex;
+    max-width: fit-content;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.25rem;
+    /* 20px */
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    transition: box-shadow 0.5s ease-out;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.gradient-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: 300% 100%;
+    animation: gradient linear infinite;
+    border-radius: inherit;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.gradient-overlay::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: inherit;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #060606;
+    z-index: -1;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.text-content {
+    display: inline-block;
+    position: relative;
+    z-index: 2;
+    background-size: 300% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: gradient linear infinite;
+}
+
+.shiny-text {
+    color: #b5b5b5a4; /* Adjust this color to change intensity/style */
+    background: linear-gradient(
+            120deg,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(255, 255, 255, 0.8) 50%,
+            rgba(255, 255, 255, 0) 60%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    display: inline-block;
+    animation: shine 5s linear infinite;
+}
+
+@keyframes shine {
+    0% {
+        background-position: 100%;
+    }
+    100% {
+        background-position: -100%;
+    }
+}
+
+.shiny-text.disabled {
+    animation: none;
+}
+.focus-container {
+    position: relative;
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Words */
+.focus-word {
+    position: relative;
+    font-size: 3rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition:
+        filter 0.3s ease,
+        color 0.3s ease;
+}
+
+.focus-word.active {
+    filter: blur(0);
+}
+
+.focus-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    box-sizing: content-box;
+    border: none;
+}
+
+.corner {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    border: 3px solid var(--border-color, #fff);
+    filter: drop-shadow(0px 0px 4px var(--border-color, #fff));
+    border-radius: 3px;
+    transition: none;
+}
+
+.top-left {
+    top: -10px;
+    left: -10px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.top-right {
+    top: -10px;
+    right: -10px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.bottom-left {
+    bottom: -10px;
+    left: -10px;
+    border-right: none;
+    border-top: none;
+}
+
+.bottom-right {
+    bottom: -10px;
+    right: -10px;
+    border-left: none;
+    border-top: none;
+}
+
+
+.glitch {
+    color: #fff;
+    font-size: clamp(2rem, 10vw, 8rem);
+    white-space: nowrap;
+    font-weight: 900;
+    position: relative;
+    margin: 0 auto;
+    user-select: none;
+    cursor: pointer;
+}
+
+.glitch::after,
+.glitch::before {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    color: #fff;
+    background-color: #060606;
+    overflow: hidden;
+    clip-path: inset(0 0 0 0);
+}
+
+.glitch:not(.enable-on-hover)::after {
+    left: 10px;
+    text-shadow: var(--after-shadow, -10px 0 red);
+    animation: animate-glitch var(--after-duration, 3s) infinite linear alternate-reverse;
+}
+.glitch:not(.enable-on-hover)::before {
+    left: -10px;
+    text-shadow: var(--before-shadow, 10px 0 cyan);
+    animation: animate-glitch var(--before-duration, 2s) infinite linear alternate-reverse;
+}
+
+.glitch.enable-on-hover::after,
+.glitch.enable-on-hover::before {
+    content: '';
+    opacity: 0;
+    animation: none;
+}
+
+.glitch.enable-on-hover:hover::after {
+    content: attr(data-text);
+    opacity: 1;
+    left: 10px;
+    text-shadow: var(--after-shadow, -10px 0 red);
+    animation: animate-glitch var(--after-duration, 3s) infinite linear alternate-reverse;
+}
+.glitch.enable-on-hover:hover::before {
+    content: attr(data-text);
+    opacity: 1;
+    left: -10px;
+    text-shadow: var(--before-shadow, 10px 0 cyan);
+    animation: animate-glitch var(--before-duration, 2s) infinite linear alternate-reverse;
+}
+
+@keyframes animate-glitch {
+    0%   { clip-path: inset(20% 0 50% 0); }
+    5%   { clip-path: inset(10% 0 60% 0); }
+    10%  { clip-path: inset(15% 0 55% 0); }
+    15%  { clip-path: inset(25% 0 35% 0); }
+    20%  { clip-path: inset(30% 0 40% 0); }
+    25%  { clip-path: inset(40% 0 20% 0); }
+    30%  { clip-path: inset(10% 0 60% 0); }
+    35%  { clip-path: inset(15% 0 55% 0); }
+    40%  { clip-path: inset(25% 0 35% 0); }
+    45%  { clip-path: inset(30% 0 40% 0); }
+    50%  { clip-path: inset(20% 0 50% 0); }
+    55%  { clip-path: inset(10% 0 60% 0); }
+    60%  { clip-path: inset(15% 0 55% 0); }
+    65%  { clip-path: inset(25% 0 35% 0); }
+    70%  { clip-path: inset(30% 0 40% 0); }
+    75%  { clip-path: inset(40% 0 20% 0); }
+    80%  { clip-path: inset(20% 0 50% 0); }
+    85%  { clip-path: inset(10% 0 60% 0); }
+    90%  { clip-path: inset(15% 0 55% 0); }
+    95%  { clip-path: inset(25% 0 35% 0); }
+    100% { clip-path: inset(30% 0 40% 0); }
+}
+.text-9xl {
+    font-size: 7.5rem; /* base size */
+}
+
+@media (min-width: 768px) {
+    .md\:text-9xl {
+        font-size: 6rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .lg\:text-9xl {
+        font-size: 7rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .xl\:text-9xl {
+        font-size: 7.5rem; /* exactly what you want */
+    }
+}
+
+
